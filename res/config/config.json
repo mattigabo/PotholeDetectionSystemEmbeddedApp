@@ -1,0 +1,29 @@
+{
+  "offsets": {
+    "horizon": 0.65,
+    "xRightOffset": 0.0,
+    "xLeftOffset": 0.25,
+    "yRightOffset": 0.9,
+    "yLeftOffset": 0.9,
+    "rightEscapeOffset": 0.4,
+    "leftEscapeOffset": 0.4
+  },
+  "thresholds": {
+    "primary": {
+      "density": 0.65,
+      "variance": 0.3,
+      "gauss": 0.60,
+      "minGreyRatio": 1.15,
+      "maxGreyRatio": 2.5,
+      "minGreenRatio": 1.25
+    },
+    "secondary": {
+      "density": 0.65,
+      "variance": 0.3,
+      "gauss": 0.60,
+      "minGreyRatio": 1.15,
+      "maxGreyRatio": 2.5,
+      "minGreenRatio": 1.25
+    }
+  }
+}
