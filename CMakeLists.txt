@@ -20,25 +20,23 @@ else ()
     message("$ENV{PhD}")
 
     # Init OPENCV Environment
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
+#    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
 
     set(OPENCV_DIR $ENV{OPENCV}/install)
-    set(OPENCV_INCLUDE ${OPENCV_DIR}/include)
-    set(OPENCV_LIBS ${OPENCV_DIR}/x64/mingw/lib)
-    set(OPENCV_BIN ${OPENCV_DIR}/x64/mingw/bin)
-    set(OPENCV_LIB_WORLD ${OPENCV_LIBS}/libopencv_world340.dll.a)
 
-    set(PHD_LIBS $ENV{PhD}/lib/static)
-    set(PHD_BIN $ENV{PhD}/bin)
-    set(PHD_LIB_WORLD ${PHD_LIBS}/libphd_world.dll.a)
+    file(GLOB PHD_LIBS "$ENV{PhD}/lib/static/lib*")
     set(PHD_INCLUDE $ENV{PhD}/include)
 
     set(RAPIDJSON_INCLUDE $ENV{RAPIDJSON}/include)
 
+
+
+    message(Found Libraries: ${PHD_LIBRARIES})
+
     find_package(OPENCV REQUIRED)
 
     include_directories(
-            ${OPENCV_INCLUDE}
+            ${OpenCV_INCLUDE_DIRS}
             ${RAPIDJSON_INCLUDE}
             ${PHD_INCLUDE}
             ${PROJECT_SOURCE_DIR}/include
@@ -49,8 +47,8 @@ else ()
 
     target_link_libraries(
             PotholeDetectionObserver
-            ${PHD_LIB_WORLD}
-            ${OPENCV_LIB_WORLD}
+            ${PHD_LIBS}
+            ${OpenCV_LIBS}
     )
 
     install(
