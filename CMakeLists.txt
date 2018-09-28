@@ -19,20 +19,21 @@ else ()
     message("$ENV{CURL_DIR}")
 
 #    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
+    set(RapidJSON_DIR "${PROJECT_SOURCE_DIR}/lib/RapidJSON")
 
     find_package(OpenCV REQUIRED)
-    find_package(RapidJSON REQUIRED)
+#    find_package(RapidJSON REQUIRED)
     find_package(PotholeDetection REQUIRED)
 
     find_package(CURL REQUIRED PATHS "$ENV{CURL_DIR}/CMAKE")
 
 
     include_directories(
-            ${OpenCV_INCLUDE_DIRS}
-            ${RapidJSON_INCLUDE_DIRS}
-            ${PotholeDetection_INCLUDE_DIRS}
-            ${CURL_INCLUDE_DIRS}
-            ${PROJECT_SOURCE_DIR}/include
+            "${OpenCV_INCLUDE_DIRS}"
+            "${RapidJSON_DIR}/include"
+            "${PotholeDetection_INCLUDE_DIRS}"
+            "${CURL_INCLUDE_DIRS}"
+            "${PROJECT_SOURCE_DIR}/include"
     )
 
     add_executable(
