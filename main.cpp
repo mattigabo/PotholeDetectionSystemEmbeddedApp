@@ -104,26 +104,37 @@ int main(int argc, char *argv[]) {
         return 0;
     } else {
 
-        auto mode = string(argv[1]);
+        auto mode = std::string(argv[1]);
         auto poison_pill = false;
 
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
         serverConfig = phd::iot::networking::loadServerConfig(config_folder + "/config.json");
 
-        if (mode == "-o" && argc > 6) {
+        if (mode == "-o" && argc > 4) {
 
-            auto method = string(argv[2]);
+            auto method = std::string(argv[2]);
             auto bayes_model = string();
             auto svm_model = string();
 
-            if (string(argv[3]) == "-b" && string(argv[5]) == "-s") {
+            if (method == "-bayes" && string(argv[3]) == "-b") {
                 bayes_model = string(argv[4]);
-                svm_model = string(argv[6]);
-            } else if (string(argv[5]) == "-b" && string(argv[3]) == "-s") {
-                bayes_model = string(argv[6]);
+            } else if(method == "-svm" && string(argv[3]) == "-s") {
                 svm_model = string(argv[4]);
+            } else if (method == "-multi" && argc > 6 && (
+                    (string(argv[3]) == "-b" && string(argv[5]) == "-s") ||
+                    (string(argv[5]) == "-b" && string(argv[3]) == "-s")
+                )) {
+
+                if (string(argv[3]) == "-b" && string(argv[5]) == "-s") {
+                    bayes_model = string(argv[4]);
+                    svm_model = string(argv[6]);
+                } else if (string(argv[5]) == "-b" && string(argv[3]) == "-s") {
+                    bayes_model = string(argv[6]);
+                    svm_model = string(argv[4]);
+                }
             } else {
-                cerr << "Unknown model types " << string(argv[5]) << " or " << string(argv[3]) << endl;
+                showHelper();
+                exit(-1);
             }
 
             const vector<pair<string, string>> headers({

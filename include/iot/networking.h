@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <iostream>
 #include <curl/curl.h>
-#include <curl/easy.h>
 #include <vector>
 
 namespace phd::iot::networking {
