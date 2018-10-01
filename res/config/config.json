@@ -33,7 +33,7 @@
     "api":"/api/pothole"
   },
   "args":{
-    "mode": "-multi",
+    "method": "-multi",
     "bayes": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/bayes",
     "svm": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/svm",
     "rotate": true

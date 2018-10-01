@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <thread>
 #include <libgen.h>
@@ -19,21 +20,27 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/istreamwrapper.h>
 
 using namespace cv;
 using namespace std;
 using namespace cv::ml;
 using namespace phd::io;
 using namespace phd::iot::networking;
+using namespace rapidjson;
 
 Configuration phdConfig;
 ServerConfig serverConfig;
+typedef struct Arguments {
+    string method;
+    string bayes;
+    string svm;
+    bool rotate;
+} Args;
 
 string config_folder = "/res/config";
-string data_folder = "/res/features";
-string results_folder = "/res/results";
-string svm_folder = "/res/svm";
-string nbayes_folder = "/res/bayes";
 
 void showHelper(void) {
 
@@ -50,7 +57,7 @@ Mat go(const string &method, const string &bayes_model, const string &svm_model,
     cv::Mat labels;
 
     try {
-        labels = phd::classify(method, svm_folder + "/" + svm_model, nbayes_folder + "/" + bayes_model, features);
+        labels = phd::classify(method, svm_model, bayes_model, features);
     } catch(phd::UndefinedMethod &ex)  {
         cerr << "ERROR: " << ex.what() << endl;
         exit(-1);
@@ -78,6 +85,46 @@ std::string toJSON(phd::iot::gps::Coordinates coordinates) {
     return buffer.GetString();
 }
 
+Args load(const string path_to_config) {
+
+    Args args;
+
+    ifstream json(path_to_config, fstream::in);
+
+    IStreamWrapper wrapper(json);
+
+    Document config;
+
+    config.ParseStream(wrapper);
+
+    if (json.is_open() && config.IsObject()) {
+
+        cout << "Opened file " << path_to_config << endl;
+
+        assert(config.HasMember("args"));
+        assert(config["args"].HasMember("method"));
+        assert(config["args"].HasMember("bayes"));
+        assert(config["args"].HasMember("svm"));
+        assert(config["args"].HasMember("rotate"));
+
+        args.method = config["args"]["method"].GetString();
+        args.bayes = config["args"]["bayes"].GetString();
+        args.svm = config["args"]["svm"].GetString();
+        args.rotate = config["args"]["rotate"].GetBool();
+
+    } else {
+        cerr << "Program arguments configuration is missing. Check it's existence or create a new config.json"
+             << " under the ../res/config/ folder inside the program directory. " << endl;
+
+        exit(-3);
+    }
+
+    json.close();
+
+    return args;
+
+}
+
 int main(int argc, char *argv[]) {
 
 //    cout << phd::io::GetCurrentWorkingDir() << endl;
@@ -85,16 +132,8 @@ int main(int argc, char *argv[]) {
     const string root = phd::io::getParentDirectory(string(dirname(argv[0])));
 
     config_folder = root + config_folder;
-    data_folder = root + data_folder;
-    results_folder = root + results_folder;
-    svm_folder = root + svm_folder;
-    nbayes_folder = root + nbayes_folder;
 
     cout << config_folder << endl;
-    cout << data_folder << endl;
-    cout << results_folder << endl;
-    cout << svm_folder << endl;
-    cout << nbayes_folder << endl;
 
     cout << "cURL Global Initialization: " << HTTP::init() << endl;
 
@@ -111,30 +150,7 @@ int main(int argc, char *argv[]) {
 
         if (mode == "-o" && argc > 4) {
 
-            auto method = std::string(argv[2]);
-            auto bayes_model = string();
-            auto svm_model = string();
-
-            if (method == "-bayes" && string(argv[3]) == "-b") {
-                bayes_model = string(argv[4]);
-            } else if(method == "-svm" && string(argv[3]) == "-s") {
-                svm_model = string(argv[4]);
-            } else if (method == "-multi" && argc > 6 && (
-                    (string(argv[3]) == "-b" && string(argv[5]) == "-s") ||
-                    (string(argv[5]) == "-b" && string(argv[3]) == "-s")
-                )) {
-
-                if (string(argv[3]) == "-b" && string(argv[5]) == "-s") {
-                    bayes_model = string(argv[4]);
-                    svm_model = string(argv[6]);
-                } else if (string(argv[5]) == "-b" && string(argv[3]) == "-s") {
-                    bayes_model = string(argv[6]);
-                    svm_model = string(argv[4]);
-                }
-            } else {
-                showHelper();
-                exit(-1);
-            }
+            Args args = load(config_folder + "/config.json");
 
             const vector<pair<string, string>> headers({
                 pair<string, string>("Accept", "application/json"),
@@ -148,8 +164,11 @@ int main(int argc, char *argv[]) {
 
                 Mat image = phd::iot::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
-                Mat labels = cv::Mat::ones(1, 10, CV_32SC1);
-//                        go(method, bayes_model, svm_model, image, phdConfig).row(0);
+                if (args.rotate) {
+                    cv::rotate(image, image, cv::ROTATE_180);
+                }
+
+                Mat labels = go(args.method, args.bayes, args.svm, image, phdConfig).row(0);
 
                 vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
 
