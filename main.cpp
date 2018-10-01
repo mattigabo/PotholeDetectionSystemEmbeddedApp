@@ -12,8 +12,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/ml.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-
+#include <opencv2/video.hpp>
 #include <iot/camera.h>
 #include <iot/gps.h>
 #include <iot/networking.h>
@@ -38,7 +37,7 @@ string nbayes_folder = "/res/bayes";
 
 void showHelper(void) {
 
-    cout << "-o [== Run Observation process on the RasPi Camera] -{bayes, svm, multi} -b bayes_model.yml -s svm_model.yml" << endl;
+    cout << "-o [== Run Observation process on the RasPi Camera]" << endl;
 
 }
 
@@ -147,7 +146,7 @@ int main(int argc, char *argv[]) {
 
                 std::string position = toJSON(phd::iot::gps::fetch());
 
-                Mat image = phd::iot::camera::fetch();
+                Mat image = phd::iot::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
                 Mat labels = cv::Mat::ones(1, 10, CV_32SC1);
 //                        go(method, bayes_model, svm_model, image, phdConfig).row(0);

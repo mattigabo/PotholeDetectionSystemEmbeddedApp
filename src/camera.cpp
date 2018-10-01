@@ -3,9 +3,31 @@
 //
 
 #include "iot/camera.h"
+#include <iostream>
+#include <opencv2/highgui.hpp>
+#include <opencv2/video.hpp>
 
 namespace phd::iot::camera {
-    cv::Mat fetch() {
-        return cv::Mat1b(1, 1, CV_32SC3);
+
+    cv::Mat fetch(const int device_id) {
+
+        cv::VideoCapture pi_camera;
+        cv::Mat capture;
+
+        pi_camera.open(device_id);
+
+        if (pi_camera.isOpened()) {
+            pi_camera.set(cv::CAP_PROP_FRAME_WIDTH,640);
+            pi_camera.set(cv::CAP_PROP_FRAME_WIDTH,480);
+
+            pi_camera.read(capture);
+        } else {
+            std::cerr << "Cannot open Raspi Camera" << std::endl;
+            exit(-1);
+        }
+
+        pi_camera.release();
+
+        return capture;
     }
 }

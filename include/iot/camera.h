@@ -9,7 +9,7 @@
 
 namespace phd::iot::camera {
 
-    cv::Mat fetch();
+    cv::Mat fetch(int device_id);
 
 }
 
