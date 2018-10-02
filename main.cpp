@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
         serverConfig = phd::iot::networking::loadServerConfig(config_folder + "/config.json");
 
-        if (mode == "-o" && argc > 4) {
+        if (mode == "-o") {
 
             Args args = load(config_folder + "/config.json");
 
@@ -157,6 +157,8 @@ int main(int argc, char *argv[]) {
                 pair<string, string>("Content-Type","application/json"),
                 pair<string, string>("charset","utf-8")
             });
+
+            std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
 
             while(!poison_pill) {
 
@@ -167,6 +169,9 @@ int main(int argc, char *argv[]) {
                 if (args.rotate) {
                     cv::rotate(image, image, cv::ROTATE_180);
                 }
+
+//                cv::imshow("Capture", image);
+//                waitKey(0);
 
                 Mat labels = go(args.method, args.bayes, args.svm, image, phdConfig).row(0);
 
@@ -180,7 +185,7 @@ int main(int argc, char *argv[]) {
                     cout << "HTTP Response Code:" << res << endl;
                 }
 
-                this_thread::sleep_for(chrono::milliseconds(500));
+//                this_thread::sleep_for(chrono::milliseconds(500));
             }
 
         } else {
