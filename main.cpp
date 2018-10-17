@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
         GPSDataStore* gpsDataStore = new GPSDataStore();
 //        GPSDataUpdater* updater = new GPSDataUpdater(gpsDataStore, &serialPortWrapper);
 
-        if (mode == "-o" && argc > 4) {
+        if (mode == "-o") {
 
             Args args = load(config_folder + "/config.json");
 
@@ -117,6 +117,8 @@ int main(int argc, char *argv[]) {
             });
 
 
+            std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
+
             while(!poison_pill) {
 
                 std::string position = toJSON(gpsDataStore->fetch());
@@ -126,6 +128,9 @@ int main(int argc, char *argv[]) {
                 if (args.rotate) {
                     cv::rotate(image, image, cv::ROTATE_180);
                 }
+
+//                cv::imshow("Capture", image);
+//                waitKey(0);
 
                 Mat labels = go(args.method, args.bayes, args.svm, image, phdConfig).row(0);
 
@@ -139,7 +144,7 @@ int main(int argc, char *argv[]) {
                     cout << "HTTP Response Code:" << res << endl;
                 }
 
-                this_thread::sleep_for(chrono::milliseconds(500));
+//                this_thread::sleep_for(chrono::milliseconds(500));
             }
 
 
