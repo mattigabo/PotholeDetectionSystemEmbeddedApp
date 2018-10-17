@@ -2,8 +2,8 @@
 // Created by Xander on 27/9/2018.
 //
 
-#ifndef POTHOLEDETECTIONOBSERVER_NETWORKING_H
-#define POTHOLEDETECTIONOBSERVER_NETWORKING_H
+#ifndef POTHOLEDETECTIONEMBEDDEDAPP_NETWORKING_H
+#define POTHOLEDETECTIONEMBEDDEDAPP_NETWORKING_H
 
 #include <string>
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <curl/curl.h>
 #include <vector>
 
-namespace phd::iot::networking {
+namespace phd::devices::networking {
 
     typedef struct ServerConfig {
         std::string protocol;
@@ -45,4 +45,4 @@ namespace phd::iot::networking {
     };
 }
 
-#endif //POTHOLEDETECTIONOBSERVER_NETWORKING_H
+#endif //POTHOLEDETECTIONEMBEDDEDAPP_NETWORKING_H

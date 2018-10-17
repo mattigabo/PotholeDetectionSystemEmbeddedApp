@@ -1,3 +1,6 @@
 [submodule "lib/RapidJSON"]
 	path = lib/RapidJSON
 	url = https://github.com/Tencent/rapidjson
+[submodule "lib/minmea"]
+	path = lib/minmea
+	url = https://github.com/kosma/minmea

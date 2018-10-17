@@ -2,12 +2,12 @@
 // Created by Xander on 26/9/2018.
 //
 
-#include "iot/camera.h"
+#include "camera.h"
 #include <iostream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/video.hpp>
 
-namespace phd::iot::camera {
+namespace phd::devices::camera {
 
     cv::Mat fetch(const int device_id) {
 

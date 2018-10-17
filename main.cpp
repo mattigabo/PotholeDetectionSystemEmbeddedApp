@@ -14,31 +14,26 @@
 #include <opencv2/ml.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/video.hpp>
-#include <iot/camera.h>
-#include <iot/gps.h>
-#include <iot/networking.h>
 
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/istreamwrapper.h>
+#include <serialport/SerialPort.h>
+#include <serialport/SigrokSerialPortWrapper.h>
+#include <gps/GPSDataStore.h>
+#include <gps/GPSDataUpdater.h>
+#include <camera.h>
+#include <networking.h>
+#include <ConfigurationUtils.h>
 
 using namespace cv;
 using namespace std;
 using namespace cv::ml;
 using namespace phd::io;
-using namespace phd::iot::networking;
-using namespace rapidjson;
+using namespace phd::devices::networking;
+using namespace phd::devices::serialport;
+using namespace phd::devices::gps;
 
 Configuration phdConfig;
 ServerConfig serverConfig;
-typedef struct Arguments {
-    string method;
-    string bayes;
-    string svm;
-    bool rotate;
-} Args;
+
 
 string config_folder = "/res/config";
 
@@ -68,61 +63,21 @@ Mat go(const string &method, const string &bayes_model, const string &svm_model,
     return labels;
 }
 
-std::string toJSON(phd::iot::gps::Coordinates coordinates) {
+std::string toJSON(phd::devices::gps::Coordinates coordinates) {
     rapidjson::Document document;
 
     document.Parse("{}");
 
     assert(document.IsObject());
 
-    document.AddMember("lat", rapidjson::Value(coordinates.lat), document.GetAllocator());
-    document.AddMember("lng", rapidjson::Value(coordinates.lng), document.GetAllocator());
+    document.AddMember("latitude", rapidjson::Value(coordinates.latitude), document.GetAllocator());
+    document.AddMember("longitude", rapidjson::Value(coordinates.longitude), document.GetAllocator());
 
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     document.Accept(writer);
 
     return buffer.GetString();
-}
-
-Args load(const string path_to_config) {
-
-    Args args;
-
-    ifstream json(path_to_config, fstream::in);
-
-    IStreamWrapper wrapper(json);
-
-    Document config;
-
-    config.ParseStream(wrapper);
-
-    if (json.is_open() && config.IsObject()) {
-
-        cout << "Opened file " << path_to_config << endl;
-
-        assert(config.HasMember("args"));
-        assert(config["args"].HasMember("method"));
-        assert(config["args"].HasMember("bayes"));
-        assert(config["args"].HasMember("svm"));
-        assert(config["args"].HasMember("rotate"));
-
-        args.method = config["args"]["method"].GetString();
-        args.bayes = config["args"]["bayes"].GetString();
-        args.svm = config["args"]["svm"].GetString();
-        args.rotate = config["args"]["rotate"].GetBool();
-
-    } else {
-        cerr << "Program arguments configuration is missing. Check it's existence or create a new config.json"
-             << " under the ../res/config/ folder inside the program directory. " << endl;
-
-        exit(-3);
-    }
-
-    json.close();
-
-    return args;
-
 }
 
 int main(int argc, char *argv[]) {
@@ -146,7 +101,10 @@ int main(int argc, char *argv[]) {
         auto poison_pill = false;
 
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
-        serverConfig = phd::iot::networking::loadServerConfig(config_folder + "/config.json");
+        serverConfig = phd::devices::networking::loadServerConfig(config_folder + "/config.json");
+
+        GPSDataStore* gpsDataStore = new GPSDataStore();
+//        GPSDataUpdater* updater = new GPSDataUpdater(gpsDataStore, &serialPortWrapper);
 
         if (mode == "-o" && argc > 4) {
 
@@ -158,11 +116,12 @@ int main(int argc, char *argv[]) {
                 pair<string, string>("charset","utf-8")
             });
 
+
             while(!poison_pill) {
 
-                std::string position = toJSON(phd::iot::gps::fetch());
+                std::string position = toJSON(gpsDataStore->fetch());
 
-                Mat image = phd::iot::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
+                Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
                 if (args.rotate) {
                     cv::rotate(image, image, cv::ROTATE_180);
@@ -183,10 +142,14 @@ int main(int argc, char *argv[]) {
                 this_thread::sleep_for(chrono::milliseconds(500));
             }
 
+
         } else {
             showHelper();
         }
+
+        delete(gpsDataStore);
     }
+
 
     HTTP::close();
 

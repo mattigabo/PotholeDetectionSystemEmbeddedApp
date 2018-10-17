@@ -2,7 +2,7 @@
 // Created by Xander on 27/9/2018.
 //
 
-#include "iot/networking.h"
+#include "networking.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -16,7 +16,7 @@
 using namespace rapidjson;
 using namespace std;
 
-namespace phd::iot::networking {
+namespace phd::devices::networking {
 
     string getURL(const ServerConfig config) {
         return getURL(config.protocol, config.hostname, config.port, config.api);
