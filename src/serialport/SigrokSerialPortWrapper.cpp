@@ -24,6 +24,7 @@ namespace phd::devices::serialport {
 
 
     void SigrokSerialPortWrapper::openPort(OperationMode mode) {
+        this->initPort();
         sp_return openingResult;
         switch (mode) {
             case READ:

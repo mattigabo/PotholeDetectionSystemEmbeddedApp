@@ -10,20 +10,15 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <vector>
+#include "ConfigurationUtils.h"
+
+using namespace phd::configurations;
 
 namespace phd::devices::networking {
 
-    typedef struct ServerConfig {
-        std::string protocol;
-        std::string hostname;
-        int port;
-        std::string api;
-    } ServerConfig;
 
     std::string getURL(std::string protocol, std::string hostname, int port, std::string api);
     std::string getURL(ServerConfig config);
-
-    ServerConfig loadServerConfig (std::string path_to_config);
 
     namespace HTTP {
 

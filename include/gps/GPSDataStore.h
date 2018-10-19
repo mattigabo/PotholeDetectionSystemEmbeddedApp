@@ -5,8 +5,8 @@
 #ifndef POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
 #define POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
 
-
 #include <mutex>
+
 namespace phd::devices::gps {
     typedef struct Coordinates {
         double latitude;
@@ -14,9 +14,9 @@ namespace phd::devices::gps {
         double altitude;
     } Coordinates;
 
-/**
- * This class offers a thread safe store to store and read GPS data
- * */
+    /**
+     * This class offers a thread safe storage to store and read GPS data
+     * */
     class GPSDataStore {
     public:
         GPSDataStore();

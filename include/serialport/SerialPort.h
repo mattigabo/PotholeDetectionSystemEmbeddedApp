@@ -8,9 +8,9 @@
 #include <string>
 using namespace std;
 namespace phd::devices::serialport {
-/**
- * Mode of operation of the serial ports
- * */
+    /**
+     * Mode of operation of the serial ports
+     * */
     enum OperationMode {
         /**
          * To open serial port in read only mode

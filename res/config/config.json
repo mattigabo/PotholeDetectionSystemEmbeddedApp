@@ -37,5 +37,8 @@
     "bayes": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/bayes",
     "svm": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/svm",
     "rotate": true
+  },
+  "gps":{
+    "serialPort": "/dev/cu.BT-GPS0055BB-SerialPort"
   }
 }

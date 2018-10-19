@@ -52,7 +52,7 @@ else ()
             src/gps/GPSDataStore.cpp include/gps/GPSDataStore.h
             src/gps/GPSDataUpdater.cpp include/gps/GPSDataUpdater.h
             #lib/minmea/minmea.c
-            include/ConfigurationUtils.h)
+            include/ConfigurationUtils.h src/ConfigurationUtils.cpp)
 
     # linking
     target_link_libraries(

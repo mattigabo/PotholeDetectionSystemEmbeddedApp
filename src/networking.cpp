@@ -28,45 +28,6 @@ namespace phd::devices::networking {
                 .append(api);
     }
 
-    ServerConfig loadServerConfig(string path_to_config) {
-
-        ServerConfig serverConfig;
-
-        ifstream json(path_to_config, fstream::in);
-
-        IStreamWrapper wrapper(json);
-
-        Document config;
-
-        config.ParseStream(wrapper);
-
-        if (json.is_open() && config.IsObject()) {
-
-            cout << "Opened file " << path_to_config << endl;
-
-            assert(config.HasMember("server"));
-            assert(config["server"].HasMember("protocol"));
-            assert(config["server"].HasMember("hostname"));
-            assert(config["server"].HasMember("port"));
-            assert(config["server"].HasMember("api"));
-
-            serverConfig.protocol = config["server"]["protocol"].GetString();
-            serverConfig.hostname = config["server"]["hostname"].GetString();
-            serverConfig.port = config["server"]["port"].GetInt();
-            serverConfig.api = config["server"]["api"].GetString();
-
-        } else {
-            cerr << "Program Server configuration is missing. Check it's existence or create a new config.json"
-                 << " under the ../res/config/ folder inside the program directory. " << endl;
-
-            exit(-3);
-        }
-
-        json.close();
-
-        return serverConfig;
-    }
-
     namespace HTTP {
 
         CURLcode init() {
