@@ -3,11 +3,12 @@
 //
 
 #include "gps/GPSDataStore.h"
+#include <cmath>
 
 namespace phd::devices::gps {
 
     GPSDataStore::GPSDataStore() {
-        internalStore = Coordinates{0.0, 0.0, 0.0};
+        internalStore = Coordinates{NAN, NAN, NAN};
     }
 
     void GPSDataStore::update(const Coordinates updatedValue) {
