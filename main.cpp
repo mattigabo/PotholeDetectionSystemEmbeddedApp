@@ -137,7 +137,7 @@ void runObservationMode(bool poison_pill, GPSDataStore* gpsDataStore){
 }
 
 void testGPSCommunication(GPSDataStore* storage){
-    for(int i=0; i < 10; i++) {
+    for(int i=0; i < 100; i++) {
         Coordinates coordinates = storage->fetch();
         cout << "LATITUDE: " << coordinates.latitude <<
              " LONGITUDE:" << coordinates.longitude <<

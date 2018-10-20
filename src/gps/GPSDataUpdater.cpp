@@ -40,10 +40,10 @@ namespace phd::devices::gps {
         }
     }
 
-/**
- * @param storage an initialized data storage where the updater will save the parsed data
- * @param dataSource an opened serial port where the the updater read data
- * */
+    /**
+     * @param storage an initialized data storage where the updater will save the parsed data
+     * @param dataSource an opened serial port where the the updater read data
+     * */
     GPSDataUpdater::GPSDataUpdater(GPSDataStore *storage, SerialPort *dataSource) {
         this->storage = storage;
         this->dataSource = dataSource;
