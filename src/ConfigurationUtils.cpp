@@ -1,6 +1,7 @@
 #include "ConfigurationUtils.h"
 
 #include <fstream>
+#include <functional>
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>

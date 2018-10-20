@@ -2,7 +2,7 @@
 // Created by Matteo Gabellini on 03/10/2018.
 //
 
-#include "SerialPort/SerialPortUtils.h"
+#include "serialport/SerialPortUtils.h"
 #include <iostream>
 #include <libserialport.h>
 

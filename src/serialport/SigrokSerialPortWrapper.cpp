@@ -2,12 +2,13 @@
 // Created by Matteo Gabellini on 03/10/2018.
 //
 
-#include "SerialPort/SigrokSerialPortWrapper.h"
+#include "serialport/SigrokSerialPortWrapper.h"
 
-#include "SerialPort/SerialPort.h"
-#include "SerialPort/SerialPortUtils.h"
+#include "serialport/SerialPort.h"
+#include "serialport/SerialPortUtils.h"
 #include <iostream>
 #include <libserialport.h>
+#include <string.h>
 
 namespace phd::devices::serialport {
 

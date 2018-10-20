@@ -9,7 +9,7 @@
 #include <iostream>
 #include <thread>
 #include "GPSDataStore.h"
-#include "../SerialPort/SerialPort.h"
+#include "../serialport/SerialPort.h"
 
 using  namespace phd::devices::serialport;
 
