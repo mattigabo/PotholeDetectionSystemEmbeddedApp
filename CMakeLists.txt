@@ -25,8 +25,15 @@ else ()
     find_package(OpenCV REQUIRED)
     #    find_package(RapidJSON REQUIRED)
     find_package(PotholeDetection REQUIRED)
-    #find_package(CURL REQUIRED PATHS "$ENV{CURL_DIR}/CMAKE")
-    find_package(CURL REQUIRED)
+    find_package(Threads)
+
+    if(${APPLE})
+        find_package(CURL REQUIRED)
+    else()
+        find_package(CURL REQUIRED PATHS "$ENV{CURL_DIR}/CMAKE")
+    endif()
+
+
 
     add_library(libserialport STATIC IMPORTED)
     set_property(TARGET libserialport PROPERTY IMPORTED_LOCATION /usr/local/lib/libserialport.a)
@@ -61,6 +68,7 @@ else ()
             ${OpenCV_LIBS}
             ${CURL_LIBRARIES}
     )
+
     if(${APPLE})
         find_library(IOKIT IOKit)
         find_library(CORE_FOUNDATION CoreFoundation)

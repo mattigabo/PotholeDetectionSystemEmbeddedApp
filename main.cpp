@@ -52,9 +52,10 @@ void showHelper(void) {
     cout << "-gps [== Test the gps communication]" << endl;
 }
 
-Mat go(const string &method, const string &bayes_model, const string &svm_model, Mat &image, const Configuration &config) {
+Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, Mat &image,
+                               const Configuration &config) {
 
-    cout << endl << "---------------" << image << endl;
+    //cout << endl << "---------------" << image << endl;
 
     auto features = phd::getFeatures(image, config);
 
@@ -120,19 +121,23 @@ void runObservationMode(bool poison_pill, GPSDataStore* gpsDataStore){
 //                cv::imshow("Capture", image);
 //                waitKey(0);
 
-        Mat labels = go(args.method, args.bayes, args.svm, image, phdConfig).row(0);
 
-        vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
+        Mat labels = extractFeaturesAndClassify(args.method, args.bayes, args.svm, image, phdConfig);
+        if(!(labels.rows == 0)) {
+            labels = labels.row(0);
 
-        if (std::find(l.begin(), l.end(), 1) != l.end() ||
-            std::find(l.begin(), l.end(), 2) != l.end()) {
+            vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
 
-            CURLcode res = HTTP::POST(getURL(serverConfig), headers, position);
+            if (std::find(l.begin(), l.end(), 1) != l.end() ||
+                std::find(l.begin(), l.end(), 2) != l.end()) {
 
-            cout << "HTTP Response Code:" << res << endl;
+                CURLcode res = HTTP::POST(getURL(serverConfig), headers, position);
+
+                cout << "HTTP Response Code:" << res << endl;
+            }
         }
 
-//                this_thread::sleep_for(chrono::milliseconds(500));
+        this_thread::sleep_for(chrono::milliseconds(500));
     }
 }
 
