@@ -123,7 +123,7 @@ void runObservationMode(bool poison_pill, GPSDataStore* gpsDataStore){
 
 
         Mat labels = extractFeaturesAndClassify(args.method, args.bayes, args.svm, image, phdConfig);
-        if(!(labels.rows == 0)) {
+        if(labels.rows != 0) {
             labels = labels.row(0);
 
             vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
