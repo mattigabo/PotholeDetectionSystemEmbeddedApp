@@ -67,6 +67,7 @@ else ()
             ${PotholeDetection_LIBS}
             ${OpenCV_LIBS}
             ${CURL_LIBRARIES}
+            pthread
     )
 
     if(${APPLE})
