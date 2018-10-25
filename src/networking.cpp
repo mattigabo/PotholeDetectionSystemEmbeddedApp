@@ -90,10 +90,6 @@ namespace phd::devices::networking {
                 _headers = curl_slist_append(_headers, h.data());
             }
 
-            curl_slist_append(_headers, "Accept: application/x-www-form-urlencoded");
-            curl_slist_append(_headers, "Content Type: application/x-www-form-urlencoded");
-            curl_slist_append(_headers, "charset: utf-8");
-
             curl_easy_setopt(curl, CURLOPT_URL, url.data());
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, _headers);

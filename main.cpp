@@ -45,11 +45,16 @@ ServerConfig serverConfig;
 string serialPortName;
 
 string config_folder = "/res/config";
-
+const vector<pair<string, string>> httpHeaders({
+                                                   pair<string, string>("Accept", "application/json"),
+                                                   pair<string, string>("Content-Type","application/json"),
+                                                   pair<string, string>("charset","utf-8")
+                                           });
 void showHelper(void) {
 
     cout << "-o [== Run Observation process on the RasPi Camera]" << endl;
     cout << "-gps [== Test the gps communication]" << endl;
+    cout << "-http [== Test HTTP communication]" << endl;
 }
 
 Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, Mat &image,
@@ -80,8 +85,8 @@ std::string toJSON(phd::devices::gps::Coordinates coordinates) {
 
     assert(document.IsObject());
 
-    document.AddMember("latitude", rapidjson::Value(coordinates.latitude), document.GetAllocator());
-    document.AddMember("longitude", rapidjson::Value(coordinates.longitude), document.GetAllocator());
+    document.AddMember("lat", rapidjson::Value(coordinates.latitude), document.GetAllocator());
+    document.AddMember("lng", rapidjson::Value(coordinates.longitude), document.GetAllocator());
 
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -96,15 +101,14 @@ SerialPort* initSerialPort(string portName){
     return sp;
 }
 
+void sendDataToServer(string payload){
+    CURLcode res = HTTP::POST(getURL(serverConfig), httpHeaders, payload);
+
+    cout << "HTTP Response Code:" << res << endl;
+}
+
 void runObservationMode(bool poison_pill, GPSDataStore* gpsDataStore){
     Args args = loadCvConfig(config_folder + "/config.json");
-
-    const vector<pair<string, string>> headers({
-                                                       pair<string, string>("Accept", "application/json"),
-                                                       pair<string, string>("Content-Type","application/json"),
-                                                       pair<string, string>("charset","utf-8")
-                                               });
-
 
     std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
 
@@ -131,9 +135,7 @@ void runObservationMode(bool poison_pill, GPSDataStore* gpsDataStore){
             if (std::find(l.begin(), l.end(), 1) != l.end() ||
                 std::find(l.begin(), l.end(), 2) != l.end()) {
 
-                CURLcode res = HTTP::POST(getURL(serverConfig), headers, position);
-
-                cout << "HTTP Response Code:" << res << endl;
+                sendDataToServer(position);
             }
         }
 
@@ -151,6 +153,11 @@ void testGPSCommunication(GPSDataStore* storage){
     }
 }
 
+void testHTTPCommunication(){
+    Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
+    sendDataToServer(toJSON(pointNearUniversity));
+}
+
 int main(int argc, char *argv[]) {
 
 //    cout << phd::io::GetCurrentWorkingDir() << endl;
@@ -161,7 +168,14 @@ int main(int argc, char *argv[]) {
 
     cout << config_folder << endl;
 
-    cout << "cURL Global Initialization: " << HTTP::init() << endl;
+    CURLcode initResult =  HTTP::init();
+    cout << "cURL Global Initialization: ";
+    if(initResult == CURLE_OK){
+        cout << "OK";
+    } else {
+        cout << "Error " << initResult;
+    }
+    cout << endl;
 
     if (argc < 2) {
         showHelper();
@@ -173,26 +187,31 @@ int main(int argc, char *argv[]) {
 
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
         serverConfig = loadServerConfig(config_folder + "/config.json");
-        serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 
-        SerialPort* serialPort = initSerialPort(serialPortName);
-        auto gpsDataStore = new GPSDataStore();
-        auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
-
-        if (mode == "-o") {
-            runObservationMode(poison_pill, gpsDataStore);
-        } else if(mode == "-gps") {
-            testGPSCommunication(gpsDataStore);
+        if(mode == "-http"){
+            testHTTPCommunication();
         } else {
-            showHelper();
-        }
+            serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 
-        updater->kill();
-        updater->join();
-        serialPort->closePort();
-        delete(updater);
-        delete(serialPort);
-        delete(gpsDataStore);
+            SerialPort *serialPort = initSerialPort(serialPortName);
+            auto gpsDataStore = new GPSDataStore();
+            auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+
+            if (mode == "-o") {
+                runObservationMode(poison_pill, gpsDataStore);
+            } else if (mode == "-gps") {
+                testGPSCommunication(gpsDataStore);
+            } else {
+                showHelper();
+            }
+
+            updater->kill();
+            updater->join();
+            serialPort->closePort();
+            delete (updater);
+            delete (serialPort);
+            delete (gpsDataStore);
+        }
     }
 
 

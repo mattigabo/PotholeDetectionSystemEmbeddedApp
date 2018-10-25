@@ -28,14 +28,14 @@
   },
   "server":{
     "protocol":"http",
-    "hostname": "192.168.1.11",
+    "hostname": "192.168.0.7",
     "port": 8080,
-    "api":"/api/pothole"
+    "api":"/api/pothole/"
   },
   "args":{
     "method": "-multi",
-    "bayes": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/bayes",
-    "svm": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/svm",
+    "bayes": "./res/bayes",
+    "svm": "./res/svm",
     "rotate": true
   },
   "gps":{

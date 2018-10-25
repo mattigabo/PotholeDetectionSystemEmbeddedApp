@@ -31,7 +31,6 @@ namespace phd::configurations {
         config.ParseStream(wrapper);
 
         if (json.is_open() && config.IsObject()) {
-            cout << "Opened file " << path_to_config << endl;
 
             loadLogic(&config);
         } else {
@@ -74,7 +73,7 @@ namespace phd::configurations {
         string portName;
 
         function<void(Document*)> loadLogic = [&](Document* configRef) {
-            cout << "Opened file " << path_to_config << endl;
+            cout << "Serial port configuration Loading... Opened file " << path_to_config << endl;
 
             assert((*configRef).HasMember("gps"));
             assert((*configRef)["gps"].HasMember("serialPort"));
@@ -94,7 +93,7 @@ namespace phd::configurations {
         ServerConfig serverConfig;
 
         function<void(Document*)> loadLogic = [&](Document* configRef) {
-            cout << "Opened file " << path_to_config << endl;
+            cout << "Server configuration Loading... Opened file " << path_to_config << endl;
 
             assert((*configRef).HasMember("server"));
             assert((*configRef)["server"].HasMember("protocol"));
@@ -111,6 +110,7 @@ namespace phd::configurations {
 
         string errorMessage = generateErrorMessage("Server", path_to_config);
 
+        loadFromJSON(path_to_config, loadLogic, errorMessage);
         return serverConfig;
     }
 };
