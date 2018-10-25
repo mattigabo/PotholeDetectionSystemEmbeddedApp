@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <libgen.h>
+#include <time.h>
 
 #include <phdetection/ontologies.hpp>
 #include <phdetection/core.hpp>
@@ -28,7 +29,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/istreamwrapper.h>
-
 
 using namespace cv;
 using namespace std;
@@ -194,7 +194,6 @@ int main(int argc, char *argv[]) {
         delete(serialPort);
         delete(gpsDataStore);
     }
-
 
     HTTP::close();
     return 1;
