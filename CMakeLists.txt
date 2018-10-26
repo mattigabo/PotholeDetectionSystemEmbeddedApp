@@ -24,7 +24,7 @@ else ()
     message("$ENV{OpenCV_DIR}")
     message("$ENV{PotholeDetection_DIR}")
     message("$ENV{CURL_DIR}")
-    message("$ENV{MinMEA_DIR}")
+    message("$ENV{MiNMEA_DIR}")
     message("$ENV{LibSerialPort_DIR}")
 
     message("Init git submodules...")
@@ -35,7 +35,7 @@ else ()
     set(RapidJSON_DIR "${PROJECT_SOURCE_DIR}/lib/RapidJSON")
     find_package(OpenCV REQUIRED)
     find_package(PotholeDetection REQUIRED)
-    find_package(MinMEA REQUIRED)
+    find_package(MiNMEA REQUIRED)
     find_package(Threads)
 
     if(${APPLE})
@@ -60,7 +60,7 @@ else ()
     include_directories(
             "${OpenCV_INCLUDE_DIRS}"
             "${RapidJSON_DIR}/include"
-            "${MinMEA_INCLUDE_DIRS}"
+            "${MiNMEA_INCLUDE_DIRS}"
             "${PotholeDetection_INCLUDE_DIRS}"
             "${CURL_INCLUDE_DIRS}"
             "${LibSerialPort_INCLUDE}"
@@ -85,7 +85,7 @@ else ()
             ${PotholeDetection_LIBS}
             ${OpenCV_LIBS}
             ${CURL_LIBRARIES}
-            ${MinMEA_LIBS}
+            ${MiNMEA_LIBS}
             pthread
     )
 
