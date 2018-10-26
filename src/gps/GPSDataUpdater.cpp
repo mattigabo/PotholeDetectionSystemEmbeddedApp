@@ -3,7 +3,7 @@
 //
 
 #include "gps/GPSDataUpdater.h"
-#include <minmea/minmea.h>
+#include "minmea/minmea.h"
 
 namespace phd::devices::gps {
 /**
