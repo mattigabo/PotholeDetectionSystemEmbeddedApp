@@ -77,7 +77,7 @@ else ()
             src/gps/GPSDataStore.cpp include/gps/GPSDataStore.h
             src/gps/GPSDataUpdater.cpp include/gps/GPSDataUpdater.h
             include/ConfigurationUtils.h src/ConfigurationUtils.cpp
-    )
+            include/executionmodes.h src/executionmodes.cpp)
 
     # linking
     target_link_libraries(
