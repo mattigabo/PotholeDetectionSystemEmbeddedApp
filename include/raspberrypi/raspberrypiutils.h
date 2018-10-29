@@ -13,6 +13,6 @@
 
 #endif
 namespace phd::raspberry::utils {
-    void setupWiringPiIfNotInizialized();
+    void setupWiringPiIfNotInitialized();
 }
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_RASPBERRYPIUTILS_H
