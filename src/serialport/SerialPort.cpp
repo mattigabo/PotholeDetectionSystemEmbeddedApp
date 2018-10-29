@@ -6,7 +6,7 @@
 namespace phd::devices::serialport {
 
     SerialPort::SerialPort(string name) {
-        portName = name;
+        port_name = name;
     }
 
 }

@@ -29,12 +29,12 @@ namespace phd::devices::gps {
 
     private:
         std::thread soul;
-        bool shouldLive;
+        bool should_live;
         std::function<void(void)> behaviour;
         GPSDataStore *storage;
-        SerialPort *dataSource;
+        SerialPort *data_source;
 
-        void live();
+        void Live();
     };
 }
 

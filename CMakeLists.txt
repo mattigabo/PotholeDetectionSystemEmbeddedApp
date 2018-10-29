@@ -77,7 +77,9 @@ else ()
             src/gps/GPSDataStore.cpp include/gps/GPSDataStore.h
             src/gps/GPSDataUpdater.cpp include/gps/GPSDataUpdater.h
             include/ConfigurationUtils.h src/ConfigurationUtils.cpp
-            include/executionmodes.h src/executionmodes.cpp)
+            include/executionmodes.h src/executionmodes.cpp
+            include/raspberrypi/Led.h src/raspberrypi/Led.cpp
+            include/raspberrypi/raspberrypiutils.h)
 
     # linking
     target_link_libraries(

@@ -19,6 +19,8 @@
 
 #include <phdetection/io.hpp>
 
+#include <raspberrypi/raspberrypiutils.h>
+
 using namespace std;
 using namespace phd::io;
 using namespace phd::devices::networking;
@@ -31,12 +33,14 @@ ServerConfig serverConfig;
 string serialPortName;
 
 string config_folder = "/res/config";
+NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
 
 void showHelper(void) {
 
     cout << "-o [== Run Observation process on the RasPi Camera]" << endl;
     cout << "-gps [== Test the gps communication]" << endl;
     cout << "-http [== Test HTTP communication]" << endl;
+    cout << "-led [== Test LED]" << endl;
 }
 
 SerialPort* initSerialPort(string portName){
@@ -64,6 +68,10 @@ int main(int argc, char *argv[]) {
     }
     cout << endl;
 
+#ifdef __RASPBERRYPI_PLATFORM__
+    wiringPiSetup();
+#endif
+
     if (argc < 2) {
         showHelper();
         return 0;
@@ -77,6 +85,8 @@ int main(int argc, char *argv[]) {
 
         if(mode == "-http"){
             testHTTPCommunication(serverConfig);
+        } else if(mode == "-led") {
+            testLed(notificationLeds);
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 

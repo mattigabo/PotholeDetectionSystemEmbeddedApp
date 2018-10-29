@@ -9,9 +9,11 @@
 
 #include <gps/GPSDataStore.h>
 #include <ConfigurationUtils.h>
+#include <raspberrypi/Led.h>
 
 using namespace phd::devices::gps;
 using namespace phd::configurations;
+using namespace phd::devices::raspberry::led;
 
 using namespace phd::io;
 
@@ -24,5 +26,7 @@ void runObservationMode(bool poison_pill,
 void testGPSCommunication(GPSDataStore* storage);
 
 void testHTTPCommunication(ServerConfig serverConfig);
+
+void testLed(NotificationLeds notificationLeds);
 
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H

@@ -34,8 +34,8 @@ namespace phd::devices::gps {
     }
 
 
-    void GPSDataUpdater::live() {
-        while (shouldLive) {
+    void GPSDataUpdater::Live() {
+        while (should_live) {
             behaviour();
         }
     }
@@ -46,10 +46,10 @@ namespace phd::devices::gps {
      * */
     GPSDataUpdater::GPSDataUpdater(GPSDataStore *storage, SerialPort *dataSource) {
         this->storage = storage;
-        this->dataSource = dataSource;
+        this->data_source = dataSource;
 
         this->behaviour = [&]() {
-            string lineRead = this->dataSource->readLine();
+            string lineRead = this->data_source->readLine();
             //std::cout << "Linea letta" << lineRead << std::endl;
             try {
                 Coordinates coordinates = parseNMEAData(lineRead.c_str());
@@ -59,12 +59,12 @@ namespace phd::devices::gps {
             }
         };
 
-        soul = std::thread(&GPSDataUpdater::live, this);
-        shouldLive = true;
+        soul = std::thread(&GPSDataUpdater::Live, this);
+        should_live = true;
     }
 
     void GPSDataUpdater::kill() {
-        shouldLive = false;
+        should_live = false;
     }
 
     void GPSDataUpdater::join() {

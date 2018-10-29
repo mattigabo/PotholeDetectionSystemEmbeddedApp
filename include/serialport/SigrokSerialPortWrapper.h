@@ -29,9 +29,9 @@ namespace phd::devices::serialport {
         void fetchDataUntilNewLineIsFounded();
         void cleanReadingBuffer();
         string extractLine();
-        sp_port **portStructurePointer;
-        char *readingBuffer;
-        string internalBuffer;
+        sp_port **port_structure_pointer;
+        char *reading_buffer;
+        string internal_buffer;
     };
 }
 

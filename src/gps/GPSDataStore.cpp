@@ -8,19 +8,19 @@
 namespace phd::devices::gps {
 
     GPSDataStore::GPSDataStore() {
-        internalStore = Coordinates{NAN, NAN, NAN};
+        internal_store = Coordinates{NAN, NAN, NAN};
     }
 
     void GPSDataStore::update(const Coordinates updatedValue) {
         //Acquire the mutex and automatic release when exit from thi scope
-        std::lock_guard <std::mutex> lock(internalMutex);
+        std::lock_guard <std::mutex> lock(internal_mutex);
 
-        internalStore = updatedValue;
+        internal_store = updatedValue;
     }
 
     Coordinates GPSDataStore::fetch() {
         //Acquire the mutex and automatic release when exit from thi scope
-        std::lock_guard <std::mutex> lock(internalMutex);
-        return internalStore;
+        std::lock_guard <std::mutex> lock(internal_mutex);
+        return internal_store;
     }
 }

@@ -26,8 +26,8 @@ namespace phd::devices::gps {
         Coordinates fetch();
 
     private:
-        Coordinates internalStore;
-        std::mutex internalMutex;
+        Coordinates internal_store;
+        std::mutex internal_mutex;
     };
 
 }

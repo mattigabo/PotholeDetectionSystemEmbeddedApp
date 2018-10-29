@@ -13,13 +13,13 @@
 namespace phd::devices::serialport {
 
     SigrokSerialPortWrapper::SigrokSerialPortWrapper(string name) : SerialPort(name) {
-        portStructurePointer = (sp_port **) malloc(sizeof(sp_port *));
-        readingBuffer = (char *) malloc(READ_BUFFER_LENGTH);
+        port_structure_pointer = (sp_port **) malloc(sizeof(sp_port *));
+        reading_buffer = (char *) malloc(READ_BUFFER_LENGTH);
         this->cleanReadingBuffer();
     }
 
     void SigrokSerialPortWrapper::initPort() {
-        sp_return resultCode = sp_get_port_by_name(this->portName.c_str(), portStructurePointer);
+        sp_return resultCode = sp_get_port_by_name(this->port_name.c_str(), port_structure_pointer);
         SerialPortUtils::checkForException(resultCode, "sp_get_port_by_name in initPort");
     }
 
@@ -29,42 +29,42 @@ namespace phd::devices::serialport {
         sp_return openingResult;
         switch (mode) {
             case READ:
-                openingResult = sp_open(*(this->portStructurePointer), SP_MODE_READ);
+                openingResult = sp_open(*(this->port_structure_pointer), SP_MODE_READ);
                 break;
             case WRITE:
-                openingResult = sp_open(*(this->portStructurePointer), SP_MODE_WRITE);
+                openingResult = sp_open(*(this->port_structure_pointer), SP_MODE_WRITE);
                 break;
             case READ_AND_WRITE:
-                openingResult = sp_open(*(this->portStructurePointer), SP_MODE_READ_WRITE);
+                openingResult = sp_open(*(this->port_structure_pointer), SP_MODE_READ_WRITE);
                 break;
         }
         SerialPortUtils::checkForException(openingResult, "sp_open in openPort");
     }
 
     void SigrokSerialPortWrapper::closePort() {
-        sp_close(*(this->portStructurePointer));
+        sp_close(*(this->port_structure_pointer));
     }
 
     void SigrokSerialPortWrapper::blockingRead() {
-        sp_blocking_read(*(this->portStructurePointer),
-                         this->readingBuffer,
+        sp_blocking_read(*(this->port_structure_pointer),
+                         this->reading_buffer,
                          READ_BUFFER_LENGTH,
                          READING_TIMEOUT_MILLISECONDS);
     }
 
     string SigrokSerialPortWrapper::extractLine() {
         char searchedChar = '\n';
-        std::size_t found = internalBuffer.find(searchedChar);
+        std::size_t found = internal_buffer.find(searchedChar);
         string result = "";
         if (found != std::string::npos) {
-            result = internalBuffer.substr(0, found + 1);
-            internalBuffer.erase(0, found + 1);
+            result = internal_buffer.substr(0, found + 1);
+            internal_buffer.erase(0, found + 1);
         }
         return result;
     }
 
     void SigrokSerialPortWrapper::cleanReadingBuffer() {
-        memset(this->readingBuffer, 0, READ_BUFFER_LENGTH);
+        memset(this->reading_buffer, 0, READ_BUFFER_LENGTH);
     }
 
     void SigrokSerialPortWrapper::fetchDataUntilNewLineIsFounded() {
@@ -72,8 +72,8 @@ namespace phd::devices::serialport {
         std::size_t found = std::string::npos;
         while (found == std::string::npos) {
             this->blockingRead();
-            internalBuffer += std::string(this->readingBuffer);
-            found = internalBuffer.find(searchedChar);
+            internal_buffer += std::string(this->reading_buffer);
+            found = internal_buffer.find(searchedChar);
             cleanReadingBuffer();
         }
     }

@@ -38,7 +38,7 @@ namespace phd::devices::serialport {
         virtual string readLine() = 0;
 
     protected:
-        string portName;
+        string port_name;
     };
 }
 
