@@ -12,6 +12,8 @@
 using namespace std;
 #endif
 
+using namespace phd::raspberry::utils;
+
 namespace phd::devices::raspberry::led {
     Led::Led(int pin) {
         this->pin = pin;

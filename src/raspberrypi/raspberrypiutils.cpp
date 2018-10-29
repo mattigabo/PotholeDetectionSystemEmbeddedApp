@@ -3,7 +3,7 @@
 //
 #include <raspberrypi/raspberrypiutils.h>
 
-namespace  phd::devices::raspberry::utils {
+namespace  phd::raspberry::utils {
     bool wiringPiInitialized = false;
 
     void setupWiringPiIfNotInitialized(){
