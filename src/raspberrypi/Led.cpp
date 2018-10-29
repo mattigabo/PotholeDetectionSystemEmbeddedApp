@@ -32,7 +32,7 @@ namespace phd::devices::raspberry::led {
     }
 
     void Led::switchOff() {
-#ifdef __raspberrypi__
+#ifdef __RASPBERRYPI_PLATFORM__
         digitalWrite (pin,  LOW);
 #else
         cout<< "LED pin: " << pin << " switched off"<< endl;
