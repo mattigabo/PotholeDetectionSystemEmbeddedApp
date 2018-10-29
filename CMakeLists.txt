@@ -54,15 +54,6 @@ else ()
             add_library(libserialport STATIC IMPORTED)
             set_property(TARGET libserialport PROPERTY IMPORTED_LOCATION /usr/local/lib/libserialport.a)
             set(LibSerialPort_INCLUDE /usr/local/include/)
-
-            #check if is arm architecture
-            EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
-            message( STATUS "Architecture: ${ARCHITECTURE}" )
-            if( ${ARCHITECTURE} STREQUAL "armv7l" )
-                find_library(wiringPi_LIB wiringPi)
-                target_link_libraries(PotholeDetectionSystemEmbeddedApp ${wiringPi_LIB})
-            endif()
-
         endif()
     endif()
 
@@ -106,6 +97,14 @@ else ()
         target_link_libraries(PotholeDetectionSystemEmbeddedApp libserialport ${IOKIT} ${CORE_FOUNDATION})
     else()
         target_link_libraries(PotholeDetectionSystemEmbeddedApp libserialport)
+    endif()
+
+    #check if is arm architecture
+    EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
+    message( STATUS "Architecture: ${ARCHITECTURE}" )
+    if( ${ARCHITECTURE} STREQUAL "armv7l" )
+        find_library(wiringPi_LIB wiringPi)
+        target_link_libraries(PotholeDetectionSystemEmbeddedApp ${wiringPi_LIB})
     endif()
 
     install(
