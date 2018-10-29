@@ -49,6 +49,10 @@ SerialPort* initSerialPort(string portName){
     return sp;
 }
 
+void initLedStructures(){
+
+}
+
 int main(int argc, char *argv[]) {
 
 //    cout << phd::io::GetCurrentWorkingDir() << endl;
@@ -67,10 +71,6 @@ int main(int argc, char *argv[]) {
         cout << "Error " << initResult;
     }
     cout << endl;
-
-#ifdef __RASPBERRYPI_PLATFORM__
-    wiringPiSetup();
-#endif
 
     if (argc < 2) {
         showHelper();

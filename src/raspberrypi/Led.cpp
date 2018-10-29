@@ -18,6 +18,7 @@ namespace phd::devices::raspberry::led {
         this->switched_on = false;
 
 #ifdef __RASPBERRYPI_PLATFORM__
+        setupWiringPiIfNotInitialized();
         pinMode (pin, OUTPUT);
 #endif
     }
