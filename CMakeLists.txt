@@ -101,8 +101,8 @@ else ()
 
     #check if is arm architecture
     EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
-    message( STATUS "Architecture: ${ARCHITECTURE}" )
-    if( ${ARCHITECTURE} STREQUAL "armv7l" )
+    message(STATUS "Architecture: ${ARCHITECTURE}" )
+    if("${ARCHITECTURE}" STREQUAL "armv7l" )
         find_library(wiringPi_LIB wiringPi)
         target_link_libraries(PotholeDetectionSystemEmbeddedApp ${wiringPi_LIB})
     endif()
