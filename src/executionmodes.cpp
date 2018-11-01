@@ -6,6 +6,7 @@
 #include <chrono>
 #include <thread>
 #include <time.h>
+#include <assert.h>
 
 #include <phdetection/ontologies.hpp>
 #include <phdetection/core.hpp>
@@ -22,6 +23,7 @@
 #include <serialport/SerialPort.h>
 #include <camera.h>
 #include <networking.h>
+#include <accelerometer.h>
 
 using namespace std;
 using namespace cv;
@@ -161,4 +163,74 @@ void testLed(NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
     notificationLeds.cameraIsShooting.switchOff();
     std::this_thread::sleep_for(1s);
+}
+
+void print_vector(const std::vector<double> v) {
+    cout << "[";
+    for (int i = 0; i < v.size(); ++i) {
+        cout << v.at(i);
+        cout << (i + 1 < v.size() ? ", " : "]");
+    }
+    cout << endl;
+}
+
+void testFeatureExtraction() {
+
+    std::vector<double> v(7);
+
+    for (int i = 0; i < v.size(); ++i) {
+        v[i] = static_cast<double>(i + 1);
+    }
+
+    cout << "Test Array: "; print_vector(v);
+
+    int window_size = 2;
+
+    vector<double> expected[6] = {
+            vector<double>({ 1.0, 2.0 }),
+            vector<double>({ 2.0, 3.0 }),
+            vector<double>({ 3.0, 4.0 }),
+            vector<double>({ 4.0, 5.0 }),
+            vector<double>({ 5.0, 6.0 }),
+            vector<double>({ 6.0, 7.0 }),
+    };
+
+    cout << "Test window creation..." << endl;
+
+    auto res = phd::devices::accelerometer::getWindow(v, window_size);
+
+    cout << "Result: "; print_vector(res);
+    cout << "Expected: "; print_vector(expected[5]);
+
+    cout << "Expected value matches calculated value: " <<
+        std::equal(res.begin(), res.begin(), expected[5].begin())
+    << endl;
+
+    int slider = 0, i = 0;
+
+    while (slider < v.size() - window_size / 2) {
+
+        res = phd::devices::accelerometer::getWindow(v, window_size, slider);
+
+        slider += window_size / 2;
+
+        cout << "Result: "; print_vector(res);
+        cout << "Expected: "; print_vector(expected[i]);
+
+        cout << "Expected value matches calculated value: " <<
+            (std::equal(res.begin(), res.begin(), expected[i++].begin()) ? "true" : "false")
+        << endl;
+
+    }
+
+    auto ft = phd::devices::accelerometer::getFeatures(v);
+
+    cout << "Mean: " << ft.mean << " | Confidence: " << ft.mean_confidence << endl;
+    cout << "Variance: " << ft.variance << endl;
+    cout << "STD_DEV: " << ft.std_dev << " | Confidence: " << ft.std_dev_confidence << endl;
+    cout << "RSD: " << ft.relative_std_dev << " | Confidence: " << ft.relative_std_dev_confidence << endl;
+    cout << "Max-Min Diff: " << ft.max_min_diff << " | Confidence: " << ft.max_min_diff_confidence << endl;
+    cout << "Confidence Sum: " << ft.confidences_sum << " | Confidence: " << ft.confidences_sum_confidence << endl;
+    cout << "Num of (statistical) features over the threshold (n.d.r. have high-confidence): " << ft.thresholds_overpass_count << "/5" << endl;
+
 }

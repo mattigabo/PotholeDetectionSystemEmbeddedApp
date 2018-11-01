@@ -16,7 +16,7 @@
 #include <networking.h>
 #include <ConfigurationUtils.h>
 #include <executionmodes.h>
-
+#include <accelerometer.h>
 #include <phdetection/io.hpp>
 
 #include <raspberrypi/raspberrypiutils.h>
@@ -41,6 +41,7 @@ void showHelper(void) {
     cout << "-gps [== Test the gps communication]" << endl;
     cout << "-http [== Test HTTP communication]" << endl;
     cout << "-led [== Test LED]" << endl;
+    cout << "-test-feature [== Test Feature Extraction functions]" << endl;
 }
 
 SerialPort* initSerialPort(string portName){
@@ -74,6 +75,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         showHelper();
+
         return 0;
     } else {
 
@@ -87,6 +89,8 @@ int main(int argc, char *argv[]) {
             testHTTPCommunication(serverConfig);
         } else if(mode == "-led") {
             testLed(notificationLeds);
+        } else if (mode == "-test-feature") {
+            testFeatureExtraction();
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 

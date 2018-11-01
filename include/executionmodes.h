@@ -29,4 +29,6 @@ void testHTTPCommunication(ServerConfig serverConfig);
 
 void testLed(NotificationLeds notificationLeds);
 
+void testFeatureExtraction();
+
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
