@@ -43,10 +43,10 @@ namespace phd::devices::accelerometer {
     };
 
     typedef struct Coefficients {
-        double high_confidence_score = 0.8;
-        double low_confidence_score = 0.2;
-        int windows_size = 30;
-        int C = 10;
+        double high_confidence_score;
+        double low_confidence_score;
+        int windows_size;
+        int C;
     } Coefficients;
 
     const Coefficients std_coefficients = {
@@ -80,6 +80,8 @@ namespace phd::devices::accelerometer {
      * @return The compound structure encapsulating the features
      */
     Features getFeatures(const std::vector<double> window);
+
+
 
 }
 
