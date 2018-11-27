@@ -79,7 +79,10 @@ else ()
             include/ConfigurationUtils.h src/ConfigurationUtils.cpp
             include/executionmodes.h src/executionmodes.cpp
             include/raspberrypi/Led.h src/raspberrypi/Led.cpp
-            include/raspberrypi/raspberrypiutils.h src/raspberrypi/raspberrypiutils.cpp src/accelerometer.cpp include/accelerometer.h)
+            include/raspberrypi/raspberrypiutils.h src/raspberrypi/raspberrypiutils.cpp
+            src/accelerometer.cpp include/accelerometer.h
+            src/accelerometerutils.cpp include/accelerometerutils.h
+    )
 
     # linking
     target_link_libraries(

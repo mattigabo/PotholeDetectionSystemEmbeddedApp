@@ -4,6 +4,8 @@
 #include <executionmodes.h>
 
 #include <chrono>
+#include <vector>
+#include <string>
 #include <thread>
 #include <time.h>
 #include <assert.h>
@@ -24,6 +26,7 @@
 #include <camera.h>
 #include <networking.h>
 #include <accelerometer.h>
+#include <accelerometerutils.h>
 
 using namespace std;
 using namespace cv;
@@ -89,7 +92,7 @@ Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, 
 void runObservationMode(bool poison_pill,
         GPSDataStore* gpsDataStore,
         Configuration phdConfig,
-        Args cvConfig,
+        CvArgs cvConfig,
         ServerConfig serverConfig){
 
     std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
@@ -165,34 +168,35 @@ void testLed(NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
 }
 
-void print_vector(const std::vector<double> v) {
+template <typename T>
+void print_vector(const std::vector<T> v) {
     cout << "[";
     for (int i = 0; i < v.size(); ++i) {
         cout << v.at(i);
-        cout << (i + 1 < v.size() ? ", " : "]");
+        cout << (i + 1 < v.size() ? ", " : "");
     }
-    cout << endl;
+    cout << "]" << endl;
 }
 
 void testFeatureExtraction() {
 
-    std::vector<double> v(7);
+    std::vector<float> v(7);
 
     for (int i = 0; i < v.size(); ++i) {
-        v[i] = static_cast<double>(i + 1);
+        v[i] = static_cast<float>(i + 1);
     }
 
     cout << "Test Array: "; print_vector(v);
 
     int window_size = 2;
 
-    vector<double> expected[6] = {
-            vector<double>({ 1.0, 2.0 }),
-            vector<double>({ 2.0, 3.0 }),
-            vector<double>({ 3.0, 4.0 }),
-            vector<double>({ 4.0, 5.0 }),
-            vector<double>({ 5.0, 6.0 }),
-            vector<double>({ 6.0, 7.0 }),
+    vector<float> expected[6] = {
+            vector<float>({ 1.0, 2.0 }),
+            vector<float>({ 2.0, 3.0 }),
+            vector<float>({ 3.0, 4.0 }),
+            vector<float>({ 4.0, 5.0 }),
+            vector<float>({ 5.0, 6.0 }),
+            vector<float>({ 6.0, 7.0 }),
     };
 
     cout << "Test window creation..." << endl;
@@ -203,7 +207,7 @@ void testFeatureExtraction() {
     cout << "Expected: "; print_vector(expected[5]);
 
     cout << "Expected value matches calculated value: " <<
-        std::equal(res.begin(), res.begin(), expected[5].begin())
+        (std::equal(res.begin(), res.begin(), expected[5].begin()) ? "true" : "false")
     << endl;
 
     int slider = 0, i = 0;
@@ -233,4 +237,110 @@ void testFeatureExtraction() {
     cout << "Confidence Sum: " << ft.confidences_sum << " | Confidence: " << ft.confidences_sum_confidence << endl;
     cout << "Num of (statistical) features over the threshold (n.d.r. have high-confidence): " << ft.thresholds_overpass_count << "/5" << endl;
 
+}
+
+void trainAccelerometer(char **argv) {
+
+    auto trainset_type = std::string(argv[2]);
+    auto trainset = std::string(argv[3]);
+    auto testset_type = std::string(argv[4]);
+    auto testset = std::string(argv[5]);
+    auto svm_acc_model = std::string(argv[6]);
+
+    std::vector<phd::devices::accelerometer::Features> features;
+    std::vector<int> labels;
+
+    auto sliding_function = [](int window) {return window - 1;};
+
+    if (trainset_type == "-d") {
+        vector<cv::String> globs;
+        cv::glob(trainset + "/*.json", globs);
+
+        for (const string ds : globs) {
+            cout << ds << endl;
+            const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
+
+            phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+        }
+
+    } else if (trainset_type == "-f") {
+
+        const phd::devices::accelerometer::utils::RawData rawData =
+                phd::devices::accelerometer::utils::readJSONDataset(trainset);
+
+        phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+
+    } else {
+        cerr << "Undefined parameter " << trainset_type << endl;
+        exit(-3);
+    }
+
+    auto stub = std::vector<int>();
+
+    std::copy_if(labels.begin(), labels.end(), back_inserter(stub), [](int v){ return v == 1;});
+
+    cout << stub.size() << endl;
+
+    phd::devices::accelerometer::training(
+            features,
+            cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
+            svm_acc_model,
+            5, 1000, exp(-5)
+    );
+
+    cout << "Testing Classifier against Test Set..." << endl;
+
+    features.clear();
+    labels.clear();
+
+    if (testset_type == "-d") {
+        vector<cv::String> globs;
+        cv::glob(testset + "/*.json", globs);
+
+        for (const string ds : globs) {
+            cout << ds << endl;
+            const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
+
+            phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+        }
+
+    } else if (testset_type == "-f") {
+
+        const phd::devices::accelerometer::utils::RawData rawData =
+                phd::devices::accelerometer::utils::readJSONDataset(testset);
+
+        phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+
+    } else {
+        cerr << "Undefined parameter " << testset_type << endl;
+        exit(-3);
+    }
+
+    stub.clear();
+    std::copy_if(labels.begin(), labels.end(), back_inserter(stub), [](int v){ return v == 1;});
+    cout << stub.size() << endl;
+
+    auto test_labels = phd::devices::accelerometer::classify(features, svm_acc_model);
+    float tp = 0, fp = 0, fn = 0, tn = 0;
+
+    for (int i = 0; i < labels.size(); ++i) {
+        if (test_labels.at<float>(0, i) == 1 && labels[i] == 1) {
+            tp++;
+        } else if (test_labels.at<float>(0, i) == 0 && labels[i] == 0) {
+            tn++;
+        } else if (test_labels.at<float>(0, i) == 1 && labels[i] == 0) {
+            fp++;
+        } else {
+            fn++;
+        }
+    }
+
+    cout << "TP: " << tp << endl;
+    cout << "TN: " << tn << endl;
+    cout << "FP: " << fp << endl;
+    cout << "FN: " << fn << endl;
+//    cout << "Accuracy: " << ((tp+tn)/labels.size()) << endl;
+    cout << "Precision: " << (tp/(tp+fp)) << endl;
+    cout << "Recall/Sensitivity: " << (tp/(tp+fn)) << endl;
+    cout << "F1: " << (2*tp/(2*tp+fp+fn)) << endl;
 }

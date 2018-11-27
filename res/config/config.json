@@ -32,10 +32,10 @@
     "port": 8080,
     "api":"/api/pothole/"
   },
-  "args":{
+  "cvArgs":{
     "method": "-multi",
-    "bayes": "./res/bayes",
-    "svm": "./res/svm",
+    "bayes": "./res/bayes/bayes.yml",
+    "svm": "./res/svm/svm.yml",
     "rotate": true
   },
   "gps":{

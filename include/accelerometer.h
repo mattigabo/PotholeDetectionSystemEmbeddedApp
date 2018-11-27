@@ -6,45 +6,48 @@
 #define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_H
 
 #include <vector>
+#include <string>
+#include <opencv2/core.hpp>
 
 namespace phd::devices::accelerometer {
 
-    const double g = 9.8196; // m/s^2
+    const float g = 9.8196f; // m/s^2
+    const int  n_features = 12;
 
     typedef struct Features {
-        double mean;
-        double mean_confidence;
-        double std_dev;
-        double std_dev_confidence;
-        double variance; // Has no confidence score
-        double relative_std_dev;
-        double relative_std_dev_confidence;
-        double max_min_diff;
-        double max_min_diff_confidence;
-        double confidences_sum;
-        double confidences_sum_confidence;
+        float mean;
+        float mean_confidence;
+        float std_dev;
+        float std_dev_confidence;
+        float variance; // Has no confidence score
+        float relative_std_dev;
+        float relative_std_dev_confidence;
+        float max_min_diff;
+        float max_min_diff_confidence;
+        float confidences_sum;
+        float confidences_sum_confidence;
         int thresholds_overpass_count;
     } Features;
 
     typedef struct Thresholds {
-        double mean_threshold;
-        double std_dev_threshold;
-        double relative_std_dev_threshold;
-        double max_min_diff_threshold;
-        double sum_threshold;
+        float mean_threshold;
+        float std_dev_threshold;
+        float relative_std_dev_threshold;
+        float max_min_diff_threshold;
+        float sum_threshold;
     } Thresholds;
 
     const Thresholds std_thresholds = {
-        .mean_threshold = g * 0.3,
-        .std_dev_threshold = g * 0.15,
-        .relative_std_dev_threshold = g * 0.015,
-        .max_min_diff_threshold = g * 0.2,
+        .mean_threshold = g * 0.3f,
+        .std_dev_threshold = g * 0.15f,
+        .relative_std_dev_threshold = g * 0.015f,
+        .max_min_diff_threshold = g * 0.2f,
         .sum_threshold = 3
     };
 
     typedef struct Coefficients {
-        double high_confidence_score;
-        double low_confidence_score;
+        float high_confidence_score;
+        float low_confidence_score;
         int windows_size;
         int C;
     } Coefficients;
@@ -63,7 +66,7 @@ namespace phd::devices::accelerometer {
      * @param slider The index of the first element of the window
      * @return The values found inside the sliding window
      */
-    std::vector<double> getWindow(const std::vector<double> stream, const int window, const int slider);
+    std::vector<float> getWindow(const std::vector<float> &stream, const int window, const int slider);
 
     /**
      *
@@ -72,16 +75,31 @@ namespace phd::devices::accelerometer {
      * @param window The number of values to get from the back of the stream, that is the size of the returning vector
      * @return The values found inside the sliding window
      */
-    std::vector<double> getWindow(const std::vector<double> stream, const int window);
+    std::vector<float> getWindow(const std::vector<float> &stream, const int window);
 
     /**
      *
      * @param window The array of accelerometer values from which extract the features
      * @return The compound structure encapsulating the features
      */
-    Features getFeatures(const std::vector<double> window);
+    Features getFeatures(const std::vector<float> &window);
 
+    /**
+     *
+     * @param features
+     * @param labels
+     * @param model
+     */
+    void training(const std::vector<Features> &features, const cv::Mat &labels, const std::string &model,
+            const int k_fold, const int max_iter, const double epsilon);
 
+    /**
+     *
+     * @param features
+     * @param model
+     * @return
+     */
+    cv::Mat classify(const std::vector<Features> &features, const std::string &model);
 
 }
 

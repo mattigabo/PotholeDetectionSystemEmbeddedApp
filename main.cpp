@@ -54,6 +54,8 @@ void initLedStructures(){
 
 }
 
+
+
 int main(int argc, char *argv[]) {
 
 //    cout << phd::io::GetCurrentWorkingDir() << endl;
@@ -89,8 +91,12 @@ int main(int argc, char *argv[]) {
             testHTTPCommunication(serverConfig);
         } else if(mode == "-led") {
             testLed(notificationLeds);
-        } else if (mode == "-test-feature") {
-            testFeatureExtraction();
+        } else if (mode == "-train" && argc > 5) {
+//            testFeatureExtraction();
+            cout << "Training mode: ON" << endl;
+
+            trainAccelerometer(argv);
+
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 
@@ -99,7 +105,7 @@ int main(int argc, char *argv[]) {
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
             if (mode == "-o") {
-                Args cvConfig = loadCvConfig(config_folder + "/config.json");
+                CvArgs cvConfig = loadCvConfig(config_folder + "/config.json");
                 runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
             } else if (mode == "-gps") {
                 testGPSCommunication(gpsDataStore);

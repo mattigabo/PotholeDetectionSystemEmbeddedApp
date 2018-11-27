@@ -20,7 +20,7 @@ using namespace phd::io;
 void runObservationMode(bool poison_pill,
         GPSDataStore* gpsDataStore,
         Configuration phdConfig,
-        Args cvConfig,
+        CvArgs cvConfig,
         ServerConfig serverConfig);
 
 void testGPSCommunication(GPSDataStore* storage);
@@ -30,5 +30,7 @@ void testHTTPCommunication(ServerConfig serverConfig);
 void testLed(NotificationLeds notificationLeds);
 
 void testFeatureExtraction();
+
+void trainAccelerometer(char **argv);
 
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H

@@ -18,10 +18,9 @@ namespace phd::configurations {
             string bayes;
             string svm;
             bool rotate;
-        } Args;
+        } CvArgs;
 
-        Args loadCvConfig(const string path_to_config);
-
+        CvArgs loadCvConfig(const string path_to_config);
 
         string loadSerialPortFromConfig(string path_to_config);
 

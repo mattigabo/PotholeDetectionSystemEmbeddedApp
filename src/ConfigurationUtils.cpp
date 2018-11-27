@@ -42,22 +42,22 @@ namespace phd::configurations {
         json.close();
     }
 
-    Args loadCvConfig(const string path_to_config) {
+    CvArgs loadCvConfig(const string path_to_config) {
 
-        Args args;
+        CvArgs args;
 
         function<void(Document*)> loadLogic = [&](Document* configRef) {
 
-            assert((*configRef).HasMember("args"));
-            assert((*configRef)["args"].HasMember("method"));
-            assert((*configRef)["args"].HasMember("bayes"));
-            assert((*configRef)["args"].HasMember("svm"));
-            assert((*configRef)["args"].HasMember("rotate"));
+            assert((*configRef).HasMember("cvArgs"));
+            assert((*configRef)["cvArgs"].HasMember("method"));
+            assert((*configRef)["cvArgs"].HasMember("bayes"));
+            assert((*configRef)["cvArgs"].HasMember("svm"));
+            assert((*configRef)["cvArgs"].HasMember("rotate"));
 
-            args.method = (*configRef)["args"]["method"].GetString();
-            args.bayes = (*configRef)["args"]["bayes"].GetString();
-            args.svm = (*configRef)["args"]["svm"].GetString();
-            args.rotate = (*configRef)["args"]["rotate"].GetBool();
+            args.method = (*configRef)["cvArgs"]["method"].GetString();
+            args.bayes = (*configRef)["cvArgs"]["bayes"].GetString();
+            args.svm = (*configRef)["cvArgs"]["svm"].GetString();
+            args.rotate = (*configRef)["cvArgs"]["rotate"].GetBool();
 
         };
 
