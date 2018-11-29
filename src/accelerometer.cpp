@@ -124,74 +124,98 @@ namespace phd::devices::accelerometer {
         return data;
     }
 
-    void training (const std::vector<Features> &features, const cv::Mat &labels, const std::string &model,
-            const int k_fold, const int max_iter, const double epsilon) {
+    cv::Mat normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type) {
 
-        const cv::Mat dataFeatures = toMat(features);
+        cv::Mat normalized_features = cv::Mat(features.rows, features.cols, features.type());
 
-        std::cout << "FT size " << dataFeatures.rows << "*" << dataFeatures.cols << std::endl;
+        for (int i = 0; i < features.cols; ++i) {
+            cv::normalize(features.col(i), normalized_features.col(i), minValue, maxValue, type);
+        }
+
+        return normalized_features;
+    }
+
+    void cross_training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+                        const int k_fold, const int max_iter, const double epsilon) {
+
+        std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
         std::cout << "SVM Initialization..." << std::endl;
 
         cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 
-        if (phd::io::exists(model)) {
-            try {
-                svm = svm->load(model);
-            } catch (cv::Exception &ex) {
-                std::cerr << ex.what() << std::endl;
-            }
+        std::cerr << "Training will start from scratch." << std::endl;
 
-        } else {
-            std::cerr << std::endl << "No saved model has been found... Training will start from scratch." << std::endl;
+        svm->setType(cv::ml::SVM::C_SVC);
+        svm->setKernel(cv::ml::SVM::RBF);
+        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, max_iter, epsilon));
 
-            svm->setType(cv::ml::SVM::C_SVC);
-            svm->setKernel(cv::ml::SVM::RBF);
-//            svm->setC(phd::devices::accelerometer::std_coefficients.C);
-//            svm->setGamma(0.1);
-            svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, max_iter, epsilon));
-        }
+        std::cout << "SVM Cross-Training..." << std::endl;
 
-        std::cout << "SVM Training..." << std::endl;
-
-        auto train_data = cv::ml::TrainData::create(dataFeatures, cv::ml::ROW_SAMPLE, labels);
+        auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
 
         svm->trainAuto(train_data,
                        k_fold,
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C),
-                       cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA), //cv::ml::ParamGrid(0.00001, 1.0, 0.00001),
+                       cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::NU),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::COEF),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::DEGREE),
                        true);
 
-//        svm->train(train_data);
+        std::cout << "Finished." << std::endl;
+
+        svm->save(model);
+
+        std::cout << "Model saved @ " << model <<std::endl;
+    }
+
+    void training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+                        const double C, const double gamma, const int max_iter, const double epsilon) {
+
+        std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
+
+        std::cout << "SVM Initialization..." << std::endl;
+
+        cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
+
+        std::cerr << "Training will start from scratch." << std::endl;
+
+        svm->setType(cv::ml::SVM::C_SVC);
+        svm->setKernel(cv::ml::SVM::RBF);
+        svm->setC(C);
+        svm->setGamma(gamma);
+        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, max_iter, epsilon));
+
+        std::cout << "SVM Training..." << std::endl;
+
+        auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
+
+        svm->train(train_data);
 
         std::cout << "Finished." << std::endl;
 
         svm->save(model);
 
-        std::cout << "Model Saved." << std::endl;
+        std::cout << "Model saved @ " << model <<std::endl;
     }
 
-    cv::Mat classify(const std::vector<Features> &features, const std::string &model) {
-
-        std::cout << "Loading SVM from " << model << std::endl;
+    cv::Mat classify(const cv::Mat &features, const std::string &model) {
 
         cv::Mat labels = cv::Mat(0, 0, CV_32SC1);
 
         cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::load(model);
 
-        const cv::Mat data = toMat(features);
+        std::cout << "SVM loaded from model " << model << std::endl;
 
         if (svm->isTrained()) {
             std::cout << "Classifying... ";
-            svm->predict(data, labels);
+            svm->predict(features, labels);
             std::cout << "Finished." << std::endl;
             transpose(labels, labels);
         } else {
-            std::cerr << "SVM Classifier is not trained";
+            std::cerr << "SVM Classifier is not trained" << std::endl;
             exit(-1);
         }
 

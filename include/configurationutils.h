@@ -13,17 +13,30 @@ namespace phd::configurations {
             std::string api;
         } ServerConfig;
 
-        typedef struct Arguments {
+        typedef struct CVArgs {
             string method;
             string bayes;
             string svm;
             bool rotate;
-        } CvArgs;
+        } CVArgs;
 
-        CvArgs loadCvConfig(const string path_to_config);
+        typedef struct SVMArgs {
+            std::string trainset;
+            std::string testset;
+            std::string model;
+            int kfold;
+            int max_iter;
+            double epsilon;
+            double C;
+            double gamma;
+        } SVMArgs;
+
+        CVArgs loadCVArgs(const string path_to_config);
 
         string loadSerialPortFromConfig(string path_to_config);
 
         ServerConfig loadServerConfig(string path_to_config);
+
+        SVMArgs loadSVMArgs(const string &path_to_config);
 };
 #endif //POTHOLEDETECTIONEMBEDDEDAPP_CONFIGURATION_UTILS_H

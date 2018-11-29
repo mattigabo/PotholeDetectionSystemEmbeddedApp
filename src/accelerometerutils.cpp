@@ -68,12 +68,12 @@ namespace phd::devices::accelerometer::utils {
                 assert(a.HasMember("end"));
                 assert(a["end"].IsInt());
                 assert(a.HasMember("type"));
-                assert(a["type"].IsInt());
+                assert(a["type"].IsString());
 
                 rawData.anomalies.push_back(Anomaly {
                     .starts = a["start"].GetInt(),
                     .ends = a["end"].GetInt(),
-                    .type = a["type"].GetInt()
+                    .type = a["type"].GetString()
                 });
             }
 

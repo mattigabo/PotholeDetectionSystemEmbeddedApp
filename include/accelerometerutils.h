@@ -15,7 +15,7 @@ namespace phd::devices::accelerometer::utils {
     typedef struct Anomaly {
         int starts;
         int ends;
-        int type;
+        std::string type;
     } Anomaly;
 
     typedef struct RawData {

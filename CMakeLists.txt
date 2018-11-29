@@ -76,7 +76,7 @@ else ()
             src/serialport/SigrokSerialPortWrapper.cpp include/serialport/SigrokSerialPortWrapper.h
             src/gps/GPSDataStore.cpp include/gps/GPSDataStore.h
             src/gps/GPSDataUpdater.cpp include/gps/GPSDataUpdater.h
-            include/ConfigurationUtils.h src/ConfigurationUtils.cpp
+            include/configurationutils.h src/configurationutils.cpp
             include/executionmodes.h src/executionmodes.cpp
             include/raspberrypi/Led.h src/raspberrypi/Led.cpp
             include/raspberrypi/raspberrypiutils.h src/raspberrypi/raspberrypiutils.cpp

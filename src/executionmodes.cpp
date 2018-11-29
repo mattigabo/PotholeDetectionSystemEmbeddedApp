@@ -40,10 +40,10 @@ using namespace phd::devices::gps;
 using namespace rapidjson;
 
 const vector<pair<string, string>> httpHeaders({
-                                                       pair<string, string>("Accept", "application/json"),
-                                                       pair<string, string>("Content-Type","application/json"),
-                                                       pair<string, string>("charset","utf-8")
-                                               });
+       pair<string, string>("Accept", "application/json"),
+       pair<string, string>("Content-Type","application/json"),
+       pair<string, string>("charset","utf-8")
+});
 
 std::string toJSON(phd::devices::gps::Coordinates coordinates) {
     rapidjson::Document document;
@@ -92,7 +92,7 @@ Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, 
 void runObservationMode(bool poison_pill,
         GPSDataStore* gpsDataStore,
         Configuration phdConfig,
-        CvArgs cvConfig,
+        CVArgs cvConfig,
         ServerConfig serverConfig){
 
     std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
@@ -122,8 +122,7 @@ void runObservationMode(bool poison_pill,
                 sendDataToServer(position, serverConfig);
             }
         }
-
-        this_thread::sleep_for(chrono::milliseconds(500));
+        std::this_thread::sleep_for(chrono::milliseconds(500));
     }
 }
 
@@ -178,149 +177,82 @@ void print_vector(const std::vector<T> v) {
     cout << "]" << endl;
 }
 
-void testFeatureExtraction() {
-
-    std::vector<float> v(7);
-
-    for (int i = 0; i < v.size(); ++i) {
-        v[i] = static_cast<float>(i + 1);
-    }
-
-    cout << "Test Array: "; print_vector(v);
-
-    int window_size = 2;
-
-    vector<float> expected[6] = {
-            vector<float>({ 1.0, 2.0 }),
-            vector<float>({ 2.0, 3.0 }),
-            vector<float>({ 3.0, 4.0 }),
-            vector<float>({ 4.0, 5.0 }),
-            vector<float>({ 5.0, 6.0 }),
-            vector<float>({ 6.0, 7.0 }),
-    };
-
-    cout << "Test window creation..." << endl;
-
-    auto res = phd::devices::accelerometer::getWindow(v, window_size);
-
-    cout << "Result: "; print_vector(res);
-    cout << "Expected: "; print_vector(expected[5]);
-
-    cout << "Expected value matches calculated value: " <<
-        (std::equal(res.begin(), res.begin(), expected[5].begin()) ? "true" : "false")
-    << endl;
-
-    int slider = 0, i = 0;
-
-    while (slider < v.size() - window_size / 2) {
-
-        res = phd::devices::accelerometer::getWindow(v, window_size, slider);
-
-        slider += window_size / 2;
-
-        cout << "Result: "; print_vector(res);
-        cout << "Expected: "; print_vector(expected[i]);
-
-        cout << "Expected value matches calculated value: " <<
-            (std::equal(res.begin(), res.begin(), expected[i++].begin()) ? "true" : "false")
-        << endl;
-
-    }
-
-    auto ft = phd::devices::accelerometer::getFeatures(v);
-
-    cout << "Mean: " << ft.mean << " | Confidence: " << ft.mean_confidence << endl;
-    cout << "Variance: " << ft.variance << endl;
-    cout << "STD_DEV: " << ft.std_dev << " | Confidence: " << ft.std_dev_confidence << endl;
-    cout << "RSD: " << ft.relative_std_dev << " | Confidence: " << ft.relative_std_dev_confidence << endl;
-    cout << "Max-Min Diff: " << ft.max_min_diff << " | Confidence: " << ft.max_min_diff_confidence << endl;
-    cout << "Confidence Sum: " << ft.confidences_sum << " | Confidence: " << ft.confidences_sum_confidence << endl;
-    cout << "Num of (statistical) features over the threshold (n.d.r. have high-confidence): " << ft.thresholds_overpass_count << "/5" << endl;
-
-}
-
-void trainAccelerometer(char **argv) {
-
-    auto trainset_type = std::string(argv[2]);
-    auto trainset = std::string(argv[3]);
-    auto testset_type = std::string(argv[4]);
-    auto testset = std::string(argv[5]);
-    auto svm_acc_model = std::string(argv[6]);
+void trainAccelerometer(const phd::configurations::SVMArgs &args) {
 
     std::vector<phd::devices::accelerometer::Features> features;
     std::vector<int> labels;
 
-    auto sliding_function = [](int window) {return window - 1;};
+    auto sliding_function = [](int window) { return window - 1; };
 
-    if (trainset_type == "-d") {
+    if (phd::io::is_dir(args.trainset.data())) {
         vector<cv::String> globs;
-        cv::glob(trainset + "/*.json", globs);
+        cv::glob(args.trainset + "/*.json", globs);
 
         for (const string ds : globs) {
-            cout << ds << endl;
             const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
-
             phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
         }
 
-    } else if (trainset_type == "-f") {
+    } else if (phd::io::is_file(args.trainset.data())) {
 
-        const phd::devices::accelerometer::utils::RawData rawData =
-                phd::devices::accelerometer::utils::readJSONDataset(trainset);
-
+        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.trainset);
         phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
 
     } else {
-        cerr << "Undefined parameter " << trainset_type << endl;
+        cerr << "Undefined directory or file " << args.trainset << endl;
         exit(-3);
     }
 
-    auto stub = std::vector<int>();
-
-    std::copy_if(labels.begin(), labels.end(), back_inserter(stub), [](int v){ return v == 1;});
-
-    cout << stub.size() << endl;
+    const cv::Mat train_data = toMat(features);
+    const cv::Mat normalized_train_data = phd::devices::accelerometer::normalize(train_data, 0.1, 0.9,
+                                                                                 cv::NORM_MINMAX);
 
     phd::devices::accelerometer::training(
-            features,
+            normalized_train_data,
             cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
-            svm_acc_model,
-            5, 1000, exp(-5)
+            args.model,
+            args.C,
+            args.gamma,
+            args.max_iter,
+            args.epsilon
     );
+    features.clear();
+    labels.clear();
+}
+
+void testAccelerometer(const phd::configurations::SVMArgs &args) {
 
     cout << "Testing Classifier against Test Set..." << endl;
 
-    features.clear();
-    labels.clear();
+    std::vector<phd::devices::accelerometer::Features> features;
+    std::vector<int> labels;
 
-    if (testset_type == "-d") {
+    auto sliding_function = [](int window) { return window - 1; };
+
+    if (phd::io::is_dir(args.testset.data())) {
         vector<cv::String> globs;
-        cv::glob(testset + "/*.json", globs);
+        cv::glob(args.testset + "/*.json", globs);
 
         for (const string ds : globs) {
-            cout << ds << endl;
             const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
-
             phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
         }
 
-    } else if (testset_type == "-f") {
+    } else if (phd::io::is_file(args.testset.data())) {
 
-        const phd::devices::accelerometer::utils::RawData rawData =
-                phd::devices::accelerometer::utils::readJSONDataset(testset);
-
+        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.testset);
         phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
 
     } else {
-        cerr << "Undefined parameter " << testset_type << endl;
+        cerr << "Undefined directory or file " << args.testset << endl;
         exit(-3);
     }
 
-    stub.clear();
-    std::copy_if(labels.begin(), labels.end(), back_inserter(stub), [](int v){ return v == 1;});
-    cout << stub.size() << endl;
+    const cv::Mat test_data = toMat(features);
 
-    auto test_labels = phd::devices::accelerometer::classify(features, svm_acc_model);
+    const cv::Mat normalized_test_data = phd::devices::accelerometer::normalize(test_data, 0.1, 0.9, cv::NORM_MINMAX);
+
+    auto test_labels = phd::devices::accelerometer::classify(normalized_test_data, args.model);
     float tp = 0, fp = 0, fn = 0, tn = 0;
 
     for (int i = 0; i < labels.size(); ++i) {
@@ -335,11 +267,8 @@ void trainAccelerometer(char **argv) {
         }
     }
 
-    cout << "TP: " << tp << endl;
-    cout << "TN: " << tn << endl;
-    cout << "FP: " << fp << endl;
-    cout << "FN: " << fn << endl;
-//    cout << "Accuracy: " << ((tp+tn)/labels.size()) << endl;
+    cout << "TP: " << tp << " | TN: " << tn << " | FP: " << fp << " | FN: " << fn << endl;
+
     cout << "Precision: " << (tp/(tp+fp)) << endl;
     cout << "Recall/Sensitivity: " << (tp/(tp+fn)) << endl;
     cout << "F1: " << (2*tp/(2*tp+fp+fn)) << endl;

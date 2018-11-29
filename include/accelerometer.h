@@ -90,8 +90,17 @@ namespace phd::devices::accelerometer {
      * @param labels
      * @param model
      */
-    void training(const std::vector<Features> &features, const cv::Mat &labels, const std::string &model,
-            const int k_fold, const int max_iter, const double epsilon);
+    void cross_training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+                        const int k_fold, const int max_iter, const double epsilon);
+
+    /**
+     *
+     * @param features
+     * @param labels
+     * @param model
+     */
+    void training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+            const double C, const double gamma, const int max_iter, const double epsilon);
 
     /**
      *
@@ -99,8 +108,17 @@ namespace phd::devices::accelerometer {
      * @param model
      * @return
      */
-    cv::Mat classify(const std::vector<Features> &features, const std::string &model);
+    cv::Mat classify(const cv::Mat &features, const std::string &model);
 
+    /**
+     *
+     * @param features
+     * @return
+     */
+    cv::Mat toMat(const std::vector<Features> &features);
+
+
+    cv::Mat normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type);
 }
 
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_H

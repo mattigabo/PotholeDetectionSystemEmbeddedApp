@@ -14,7 +14,7 @@
 #include <serialport/SerialPort.h>
 #include <serialport/SigrokSerialPortWrapper.h>
 #include <networking.h>
-#include <ConfigurationUtils.h>
+#include <configurationutils.h>
 #include <executionmodes.h>
 #include <accelerometer.h>
 #include <phdetection/io.hpp>
@@ -41,7 +41,8 @@ void showHelper(void) {
     cout << "-gps [== Test the gps communication]" << endl;
     cout << "-http [== Test HTTP communication]" << endl;
     cout << "-led [== Test LED]" << endl;
-    cout << "-test-feature [== Test Feature Extraction functions]" << endl;
+    cout << "-train <config-file> [ == Train and Test the SVM classifier against the given train-set(s) and test-set(s)]" << endl;
+    cout << "-test <config-file> [ == Trained Classify against the given test-set]" << endl;
 }
 
 SerialPort* initSerialPort(string portName){
@@ -53,8 +54,6 @@ SerialPort* initSerialPort(string portName){
 void initLedStructures(){
 
 }
-
-
 
 int main(int argc, char *argv[]) {
 
@@ -82,6 +81,9 @@ int main(int argc, char *argv[]) {
     } else {
 
         auto mode = std::string(argv[1]);
+
+        cout << mode << " mode: ON" << endl;
+
         auto poison_pill = false;
 
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
@@ -91,11 +93,17 @@ int main(int argc, char *argv[]) {
             testHTTPCommunication(serverConfig);
         } else if(mode == "-led") {
             testLed(notificationLeds);
-        } else if (mode == "-train" && argc > 5) {
-//            testFeatureExtraction();
-            cout << "Training mode: ON" << endl;
+        } else if (mode == "-train" && argc > 2) {
 
-            trainAccelerometer(argv);
+            auto svmConfig = loadSVMArgs(argv[2]);
+
+            trainAccelerometer(svmConfig);
+            testAccelerometer(svmConfig);
+
+        } else if (mode == "-test" && argc > 2) {
+
+            auto svmConfig = loadSVMArgs(argv[2]);
+            testAccelerometer(svmConfig);
 
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
@@ -105,7 +113,7 @@ int main(int argc, char *argv[]) {
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
             if (mode == "-o") {
-                CvArgs cvConfig = loadCvConfig(config_folder + "/config.json");
+                CVArgs cvConfig = loadCVArgs(config_folder + "/config.json");
                 runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
             } else if (mode == "-gps") {
                 testGPSCommunication(gpsDataStore);
