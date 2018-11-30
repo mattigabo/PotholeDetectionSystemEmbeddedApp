@@ -177,7 +177,7 @@ void print_vector(const std::vector<T> v) {
     cout << "]" << endl;
 }
 
-void trainAccelerometer(const phd::configurations::SVMArgs &args) {
+void trainAccelerometer(const phd::configurations::CrossValidationArgs<phd::configurations::SVMParams> &args, const bool cross_validate) {
 
     std::vector<phd::devices::accelerometer::Features> features;
     std::vector<int> labels;
@@ -207,20 +207,27 @@ void trainAccelerometer(const phd::configurations::SVMArgs &args) {
     const cv::Mat normalized_train_data = phd::devices::accelerometer::normalize(train_data, 0.1, 0.9,
                                                                                  cv::NORM_MINMAX);
 
-    phd::devices::accelerometer::training(
-            normalized_train_data,
-            cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
-            args.model,
-            args.C,
-            args.gamma,
-            args.max_iter,
-            args.epsilon
-    );
+    if (cross_validate) {
+        phd::devices::accelerometer::cross_training(
+                normalized_train_data,
+                cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
+                args.model,
+                args.params.second
+        );
+    } else {
+        phd::devices::accelerometer::training(
+                normalized_train_data,
+                cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
+                args.model,
+                args.params.second
+        );
+    }
+
     features.clear();
     labels.clear();
 }
 
-void testAccelerometer(const phd::configurations::SVMArgs &args) {
+void testAccelerometer(const phd::configurations::CrossValidationArgs<phd::configurations::SVMParams> &args) {
 
     cout << "Testing Classifier against Test Set..." << endl;
 

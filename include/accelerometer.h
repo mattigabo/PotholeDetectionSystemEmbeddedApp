@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <opencv2/core.hpp>
+#include "configurationutils.h"
 
 namespace phd::devices::accelerometer {
 
@@ -90,8 +91,11 @@ namespace phd::devices::accelerometer {
      * @param labels
      * @param model
      */
-    void cross_training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                        const int k_fold, const int max_iter, const double epsilon);
+    void cross_training(
+            const cv::Mat &features,
+            const cv::Mat &labels,
+            const std::string &model,
+            const phd::configurations::SVMParams params);
 
     /**
      *
@@ -99,8 +103,11 @@ namespace phd::devices::accelerometer {
      * @param labels
      * @param model
      */
-    void training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-            const double C, const double gamma, const int max_iter, const double epsilon);
+    void training(
+            const cv::Mat &features,
+            const cv::Mat &labels,
+            const std::string &model,
+            const phd::configurations::SVMParams params);
 
     /**
      *

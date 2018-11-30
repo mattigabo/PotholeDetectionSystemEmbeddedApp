@@ -95,14 +95,21 @@ int main(int argc, char *argv[]) {
             testLed(notificationLeds);
         } else if (mode == "-train" && argc > 2) {
 
-            auto svmConfig = loadSVMArgs(argv[2]);
+            auto svmConfig = loadSVMCrossValidationArgs(argv[2]);
 
-            trainAccelerometer(svmConfig);
+            trainAccelerometer(svmConfig, false);
+            testAccelerometer(svmConfig);
+
+        } else if (mode == "-cross-train" && argc > 2) {
+
+            auto svmConfig = loadSVMCrossValidationArgs(argv[2]);
+
+            trainAccelerometer(svmConfig, true);
             testAccelerometer(svmConfig);
 
         } else if (mode == "-test" && argc > 2) {
 
-            auto svmConfig = loadSVMArgs(argv[2]);
+            auto svmConfig = loadSVMCrossValidationArgs(argv[2]);
             testAccelerometer(svmConfig);
 
         } else {

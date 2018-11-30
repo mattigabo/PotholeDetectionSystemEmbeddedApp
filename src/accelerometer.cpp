@@ -136,7 +136,7 @@ namespace phd::devices::accelerometer {
     }
 
     void cross_training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                        const int k_fold, const int max_iter, const double epsilon) {
+                        const phd::configurations::SVMParams params) {
 
         std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
@@ -146,16 +146,16 @@ namespace phd::devices::accelerometer {
 
         std::cerr << "Training will start from scratch." << std::endl;
 
-        svm->setType(cv::ml::SVM::C_SVC);
-        svm->setKernel(cv::ml::SVM::RBF);
-        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, max_iter, epsilon));
+        svm->setType(params.type);
+        svm->setKernel(params.kernel);
+        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, params.max_iter, params.epsilon));
 
         std::cout << "SVM Cross-Training..." << std::endl;
 
         auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
 
         svm->trainAuto(train_data,
-                       k_fold,
+                       params.kfold,
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P),
@@ -172,7 +172,7 @@ namespace phd::devices::accelerometer {
     }
 
     void training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                        const double C, const double gamma, const int max_iter, const double epsilon) {
+                  const phd::configurations::SVMParams params) {
 
         std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
@@ -182,11 +182,11 @@ namespace phd::devices::accelerometer {
 
         std::cerr << "Training will start from scratch." << std::endl;
 
-        svm->setType(cv::ml::SVM::C_SVC);
-        svm->setKernel(cv::ml::SVM::RBF);
-        svm->setC(C);
-        svm->setGamma(gamma);
-        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, max_iter, epsilon));
+        svm->setType(params.type);
+        svm->setKernel(params.kernel);
+        svm->setC(params.C);
+        svm->setGamma(params.gamma);
+        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, params.max_iter, params.epsilon));
 
         std::cout << "SVM Training..." << std::endl;
 

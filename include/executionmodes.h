@@ -28,8 +28,8 @@ void testHTTPCommunication(ServerConfig serverConfig);
 
 void testLed(NotificationLeds notificationLeds);
 
-void trainAccelerometer(const phd::configurations::SVMArgs &args);
+void trainAccelerometer(const phd::configurations::CrossValidationArgs<phd::configurations::SVMParams> &args, const bool cross_validate);
 
-void testAccelerometer(const phd::configurations::SVMArgs &args);
+void testAccelerometer(const phd::configurations::CrossValidationArgs<phd::configurations::SVMParams> &args);
 
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
