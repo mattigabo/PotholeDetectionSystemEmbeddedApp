@@ -1,0 +1,16 @@
+{
+  "svm": {
+    "train-set": "/path/to/train/set/{file}",
+    "test-set": "/path/to/test/set/{file}",
+    "model": "/path/to/svm/model.yml",
+    "norm-method": "MIN-MAX | L1 | L2 | HAMMING | HAMMING2",
+    "norm-range": [0.1, 0.9],
+    "kernel": "RBF | LINEAR",
+    "type": "C_SVC | NU_SVC",
+    "k-fold": 2,
+    "max-iter": 1000,
+    "epsilon": 0.000001,
+    "C": 10,
+    "gamma": 0.000001
+  }
+}
