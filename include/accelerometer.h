@@ -43,7 +43,7 @@ namespace phd::devices::accelerometer {
         .std_dev_threshold = g * 0.15f,
         .relative_std_dev_threshold = g * 0.015f,
         .max_min_diff_threshold = g * 0.2f,
-        .sum_threshold = 3
+        .sum_threshold = 3.0f
     };
 
     typedef struct Coefficients {
@@ -91,7 +91,7 @@ namespace phd::devices::accelerometer {
      * @param labels
      * @param model
      */
-    void cross_training(
+    void cross_train(
             const cv::Mat &features,
             const cv::Mat &labels,
             const std::string &model,
@@ -103,7 +103,7 @@ namespace phd::devices::accelerometer {
      * @param labels
      * @param model
      */
-    void training(
+    void train(
             const cv::Mat &features,
             const cv::Mat &labels,
             const std::string &model,

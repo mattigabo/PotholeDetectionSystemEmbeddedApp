@@ -177,45 +177,51 @@ void print_vector(const std::vector<T> v) {
     cout << "]" << endl;
 }
 
-void trainAccelerometer(const phd::configurations::CrossValidationArgs<phd::configurations::SVMParams> &args, const bool cross_validate) {
+void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args, const bool cross_validate) {
 
     std::vector<phd::devices::accelerometer::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
 
-    if (phd::io::is_dir(args.trainset.data())) {
+    if (phd::io::is_dir(args.train_set.data())) {
         vector<cv::String> globs;
-        cv::glob(args.trainset + "/*.json", globs);
+        cv::glob(args.train_set + "/*.json", globs);
 
         for (const string ds : globs) {
             const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
             phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
         }
 
-    } else if (phd::io::is_file(args.trainset.data())) {
+    } else if (phd::io::is_file(args.train_set.data())) {
 
-        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.trainset);
+        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.train_set);
         phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
 
     } else {
-        cerr << "Undefined directory or file " << args.trainset << endl;
+        cerr << "Undefined directory or file " << args.train_set << endl;
         exit(-3);
     }
 
     const cv::Mat train_data = toMat(features);
-    const cv::Mat normalized_train_data = phd::devices::accelerometer::normalize(train_data, 0.1, 0.9,
-                                                                                 cv::NORM_MINMAX);
+    const cv::Mat normalized_train_data =
+            phd::devices::accelerometer::normalize(
+                    train_data,
+                    args.norm_range.first,
+                    args.norm_range.second,
+                    args.norm_method
+                );
 
     if (cross_validate) {
-        phd::devices::accelerometer::cross_training(
+        phd::devices::accelerometer::cross_train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
                 args.params.second
         );
+
     } else {
-        phd::devices::accelerometer::training(
+        phd::devices::accelerometer::train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -227,7 +233,7 @@ void trainAccelerometer(const phd::configurations::CrossValidationArgs<phd::conf
     labels.clear();
 }
 
-void testAccelerometer(const phd::configurations::CrossValidationArgs<phd::configurations::SVMParams> &args) {
+void testAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {
 
     cout << "Testing Classifier against Test Set..." << endl;
 
@@ -236,28 +242,34 @@ void testAccelerometer(const phd::configurations::CrossValidationArgs<phd::confi
 
     auto sliding_function = [](int window) { return window - 1; };
 
-    if (phd::io::is_dir(args.testset.data())) {
+    if (phd::io::is_dir(args.test_set.data())) {
         vector<cv::String> globs;
-        cv::glob(args.testset + "/*.json", globs);
+        cv::glob(args.test_set + "/*.json", globs);
 
         for (const string ds : globs) {
             const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
             phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
         }
 
-    } else if (phd::io::is_file(args.testset.data())) {
+    } else if (phd::io::is_file(args.test_set.data())) {
 
-        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.testset);
+        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.test_set);
         phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
 
     } else {
-        cerr << "Undefined directory or file " << args.testset << endl;
+        cerr << "Undefined directory or file " << args.test_set << endl;
         exit(-3);
     }
 
-    const cv::Mat test_data = toMat(features);
+    const cv::Mat test_data = phd::devices::accelerometer::toMat(features);
 
-    const cv::Mat normalized_test_data = phd::devices::accelerometer::normalize(test_data, 0.1, 0.9, cv::NORM_MINMAX);
+    const cv::Mat normalized_test_data =
+            phd::devices::accelerometer::normalize(
+                    test_data,
+                    args.norm_range.first,
+                    args.norm_range.second,
+                    args.norm_method
+            );
 
     auto test_labels = phd::devices::accelerometer::classify(normalized_test_data, args.model);
     float tp = 0, fp = 0, fn = 0, tn = 0;
