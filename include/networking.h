@@ -10,7 +10,7 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <vector>
-#include "ConfigurationUtils.h"
+#include "configurationutils.h"
 
 using namespace phd::configurations;
 

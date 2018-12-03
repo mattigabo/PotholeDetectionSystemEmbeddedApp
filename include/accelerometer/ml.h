@@ -8,8 +8,9 @@
 #include <vector>
 #include <string>
 #include <opencv2/core.hpp>
+#include "configurationutils.h"
 
-namespace phd::devices::accelerometer {
+namespace phd::devices::accelerometer::ml {
 
     const float g = 9.8196f; // m/s^2
     const int  n_features = 12;
@@ -42,7 +43,7 @@ namespace phd::devices::accelerometer {
         .std_dev_threshold = g * 0.15f,
         .relative_std_dev_threshold = g * 0.015f,
         .max_min_diff_threshold = g * 0.2f,
-        .sum_threshold = 3
+        .sum_threshold = 3.0f
     };
 
     typedef struct Coefficients {
@@ -90,8 +91,23 @@ namespace phd::devices::accelerometer {
      * @param labels
      * @param model
      */
-    void training(const std::vector<Features> &features, const cv::Mat &labels, const std::string &model,
-            const int k_fold, const int max_iter, const double epsilon);
+    void cross_train(
+            const cv::Mat &features,
+            const cv::Mat &labels,
+            const std::string &model,
+            const phd::configurations::SVMParams params);
+
+    /**
+     *
+     * @param features
+     * @param labels
+     * @param model
+     */
+    void train(
+            const cv::Mat &features,
+            const cv::Mat &labels,
+            const std::string &model,
+            const phd::configurations::SVMParams params);
 
     /**
      *
@@ -99,8 +115,17 @@ namespace phd::devices::accelerometer {
      * @param model
      * @return
      */
-    cv::Mat classify(const std::vector<Features> &features, const std::string &model);
+    cv::Mat classify(const cv::Mat &features, const std::string &model);
 
+    /**
+     *
+     * @param features
+     * @return
+     */
+    cv::Mat toMat(const std::vector<Features> &features);
+
+
+    cv::Mat normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type);
 }
 
 #endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_H

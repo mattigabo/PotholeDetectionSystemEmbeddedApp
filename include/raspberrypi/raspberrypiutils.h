@@ -5,7 +5,10 @@
 #ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_RASPBERRYPIUTILS_H
 #define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_RASPBERRYPIUTILS_H
 
-
+/*
+ * to date, unfortunately this is the only mode to distinguish the RaspberryPi architecture
+ * from other typical notebook computer architectures.
+ * */
 #ifdef __arm__
 
 #define __RASPBERRYPI_PLATFORM__

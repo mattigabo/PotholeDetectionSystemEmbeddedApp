@@ -2,14 +2,14 @@
 // Created by Xander on 01/11/2018.
 //
 
-#include "accelerometer.h"
+#include "accelerometer/ml.h"
 #include <math.h>
 #include <algorithm>
 #include <iostream>
 #include <opencv2/ml.hpp>
 #include <phdetection/io.hpp>
 
-namespace phd::devices::accelerometer {
+namespace phd::devices::accelerometer::ml {
 
     std::vector<float> getWindow(const std::vector<float> &stream, const int window, const int slider) {
 
@@ -64,15 +64,14 @@ namespace phd::devices::accelerometer {
         return max - min;
     }
 
-    float assign_confidence(const float value, const float threshold, bool& check) {
-        float d = std_coefficients.low_confidence_score;
-        check = false;
+    bool assign_confidence(const float value, const float threshold, float &assigned_confidence) {
         if (value > threshold) {
-            d = std_coefficients.high_confidence_score;
-            check = true;
+            assigned_confidence = std_coefficients.high_confidence_score;
+            return true;
+        } else {
+            assigned_confidence = std_coefficients.low_confidence_score;
+            return false;
         }
-
-        return d;
     }
 
     Features getFeatures(const std::vector<float> &window) {
@@ -85,21 +84,22 @@ namespace phd::devices::accelerometer {
         ft.relative_std_dev = relative_std_dev(ft.std_dev, ft.mean);
         ft.max_min_diff = max_min_difference(window);
 
-        bool check = false;
+        if (assign_confidence(ft.mean, std_thresholds.mean_threshold, ft.mean_confidence))
+            ft.thresholds_overpass_count++;
 
-        ft.mean_confidence = assign_confidence(ft.mean, std_thresholds.mean_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
-        ft.std_dev_confidence = assign_confidence(ft.std_dev, std_thresholds.std_dev_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
-        ft.relative_std_dev_confidence = assign_confidence(ft.relative_std_dev, std_thresholds.relative_std_dev_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
-        ft.max_min_diff_confidence = assign_confidence(ft.max_min_diff, std_thresholds.max_min_diff_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
+        if (assign_confidence(ft.std_dev, std_thresholds.std_dev_threshold, ft.std_dev_confidence))
+            ft.thresholds_overpass_count++;
+
+        if (assign_confidence(ft.relative_std_dev, std_thresholds.relative_std_dev_threshold, ft.relative_std_dev_confidence))
+            ft.thresholds_overpass_count++;
+
+        if (assign_confidence(ft.max_min_diff, std_thresholds.max_min_diff_threshold, ft.max_min_diff_confidence))
+            ft.thresholds_overpass_count++;
 
         ft.confidences_sum = ft.mean_confidence + ft.std_dev_confidence + ft.relative_std_dev_confidence + ft.max_min_diff_confidence;
 
-        ft.confidences_sum_confidence = assign_confidence(ft.confidences_sum, std_thresholds.sum_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
+        if (assign_confidence(ft.confidences_sum, std_thresholds.sum_threshold, ft.confidences_sum_confidence))
+            ft.thresholds_overpass_count++;
 
         return ft;
     }
@@ -124,74 +124,98 @@ namespace phd::devices::accelerometer {
         return data;
     }
 
-    void training (const std::vector<Features> &features, const cv::Mat &labels, const std::string &model,
-            const int k_fold, const int max_iter, const double epsilon) {
+    cv::Mat normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type) {
 
-        const cv::Mat dataFeatures = toMat(features);
+        cv::Mat normalized_features = cv::Mat(features.rows, features.cols, features.type());
 
-        std::cout << "FT size " << dataFeatures.rows << "*" << dataFeatures.cols << std::endl;
+        for (int i = 0; i < features.cols; ++i) {
+            cv::normalize(features.col(i), normalized_features.col(i), minValue, maxValue, type);
+        }
+
+        return normalized_features;
+    }
+
+    void cross_train(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+                     const phd::configurations::SVMParams params) {
+
+        std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
         std::cout << "SVM Initialization..." << std::endl;
 
         cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
 
-        if (phd::io::exists(model)) {
-            try {
-                svm = svm->load(model);
-            } catch (cv::Exception &ex) {
-                std::cerr << ex.what() << std::endl;
-            }
+        std::cerr << "Training will start from scratch." << std::endl;
 
-        } else {
-            std::cerr << std::endl << "No saved model has been found... Training will start from scratch." << std::endl;
+        svm->setType(params.type);
+        svm->setKernel(params.kernel);
+        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, params.max_iter, params.epsilon));
 
-            svm->setType(cv::ml::SVM::C_SVC);
-            svm->setKernel(cv::ml::SVM::RBF);
-//            svm->setC(phd::devices::accelerometer::std_coefficients.C);
-//            svm->setGamma(0.1);
-            svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, max_iter, epsilon));
-        }
+        std::cout << "SVM Cross-Training..." << std::endl;
 
-        std::cout << "SVM Training..." << std::endl;
-
-        auto train_data = cv::ml::TrainData::create(dataFeatures, cv::ml::ROW_SAMPLE, labels);
+        auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
 
         svm->trainAuto(train_data,
-                       k_fold,
+                       params.k_fold,
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C),
-                       cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA), //cv::ml::ParamGrid(0.00001, 1.0, 0.00001),
+                       cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::NU),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::COEF),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::DEGREE),
-                       true);
-
-//        svm->train(train_data);
+                       params.balanced_folding);
 
         std::cout << "Finished." << std::endl;
 
         svm->save(model);
 
-        std::cout << "Model Saved." << std::endl;
+        std::cout << "Model saved @ " << model <<std::endl;
     }
 
-    cv::Mat classify(const std::vector<Features> &features, const std::string &model) {
+    void train(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+               const phd::configurations::SVMParams params) {
 
-        std::cout << "Loading SVM from " << model << std::endl;
+        std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
+
+        std::cout << "SVM Initialization..." << std::endl;
+
+        cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
+
+        std::cerr << "Training will start from scratch." << std::endl;
+
+        svm->setType(params.type);
+        svm->setKernel(params.kernel);
+        svm->setC(params.C);
+        svm->setGamma(params.gamma);
+        svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, params.max_iter, params.epsilon));
+
+        std::cout << "SVM Training..." << std::endl;
+
+        auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
+
+        svm->train(train_data);
+
+        std::cout << "Finished." << std::endl;
+
+        svm->save(model);
+
+        std::cout << "Model saved @ " << model <<std::endl;
+    }
+
+    cv::Mat classify(const cv::Mat &features, const std::string &model) {
 
         cv::Mat labels = cv::Mat(0, 0, CV_32SC1);
 
         cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::load(model);
 
-        const cv::Mat data = toMat(features);
+        std::cout << "SVM loaded from model " << model << std::endl;
 
         if (svm->isTrained()) {
             std::cout << "Classifying... ";
-            svm->predict(data, labels);
+            svm->predict(features, labels);
             std::cout << "Finished." << std::endl;
             transpose(labels, labels);
         } else {
-            std::cerr << "SVM Classifier is not trained";
+            std::cerr << "SVM Classifier is not trained" << std::endl;
             exit(-1);
         }
 
