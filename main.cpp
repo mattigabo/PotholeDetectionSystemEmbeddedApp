@@ -16,7 +16,7 @@
 #include <networking.h>
 #include <configurationutils.h>
 #include <executionmodes.h>
-#include <accelerometer.h>
+#include <accelerometer/ml.h>
 #include <phdetection/io.hpp>
 
 #include <raspberrypi/raspberrypiutils.h>

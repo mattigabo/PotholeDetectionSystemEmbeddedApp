@@ -2,14 +2,14 @@
 // Created by Xander on 01/11/2018.
 //
 
-#include "accelerometer.h"
+#include "accelerometer/ml.h"
 #include <math.h>
 #include <algorithm>
 #include <iostream>
 #include <opencv2/ml.hpp>
 #include <phdetection/io.hpp>
 
-namespace phd::devices::accelerometer {
+namespace phd::devices::accelerometer::ml {
 
     std::vector<float> getWindow(const std::vector<float> &stream, const int window, const int slider) {
 

@@ -25,8 +25,8 @@
 #include <serialport/SerialPort.h>
 #include <camera.h>
 #include <networking.h>
-#include <accelerometer.h>
-#include <accelerometerutils.h>
+#include <accelerometer/ml.h>
+#include <accelerometer/utils.h>
 
 using namespace std;
 using namespace cv;
@@ -179,7 +179,7 @@ void print_vector(const std::vector<T> v) {
 
 void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args, const bool cross_validate) {
 
-    std::vector<phd::devices::accelerometer::Features> features;
+    std::vector<phd::devices::accelerometer::ml::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
@@ -205,7 +205,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
 
     const cv::Mat train_data = toMat(features);
     const cv::Mat normalized_train_data =
-            phd::devices::accelerometer::normalize(
+            phd::devices::accelerometer::ml::normalize(
                     train_data,
                     args.norm_range.first,
                     args.norm_range.second,
@@ -213,7 +213,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
                 );
 
     if (cross_validate) {
-        phd::devices::accelerometer::cross_train(
+        phd::devices::accelerometer::ml::cross_train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -221,7 +221,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
         );
 
     } else {
-        phd::devices::accelerometer::train(
+        phd::devices::accelerometer::ml::train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -237,7 +237,7 @@ void testAccelerometer(const phd::configurations::MLOptions<phd::configurations:
 
     cout << "Testing Classifier against Test Set..." << endl;
 
-    std::vector<phd::devices::accelerometer::Features> features;
+    std::vector<phd::devices::accelerometer::ml::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
@@ -261,17 +261,17 @@ void testAccelerometer(const phd::configurations::MLOptions<phd::configurations:
         exit(-3);
     }
 
-    const cv::Mat test_data = phd::devices::accelerometer::toMat(features);
+    const cv::Mat test_data = phd::devices::accelerometer::ml::toMat(features);
 
     const cv::Mat normalized_test_data =
-            phd::devices::accelerometer::normalize(
+            phd::devices::accelerometer::ml::normalize(
                     test_data,
                     args.norm_range.first,
                     args.norm_range.second,
                     args.norm_method
             );
 
-    auto test_labels = phd::devices::accelerometer::classify(normalized_test_data, args.model);
+    auto test_labels = phd::devices::accelerometer::ml::classify(normalized_test_data, args.model);
     float tp = 0, fp = 0, fn = 0, tn = 0;
 
     for (int i = 0; i < labels.size(); ++i) {

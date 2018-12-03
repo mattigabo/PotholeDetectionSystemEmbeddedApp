@@ -2,7 +2,7 @@
 // Created by Xander on 26/11/2018.
 //
 
-#include "accelerometerutils.h"
+#include "accelerometer/utils.h"
 
 #include <iostream>
 #include <fstream>
@@ -89,7 +89,7 @@ namespace phd::devices::accelerometer::utils {
     }
 
     bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
-            std::vector<phd::devices::accelerometer::Features> &features, std::vector<int> &labels){
+            std::vector<phd::devices::accelerometer::ml::Features> &features, std::vector<int> &labels){
 
         const auto v = (
                 axis == "x" || axis == "X" ? raw.x :
@@ -99,11 +99,11 @@ namespace phd::devices::accelerometer::utils {
 
         int
             slider = 0,
-            window_size = phd::devices::accelerometer::std_coefficients.windows_size;
+            window_size = phd::devices::accelerometer::ml::std_coefficients.windows_size;
 
         while (slider < v.size() - window_size) {
 
-            auto res = phd::devices::accelerometer::getWindow(v, window_size, slider);
+            auto res = phd::devices::accelerometer::ml::getWindow(v, window_size, slider);
 
             auto a_copy = std::vector<Anomaly>();
 
@@ -121,7 +121,7 @@ namespace phd::devices::accelerometer::utils {
                 labels.push_back(0);
             }
 
-            auto ft = phd::devices::accelerometer::getFeatures(res);
+            auto ft = phd::devices::accelerometer::ml::getFeatures(res);
 
             features.push_back(ft);
 

@@ -10,7 +10,7 @@
 #include <opencv2/core.hpp>
 #include "configurationutils.h"
 
-namespace phd::devices::accelerometer {
+namespace phd::devices::accelerometer::ml {
 
     const float g = 9.8196f; // m/s^2
     const int  n_features = 12;
