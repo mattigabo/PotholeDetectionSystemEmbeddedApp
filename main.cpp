@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
-#include <libgen.h>
 
+#include <libgen.h>
 
 #include <opencv2/core.hpp>
 #include <opencv2/ml.hpp>
@@ -16,10 +16,12 @@
 #include <networking.h>
 #include <configurationutils.h>
 #include <executionmodes.h>
-#include <accelerometer.h>
+#include <accelerometer/ml.h>
 #include <phdetection/io.hpp>
 
 #include <raspberrypi/raspberrypiutils.h>
+
+#include <fingerprint.h>
 
 using namespace std;
 using namespace phd::io;
@@ -95,22 +97,28 @@ int main(int argc, char *argv[]) {
             testLed(notificationLeds);
         } else if (mode == "-train" && argc > 2) {
 
-            auto svmConfig = loadSVMCrossValidationArgs(argv[2]);
+            auto svmConfig = loadSVMOptions(argv[2]);
 
             trainAccelerometer(svmConfig, false);
-            testAccelerometer(svmConfig);
+//            testAccelerometer(svmConfig);
 
         } else if (mode == "-cross-train" && argc > 2) {
 
-            auto svmConfig = loadSVMCrossValidationArgs(argv[2]);
+            auto svmConfig = loadSVMOptions(argv[2]);
 
             trainAccelerometer(svmConfig, true);
             testAccelerometer(svmConfig);
 
         } else if (mode == "-test" && argc > 2) {
 
-            auto svmConfig = loadSVMCrossValidationArgs(argv[2]);
+            auto svmConfig = loadSVMOptions(argv[2]);
             testAccelerometer(svmConfig);
+
+        } else if (mode == "-fp") {
+
+            std::string uid = fingerprint::getUID();
+
+            std::cout << "Fp: " << uid << std::endl;
 
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");

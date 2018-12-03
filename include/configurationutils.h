@@ -22,21 +22,24 @@ namespace phd::configurations {
     } CVArgs;
 
     template <typename T>
-    struct CrossValidationArgs {
-        std::string trainset;
-        std::string testset;
+    struct MLOptions {
+        std::string train_set;
+        std::string test_set;
         std::string model;
+        cv::NormTypes norm_method;
+        std::pair<float, float> norm_range;
         std::pair<string, T> params;
     };
 
     typedef struct SVMParams {
         cv::ml::SVM::Types type;
         cv::ml::SVM::KernelTypes kernel;
-        int kfold;
+        int k_fold;
         int max_iter;
         double epsilon;
         double C;
         double gamma;
+        bool balanced_folding;
     } SVMParams;
 
     CVArgs loadCVArgs(const string path_to_config);
@@ -45,6 +48,6 @@ namespace phd::configurations {
 
     ServerConfig loadServerConfig(string path_to_config);
 
-    CrossValidationArgs<SVMParams> loadSVMCrossValidationArgs(const string &path_to_config);
+    MLOptions<SVMParams> loadSVMOptions(const string &path_to_config);
 };
 #endif //POTHOLEDETECTIONEMBEDDEDAPP_CONFIGURATION_UTILS_H

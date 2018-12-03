@@ -2,14 +2,14 @@
 // Created by Xander on 01/11/2018.
 //
 
-#include "accelerometer.h"
+#include "accelerometer/ml.h"
 #include <math.h>
 #include <algorithm>
 #include <iostream>
 #include <opencv2/ml.hpp>
 #include <phdetection/io.hpp>
 
-namespace phd::devices::accelerometer {
+namespace phd::devices::accelerometer::ml {
 
     std::vector<float> getWindow(const std::vector<float> &stream, const int window, const int slider) {
 
@@ -64,15 +64,14 @@ namespace phd::devices::accelerometer {
         return max - min;
     }
 
-    float assign_confidence(const float value, const float threshold, bool& check) {
-        float d = std_coefficients.low_confidence_score;
-        check = false;
+    bool assign_confidence(const float value, const float threshold, float &assigned_confidence) {
         if (value > threshold) {
-            d = std_coefficients.high_confidence_score;
-            check = true;
+            assigned_confidence = std_coefficients.high_confidence_score;
+            return true;
+        } else {
+            assigned_confidence = std_coefficients.low_confidence_score;
+            return false;
         }
-
-        return d;
     }
 
     Features getFeatures(const std::vector<float> &window) {
@@ -85,21 +84,22 @@ namespace phd::devices::accelerometer {
         ft.relative_std_dev = relative_std_dev(ft.std_dev, ft.mean);
         ft.max_min_diff = max_min_difference(window);
 
-        bool check = false;
+        if (assign_confidence(ft.mean, std_thresholds.mean_threshold, ft.mean_confidence))
+            ft.thresholds_overpass_count++;
 
-        ft.mean_confidence = assign_confidence(ft.mean, std_thresholds.mean_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
-        ft.std_dev_confidence = assign_confidence(ft.std_dev, std_thresholds.std_dev_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
-        ft.relative_std_dev_confidence = assign_confidence(ft.relative_std_dev, std_thresholds.relative_std_dev_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
-        ft.max_min_diff_confidence = assign_confidence(ft.max_min_diff, std_thresholds.max_min_diff_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
+        if (assign_confidence(ft.std_dev, std_thresholds.std_dev_threshold, ft.std_dev_confidence))
+            ft.thresholds_overpass_count++;
+
+        if (assign_confidence(ft.relative_std_dev, std_thresholds.relative_std_dev_threshold, ft.relative_std_dev_confidence))
+            ft.thresholds_overpass_count++;
+
+        if (assign_confidence(ft.max_min_diff, std_thresholds.max_min_diff_threshold, ft.max_min_diff_confidence))
+            ft.thresholds_overpass_count++;
 
         ft.confidences_sum = ft.mean_confidence + ft.std_dev_confidence + ft.relative_std_dev_confidence + ft.max_min_diff_confidence;
 
-        ft.confidences_sum_confidence = assign_confidence(ft.confidences_sum, std_thresholds.sum_threshold, check);
-        if (check) ft.thresholds_overpass_count++;
+        if (assign_confidence(ft.confidences_sum, std_thresholds.sum_threshold, ft.confidences_sum_confidence))
+            ft.thresholds_overpass_count++;
 
         return ft;
     }
@@ -135,8 +135,8 @@ namespace phd::devices::accelerometer {
         return normalized_features;
     }
 
-    void cross_training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                        const phd::configurations::SVMParams params) {
+    void cross_train(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+                     const phd::configurations::SVMParams params) {
 
         std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
@@ -155,14 +155,14 @@ namespace phd::devices::accelerometer {
         auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
 
         svm->trainAuto(train_data,
-                       params.kfold,
+                       params.k_fold,
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::NU),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::COEF),
                        cv::ml::SVM::getDefaultGrid(cv::ml::SVM::DEGREE),
-                       true);
+                       params.balanced_folding);
 
         std::cout << "Finished." << std::endl;
 
@@ -171,8 +171,8 @@ namespace phd::devices::accelerometer {
         std::cout << "Model saved @ " << model <<std::endl;
     }
 
-    void training(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                  const phd::configurations::SVMParams params) {
+    void train(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
+               const phd::configurations::SVMParams params) {
 
         std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 

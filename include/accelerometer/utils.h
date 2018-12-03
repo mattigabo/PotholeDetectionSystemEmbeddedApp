@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include "accelerometer.h"
+#include "accelerometer/ml.h"
 
 namespace phd::devices::accelerometer::utils {
 
@@ -28,7 +28,7 @@ namespace phd::devices::accelerometer::utils {
     RawData readJSONDataset(const std::string &dataset);
 
     bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
-            std::vector<phd::devices::accelerometer::Features> &features, std::vector<int> &labels);
+            std::vector<phd::devices::accelerometer::ml::Features> &features, std::vector<int> &labels);
 
 }
 

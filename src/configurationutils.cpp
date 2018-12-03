@@ -15,12 +15,13 @@ using namespace rapidjson;
 namespace phd::configurations {
 
     string generateErrorMessage(string subject, string path_to_config){
+
         return string("Program ") +
                 subject +
                 string(" configuration is missing.") +
                 string(" Check it's existence or create a new config.json under the ") +
                 path_to_config +
-                string("folder inside the program directory. ");
+                string(" folder inside the program directory. ");
     }
 
     void loadFromJSON(const string path_to_config, function<void(Document*)> loadLogic, string errorMessage) {
@@ -115,35 +116,52 @@ namespace phd::configurations {
         return serverConfig;
     }
 
-    CrossValidationArgs<SVMParams> loadSVMCrossValidationArgs(const string &path_to_config) {
+    MLOptions<SVMParams> loadSVMOptions(const string &path_to_config) {
 
-        CrossValidationArgs<SVMParams> config;
+        MLOptions<SVMParams> config;
         SVMParams params;
 
         function<void (Document*)> parser = [&](Document* json) {
             cout << "Loading Support Vector Machine Configuration... Opened file " << path_to_config << endl;
 
             assert((*json).HasMember("svm"));
+
+            // training and testing sets and algorithm model
             assert((*json)["svm"].HasMember("train-set"));
             assert((*json)["svm"]["train-set"].IsString());
             assert((*json)["svm"].HasMember("test-set"));
             assert((*json)["svm"]["test-set"].IsString());
             assert((*json)["svm"].HasMember("model"));
             assert((*json)["svm"]["model"].IsString());
+
+            // normalization options
+            assert((*json)["svm"].HasMember("norm-method"));
+            assert((*json)["svm"]["norm-method"].IsString());
+            assert((*json)["svm"].HasMember("norm-range"));
+            assert((*json)["svm"]["norm-range"].IsArray());
+
+            // svm-specific
             assert((*json)["svm"].HasMember("type"));
             assert((*json)["svm"]["type"].IsString());
             assert((*json)["svm"].HasMember("kernel"));
             assert((*json)["svm"]["kernel"].IsString());
-            assert((*json)["svm"].HasMember("k-fold"));
-            assert((*json)["svm"]["k-fold"].IsInt());
             assert((*json)["svm"].HasMember("max-iter"));
             assert((*json)["svm"]["max-iter"].IsInt());
             assert((*json)["svm"].HasMember("epsilon"));
             assert((*json)["svm"]["epsilon"].IsDouble());
+
+            // svm-specific -cross-train only
+            assert((*json)["svm"].HasMember("k-fold"));
+            assert((*json)["svm"]["k-fold"].IsInt());
+            assert((*json)["svm"].HasMember("balanced-folding"));
+            assert((*json)["svm"]["balanced-folding"].IsBool());
+
+            // svm-specific -train only
             assert((*json)["svm"].HasMember("C"));
             assert((*json)["svm"]["C"].IsDouble());
             assert((*json)["svm"].HasMember("gamma"));
             assert((*json)["svm"]["gamma"].IsDouble());
+
 
             auto type_parser = [](const string type) -> cv::ml::SVM::Types {
 
@@ -164,11 +182,8 @@ namespace phd::configurations {
                 } else if (stub == "ONE_CLASS" || stub == "ONECLASS"){
                     return cv::ml::SVM::Types::ONE_CLASS;
                 } else {
-                    throw cv::Exception(
-                            -666,"Unknown SVM Type " + type,
-                            "type_parser = [](string type) -> cv::ml::SVM::Types",
-                            "configurationutils.cpp", 164
-                    );
+                    std::cerr << "Unknown SVM type " << type << ". Using default type C_SVC." << std::endl;
+                    return cv::ml::SVM::Types::C_SVC;
                 }
             };
 
@@ -188,42 +203,88 @@ namespace phd::configurations {
                 } else if (stub == "INTER"){
                     return cv::ml::SVM::KernelTypes::INTER;
                 } else {
-                    throw cv::Exception(
-                            -666,"Unknown Kernel Type " + kernel,
-                            "kernel_parser = [](string kernel) -> cv::ml::SVM::KernelTypes",
-                            "configurationutils.cpp", 186
-                    );
+                    std::cerr << "Unknown kernel " << kernel << ". Using default kernel RBF." << std::endl;
+                    return cv::ml::SVM::KernelTypes::RBF;
                 }
             };
 
-            config.trainset = (*json)["svm"]["train-set"].GetString();
-            config.testset = (*json)["svm"]["test-set"].GetString();
+            auto norm_parser = [](string norm_method) -> cv::NormTypes {
+
+                string stub = string(norm_method.data());
+
+                std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
+                std::transform(stub.begin(), stub.end(), stub.begin(), [](char c) {
+                    return c == '-' || c == ' ' ? '_' : c;
+                });
+
+                if (stub.find("NORM_") != string::npos) {
+                    stub.erase(0, string("NORM_").length());
+                }
+
+                if (stub == "MIN_MAX" || stub == "MINMAX") {
+                    return cv::NormTypes::NORM_MINMAX;
+                } else if (stub == "L1"){
+                    return cv::NormTypes::NORM_L1;
+                } else if (stub == "L2"){
+                    return cv::NormTypes::NORM_L2;
+                } else if (stub == "HAMMING"){
+                    return cv::NormTypes::NORM_HAMMING;
+                } else if (stub == "HAMMING2"){
+                    return cv::NormTypes::NORM_HAMMING2;
+                } else if (stub == "INF"){
+                    return cv::NormTypes::NORM_INF;
+                } else if (stub == "RELATIVE"){
+                    return cv::NormTypes::NORM_RELATIVE;
+                } else {
+                    std::cerr << "Unknown normalization method " << norm_method << ". Using default method MINMAX." << std::endl;
+                    return cv::NormTypes::NORM_MINMAX;
+                }
+            };
+
+            config.train_set = (*json)["svm"]["train-set"].GetString();
+            config.test_set = (*json)["svm"]["test-set"].GetString();
             config.model = (*json)["svm"]["model"].GetString();
-            params.kfold = (*json)["svm"]["k-fold"].GetInt();
+            config.norm_method = norm_parser((*json)["svm"]["norm-method"].GetString());
+            if ((*json)["svm"]["norm-range"].GetArray().Size() > 2 &&
+                    (*json)["svm"]["norm-range"].GetArray()[0].IsNumber() &&
+                    (*json)["svm"]["norm-range"].GetArray()[1].IsNumber()) {
+                float first = (*json)["svm"]["norm-range"].GetArray()[0].GetFloat();
+                float second = (*json)["svm"]["norm-range"].GetArray()[1].GetFloat();
+                config.norm_range = std::pair<float, float>(first, second);
+            } else {
+                std::cerr << "Undefined range of normalization. Using default range [0.1, 0.9]." << std::endl;
+                config.norm_range = std::pair<float, float>(0.1, 0.9);
+            }
+
+            params.k_fold = (*json)["svm"]["k-fold"].GetInt();
             params.max_iter = (*json)["svm"]["max-iter"].GetInt();
             params.epsilon = (*json)["svm"]["epsilon"].GetDouble();
             params.C = (*json)["svm"]["C"].GetDouble();
             params.gamma = (*json)["svm"]["gamma"].GetDouble();
             params.type = type_parser((*json)["svm"]["type"].GetString());
             params.kernel = kernel_parser((*json)["svm"]["kernel"].GetString());
+            params.balanced_folding = (*json)["svm"]["balanced-folding"].GetBool();
             config.params = std::pair<string, SVMParams>("svm", params);
+
+            std::cout << std::endl << "LOADED: " << std::endl
+                      << "train-set:" << config.train_set <<  std::endl
+                      << "test-set:" << config.test_set <<  std::endl
+                      << "model:" << config.model <<  std::endl
+                      << "norm:" << (*json)["svm"]["norm-method"].GetString() << " | def: MINMAX" << std::endl
+                      << "range:[" << config.norm_range.first << "," << config.norm_range.second << "]" <<  std::endl
+                      << "type:" << (*json)["svm"]["type"].GetString() << " | def: C_SVC" << std::endl
+                      << "kernel:" << (*json)["svm"]["kernel"].GetString() << " | def: RBF" <<  std::endl
+                      << "k-fold:" << params.k_fold <<  std::endl
+                      << "balanced-folding:" << (params.balanced_folding ? "true" : "false") <<  std::endl
+                      << "max-iter:" << params.max_iter <<  std::endl
+                      << "epsilon:" << params.epsilon <<  std::endl
+                      << "C:" << params.C <<  std::endl
+                      << "gamma:" << params.gamma <<  std::endl << std::endl;
         };
 
         string errorMessage = generateErrorMessage("SVM", path_to_config);
 
         loadFromJSON(path_to_config, parser, errorMessage);
-
-        std::cout << std::endl << "LOADED: " << std::endl
-        << "train-set:" << config.trainset <<  std::endl
-        << "test-set:" << config.testset <<  std::endl
-        << "model:" << config.model <<  std::endl
-        << "type:" << params.type <<  std::endl
-        << "kernel:" << params.kernel <<  std::endl
-        << "k-fold:" << params.kfold <<  std::endl
-        << "max-iter:" << params.max_iter <<  std::endl
-        << "epsilon:" << params.epsilon <<  std::endl
-        << "C:" << params.C <<  std::endl
-        << "gamma:" << params.gamma <<  std::endl << std::endl;
 
         return config;
     }

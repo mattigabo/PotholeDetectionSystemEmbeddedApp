@@ -1,3 +1,6 @@
 [submodule "lib/RapidJSON"]
 	path = lib/RapidJSON
 	url = https://github.com/Tencent/rapidjson
+[submodule "lib/RxCpp"]
+	path = lib/RxCpp
+	url = https://github.com/ReactiveX/RxCpp

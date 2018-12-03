@@ -33,6 +33,7 @@ else ()
 
     #    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
     set(RapidJSON_DIR "${PROJECT_SOURCE_DIR}/lib/RapidJSON")
+    set(RxC++_DIR "${PROJECT_SOURCE_DIR}/lib/RxCpp")
     find_package(OpenCV REQUIRED)
     find_package(PotholeDetection REQUIRED)
     find_package(MiNMEA REQUIRED)
@@ -60,6 +61,7 @@ else ()
     include_directories(
             "${OpenCV_INCLUDE_DIRS}"
             "${RapidJSON_DIR}/include"
+            "${RxC++_DIR}/Rx/v2/src"
             "${MiNMEA_INCLUDE_DIRS}"
             "${PotholeDetection_INCLUDE_DIRS}"
             "${CURL_INCLUDE_DIRS}"
@@ -80,8 +82,9 @@ else ()
             include/executionmodes.h src/executionmodes.cpp
             include/raspberrypi/Led.h src/raspberrypi/Led.cpp
             include/raspberrypi/raspberrypiutils.h src/raspberrypi/raspberrypiutils.cpp
-            src/accelerometer.cpp include/accelerometer.h
-            src/accelerometerutils.cpp include/accelerometerutils.h
+            src/accelerometer/ml.cpp include/accelerometer/ml.h
+            src/accelerometer/utils.cpp include/accelerometer/utils.h
+            include/fingerprint.h src/fingerprint.cpp
     )
 
     # linking
