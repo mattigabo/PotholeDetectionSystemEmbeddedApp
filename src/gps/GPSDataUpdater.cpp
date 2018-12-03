@@ -50,7 +50,7 @@ namespace phd::devices::gps {
 
         this->behaviour = [&]() {
             string lineRead = this->data_source->readLine();
-            //std::cout << "Linea letta" << lineRead << std::endl;
+            //std::cout << "Line Read" << lineRead << std::endl;
             try {
                 Coordinates coordinates = parseNMEAData(lineRead.c_str());
                 this->storage->update(coordinates);
