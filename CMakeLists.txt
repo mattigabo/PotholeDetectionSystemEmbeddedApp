@@ -84,7 +84,8 @@ else ()
             include/raspberrypi/raspberrypiutils.h src/raspberrypi/raspberrypiutils.cpp
             src/accelerometer/ml.cpp include/accelerometer/ml.h
             src/accelerometer/utils.cpp include/accelerometer/utils.h
-            include/fingerprint.h)
+            include/fingerprint.h src/fingerprint.cpp
+    )
 
     # linking
     target_link_libraries(
