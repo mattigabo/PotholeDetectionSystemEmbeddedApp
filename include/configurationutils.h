@@ -1,5 +1,5 @@
-#ifndef POTHOLEDETECTIONEMBEDDEDAPP_CONFIGURATION_UTILS_H
-#define POTHOLEDETECTIONEMBEDDEDAPP_CONFIGURATION_UTILS_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CONFIGURATION_UTILS_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CONFIGURATION_UTILS_H
 #include <iostream>
 #include <opencv2/ml.hpp>
 
@@ -7,19 +7,19 @@ using namespace std;
 
 namespace phd::configurations {
 
-    typedef struct ServerConfig {
+    struct ServerConfig {
         std::string protocol;
         std::string hostname;
         int port;
         std::string api;
-    } ServerConfig;
+    };
 
-    typedef struct CVArgs {
+    struct CVArgs {
         string method;
         string bayes;
         string svm;
         bool rotate;
-    } CVArgs;
+    };
 
     template <typename T>
     struct MLOptions {
@@ -31,7 +31,7 @@ namespace phd::configurations {
         std::pair<string, T> params;
     };
 
-    typedef struct SVMParams {
+    struct SVMParams {
         cv::ml::SVM::Types type;
         cv::ml::SVM::KernelTypes kernel;
         int k_fold;
@@ -40,7 +40,7 @@ namespace phd::configurations {
         double C;
         double gamma;
         bool balanced_folding;
-    } SVMParams;
+    };
 
     CVArgs loadCVArgs(const string path_to_config);
 
@@ -50,4 +50,4 @@ namespace phd::configurations {
 
     MLOptions<SVMParams> loadSVMOptions(const string &path_to_config);
 };
-#endif //POTHOLEDETECTIONEMBEDDEDAPP_CONFIGURATION_UTILS_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CONFIGURATION_UTILS_H

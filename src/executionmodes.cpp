@@ -21,12 +21,13 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/istreamwrapper.h>
 
-
 #include <serialport/SerialPort.h>
 #include <camera.h>
 #include <networking.h>
 #include <accelerometer/ml.h>
 #include <accelerometer/utils.h>
+
+#include <execution/utils.h>
 
 using namespace std;
 using namespace cv;
@@ -38,35 +39,6 @@ using namespace phd::devices::serialport;
 using namespace phd::devices::gps;
 
 using namespace rapidjson;
-
-const vector<pair<string, string>> httpHeaders({
-       pair<string, string>("Accept", "application/json"),
-       pair<string, string>("Content-Type","application/json"),
-       pair<string, string>("charset","utf-8")
-});
-
-std::string toJSON(phd::devices::gps::Coordinates coordinates) {
-    rapidjson::Document document;
-
-    document.Parse("{}");
-
-    assert(document.IsObject());
-
-    document.AddMember("lat", rapidjson::Value(coordinates.latitude), document.GetAllocator());
-    document.AddMember("lng", rapidjson::Value(coordinates.longitude), document.GetAllocator());
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
-
-    return buffer.GetString();
-}
-
-void sendDataToServer(string payload, ServerConfig serverConfig){
-    CURLcode res = HTTP::POST(getURL(serverConfig), httpHeaders, payload);
-
-    cout << "HTTP Response Code:" << res << endl;
-}
 
 Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, Mat &image,
                                const Configuration &config) {
@@ -107,8 +79,8 @@ void runObservationMode(bool poison_pill,
             cv::rotate(image, image, cv::ROTATE_180);
         }
 
-//                cv::imshow("Capture", image);
-//                waitKey(0);
+//        cv::imshow("Capture", image);
+//        waitKey(0);
 
         Mat labels = extractFeaturesAndClassify(cvConfig.method, cvConfig.bayes, cvConfig.svm, image, phdConfig);
         if(labels.rows != 0) {

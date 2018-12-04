@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(PotholeDetectionSystemEmbeddedApp VERSION 0.0.2)
+project(PotholeDetectionSystem_EmbeddedApp VERSION 0.0.2)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
@@ -85,7 +85,7 @@ else ()
             src/accelerometer/ml.cpp include/accelerometer/ml.h
             src/accelerometer/utils.cpp include/accelerometer/utils.h
             include/fingerprint.h src/fingerprint.cpp
-    )
+            include/execution/modes.h include/execution/observers/camera.h include/execution/observables/camera.h src/execution/observables/camera.cpp src/execution/utils.cpp include/execution/utils.h src/execution/observables/gps.cpp include/execution/observables/gps.h src/execution/test.cpp include/execution/test.h)
 
     # linking
     target_link_libraries(

@@ -23,6 +23,11 @@
 
 #include <fingerprint.h>
 
+#include <execution/observables/camera.h>
+#include <execution/observers/camera.h>
+#include <execution/observables/gps.h>
+#include <execution/test.h>
+
 using namespace std;
 using namespace phd::io;
 using namespace phd::devices::networking;
@@ -122,6 +127,8 @@ int main(int argc, char *argv[]) {
 
             std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
 
+            testA();
+
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 
@@ -134,6 +141,9 @@ int main(int argc, char *argv[]) {
                 runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
             } else if (mode == "-gps") {
                 testGPSCommunication(gpsDataStore);
+
+                observables::gps::createGPSObservable(gpsDataStore, observables::gps::GPS_REFRESH_RATE);
+
             } else {
                 showHelper();
             }

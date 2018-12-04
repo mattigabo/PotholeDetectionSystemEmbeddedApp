@@ -45,7 +45,7 @@ namespace phd::devices::networking {
             ) {
 
 
-            CURL *curl  = curl_easy_init();
+            CURL *curl = curl_easy_init();
             curl_slist *_headers = NULL;
 
             if (curl == NULL) {
