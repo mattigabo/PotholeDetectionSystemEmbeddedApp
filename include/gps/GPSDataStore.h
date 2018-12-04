@@ -2,12 +2,13 @@
 // Created by Matteo Gabellini on 06/10/2018.
 //
 
-#ifndef POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
-#define POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H
 
 #include <mutex>
 
 namespace phd::devices::gps {
+
     typedef struct Coordinates {
         double latitude;
         double longitude;
@@ -31,4 +32,4 @@ namespace phd::devices::gps {
     };
 
 }
-#endif //POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H

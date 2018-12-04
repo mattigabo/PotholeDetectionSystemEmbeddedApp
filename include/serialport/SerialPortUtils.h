@@ -2,8 +2,8 @@
 // Created by Matteo Gabellini on 03/10/2018.
 //
 
-#ifndef POTHOLEDETECTIONEMBEDDEDAPP_SERIALPORTUTILS_H
-#define POTHOLEDETECTIONEMBEDDEDAPP_SERIALPORTUTILS_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_SERIALPORTUTILS_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_SERIALPORTUTILS_H
 
 #include <list>
 #include <string>
@@ -16,4 +16,4 @@ namespace phd::devices::serialport {
         static void checkForException(int operationResultCode, string operationName);
     };
 }
-#endif //POTHOLEDETECTIONEMBEDDEDAPP_SERIALPORTUTILS_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_SERIALPORTUTILS_H

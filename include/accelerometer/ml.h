@@ -2,8 +2,8 @@
 // Created by Xander on 01/11/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_H
-#define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_H
 
 #include <vector>
 #include <string>
@@ -128,4 +128,4 @@ namespace phd::devices::accelerometer::ml {
     cv::Mat normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type);
 }
 
-#endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_H

@@ -2,8 +2,8 @@
 // Created by Matteo Gabellini on 27/10/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
-#define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H
 
 #include <phdetection/io.hpp>
 
@@ -32,4 +32,4 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
 
 void testAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args);
 
-#endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H
