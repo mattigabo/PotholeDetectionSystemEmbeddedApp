@@ -13,4 +13,7 @@ std::string toJSON(phd::devices::gps::Coordinates coordinates);
 
 void sendDataToServer(std::string payload, phd::configurations::ServerConfig serverConfig);
 
+template <typename T>
+void print_vector(std::vector<T> v);
+
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_UTILS_H

@@ -4,6 +4,10 @@
 
 #include "execution/test.h"
 
+#include <algorithm>
+#include <numeric>
+#include <execution/utils.h>
+
 void testA() {
 
     auto period = std::chrono::milliseconds(1500);
@@ -39,4 +43,26 @@ void testA() {
 
     values.as_blocking().subscribe();
 
+}
+
+void testB() {
+
+    auto period = std::chrono::milliseconds(15);
+
+    auto values = rxcpp::observable<>::interval(period, rxcpp::observe_on_event_loop())
+                    .publish();
+
+    values.connect();
+
+    auto buffered_values = values.buffer(30).map([&](std::vector<long> v) {
+        return std::accumulate(v.begin(), v.end(), 0);
+    });
+
+    buffered_values.subscribe([&](long sum30){
+        std::cout << sum30 << std::endl;
+    },[](){
+        printf("OnCompleted\n");
+    });
+
+    buffered_values.as_blocking().subscribe();
 }

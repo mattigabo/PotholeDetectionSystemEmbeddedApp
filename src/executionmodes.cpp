@@ -139,16 +139,6 @@ void testLed(NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
 }
 
-template <typename T>
-void print_vector(const std::vector<T> v) {
-    cout << "[";
-    for (int i = 0; i < v.size(); ++i) {
-        cout << v.at(i);
-        cout << (i + 1 < v.size() ? ", " : "");
-    }
-    cout << "]" << endl;
-}
-
 void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args, const bool cross_validate) {
 
     std::vector<phd::devices::accelerometer::ml::Features> features;

@@ -41,3 +41,13 @@ void sendDataToServer(std::string payload, ServerConfig serverConfig){
 
     cout << "HTTP Response Code:" << res << endl;
 }
+
+template <typename T>
+void print_vector(const std::vector<T> v) {
+    cout << "[";
+    for (int i = 0; i < v.size(); ++i) {
+        cout << v.at(i);
+        cout << (i + 1 < v.size() ? ", " : "");
+    }
+    cout << "]" << endl;
+}
