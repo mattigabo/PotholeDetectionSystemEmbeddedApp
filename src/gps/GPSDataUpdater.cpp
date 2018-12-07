@@ -17,7 +17,6 @@ namespace phd::devices::gps {
             case MINMEA_SENTENCE_GGA: {
                 struct minmea_sentence_gga frame;
                 if (minmea_parse_gga(&frame, line)) {
-                    //printf("$GGA: fix quality: %d\n", frame.fix_quality);
                     result = Coordinates{minmea_tocoord(&frame.latitude),
                                          minmea_tocoord(&frame.longitude),
                                          minmea_tofloat(&frame.altitude)};
@@ -27,9 +26,7 @@ namespace phd::devices::gps {
 
             default:
                 throw string("NMEA type ignored");
-                break;
         }
-        //}
         return result;
     }
 

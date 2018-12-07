@@ -34,6 +34,8 @@ else ()
     #    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
     set(RapidJSON_DIR "${PROJECT_SOURCE_DIR}/lib/RapidJSON")
     set(RxC++_DIR "${PROJECT_SOURCE_DIR}/lib/RxCpp")
+    set(NunchuckAdapter_DIR "${PROJECT_SOURCE_DIR}/lib/nunchuck-adapter")
+
     find_package(OpenCV REQUIRED)
     find_package(PotholeDetection REQUIRED)
     find_package(MiNMEA REQUIRED)
@@ -67,6 +69,7 @@ else ()
             "${CURL_INCLUDE_DIRS}"
             "${LibSerialPort_INCLUDE}"
             "${PROJECT_SOURCE_DIR}/include"
+            "${NunchuckAdapter_DIR}/include"
     )
 
     add_executable(
