@@ -7,12 +7,6 @@
 
 #include "rxcpp/rx.hpp"
 
-#include <chrono>
-#include <vector>
-#include <string>
-#include <thread>
-#include <time.h>
-
 void testA();
 
 void testB();
