@@ -11,4 +11,6 @@ void testA();
 
 void testB();
 
+void testC();
+
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_TEST_H

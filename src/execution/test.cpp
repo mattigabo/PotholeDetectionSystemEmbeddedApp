@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iterator>
 #include <iostream>
+#include <random>
 
 #include <execution/utils.h>
 
@@ -99,6 +100,63 @@ void testB() {
             t.first,
             std::accumulate(t.second.begin(), t.second.end(), 0),
             vector_to_string(t.second)
+        );
+    })
+    .as_blocking()
+    .subscribe([&](std::tuple<long, long, std::string> t){
+
+        long i, sum;
+        std::string s;
+        std::tie(i, sum, s) = t;
+
+        std::cout << i << "|" << sum << "|" << s.size() << std::endl;
+    },[](){
+        printf("OnCompleted\n");
+    });
+}
+
+void testC() {
+
+    std::mt19937 rng;
+    rng.seed(std::random_device()());
+    std::uniform_int_distribution<std::mt19937::result_type> dist6(0, 100);
+
+    auto period_A = std::chrono::milliseconds(10);
+
+    auto asPairs = [](long a, vector<long> b) {
+        return std::make_pair(a, b);
+    };
+
+    auto values_A = rxcpp::observable<>::interval(period_A, rxcpp::observe_on_event_loop());
+
+    auto A_with_B = values_A.buffer(30).map([&](std::vector<long> v){
+        return asPairs(static_cast<long>(dist6(rng)), v);
+    }).publish();
+
+    A_with_B.connect();
+
+    auto vector_to_string = [&](std::vector<long> v) {
+        std::ostringstream oss;
+        oss << "[";
+        if (!v.empty()){
+
+            // Convert all but the last element to avoid a trailing ","
+            std::copy(v.begin(), v.end()-1,
+                      std::ostream_iterator<int>(oss, ","));
+
+            // Now add the last element with no delimiter
+            oss << v.back();
+        }
+        oss << "]";
+
+        return oss.str();
+    };
+
+    A_with_B.map([&](std::pair<long, std::vector<long>> t){
+        return std::make_tuple(
+                t.first,
+                std::accumulate(t.second.begin(), t.second.end(), 0),
+                vector_to_string(t.second)
         );
     })
     .as_blocking()
