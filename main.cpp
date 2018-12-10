@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
 
             std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
 
-            testB();
+            //testB();
 
         } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
