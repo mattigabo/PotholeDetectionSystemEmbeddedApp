@@ -5,6 +5,7 @@
 #include "fingerprint.h"
 
 #include <iostream>
+#include <string>
 #include <algorithm>
 #include <functional>
 
@@ -199,15 +200,44 @@ namespace fingerprint {
     }
 #endif
 
+    const std::regex serialRegex("[0-9]+");
+    const std::string getCpuInfoCommand("cat /proc/cpuinfo | grep Serial  2>&1");
+
+    std::vector<u32> getArmCPUInfo(){
+        std::array<char, 256> buffer;
+        std::string serialNumber;
+
+        FILE* pipe = popen(getCpuInfoCommand.c_str(), "r");
+        if (!pipe)
+        {
+            return std::vector<u32>();
+        }
+
+        while (fgets(buffer.data(), 256, pipe) != NULL) {
+            const std::string tmp = std::string(buffer.data());
+
+            std::smatch match;
+
+            if (std::regex_search(tmp.begin(), tmp.end(), match, serialRegex)) {
+                serialNumber =  std::string(match[match.size() - 2l]);
+            }
+        }
+        unsigned int result = std::stoul(serialNumber, 0,10);
+        return std::vector<u32>(result);
+    }
 
     std::vector<u32> getCPUInfo() {
         int cpu_info[4] = { 0, 0, 0, 0 };
+        std::vector<u32> info;
+
 #ifdef WINDOWS
         __cpuid(cpu_info, 0 );
+#elseifdef LINUX __arm__
+        info = getArmCPUInfo();
 #else
         __cpuid(0, cpu_info[0] , cpu_info[1], cpu_info[2], cpu_info[3]);
 #endif
-        std::vector<u32> info;
+
 
         for (int i = 0; i < 4; ++i) {
             info.emplace_back((u32) cpu_info[i]);
