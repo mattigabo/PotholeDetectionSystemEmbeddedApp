@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 
             cout << toJSON(phd::devices::gps::Coordinates{1.0, 1.0, 1.0}, uid) << endl;
             cout << toJSON(uid) << endl;
-
+//            testB();
 //            testC();
 
         } else {
