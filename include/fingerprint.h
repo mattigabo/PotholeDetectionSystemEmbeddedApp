@@ -9,6 +9,8 @@
 
 namespace fingerprint {
 
+    std::string extractSerialNumber(std::string readString);
+
     std::string getUID ();
 
     bool validateUID(std::string uid);

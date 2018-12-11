@@ -21,8 +21,6 @@
 
 #include <raspberrypi/raspberrypiutils.h>
 
-#include <fingerprint.h>
-
 #include <execution/observables/camera.h>
 #include <execution/observers/camera.h>
 #include <execution/observables/gps.h>
@@ -48,6 +46,7 @@ void showHelper(void) {
     cout << "-gps [== Test the gps communication]" << endl;
     cout << "-http [== Test HTTP communication]" << endl;
     cout << "-led [== Test LED]" << endl;
+    cout << "-accelerometer [== Test Accelerometer]" << endl;
     cout << "-train <config-file> [ == Train and Test the SVM classifier against the given train-set(s) and test-set(s)]" << endl;
     cout << "-test <config-file> [ == Trained Classify against the given test-set]" << endl;
 }
@@ -100,32 +99,30 @@ int main(int argc, char *argv[]) {
             testHTTPCommunication(serverConfig);
         } else if(mode == "-led") {
             testLed(notificationLeds);
+        } else if (mode == "-accelerometer") {
+            testAccelerometerCommunication();
         } else if (mode == "-train" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
 
-            trainAccelerometer(svmConfig, false);
-//            testAccelerometer(svmConfig);
+            trainAccelerometerMlAlgorithm(svmConfig, false);
+//            testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-cross-train" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
 
-            trainAccelerometer(svmConfig, true);
-            testAccelerometer(svmConfig);
+            trainAccelerometerMlAlgorithm(svmConfig, true);
+            testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-test" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
-            testAccelerometer(svmConfig);
+            testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-fp") {
 
-            std::string uid = fingerprint::getUID();
-
-            std::cout << "Fp: " << uid << std::endl;
-
-            std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
+            testFingerPrintCalculation();
 
             //testB();
             //testC();

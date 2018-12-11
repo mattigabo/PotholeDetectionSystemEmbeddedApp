@@ -27,7 +27,14 @@
 #include <accelerometer/ml.h>
 #include <accelerometer/utils.h>
 
+#include <nunchuckdata.h>
+#include <nunchuckreader.h>
+#include <nunchuckdatasampler.h>
+
 #include <execution/utils.h>
+#include <fingerprint.h>
+
+#include <fstream>
 
 using namespace std;
 using namespace cv;
@@ -37,6 +44,8 @@ using namespace phd::io;
 using namespace phd::devices::networking;
 using namespace phd::devices::serialport;
 using namespace phd::devices::gps;
+
+using namespace nunchuckadapter;
 
 using namespace rapidjson;
 
@@ -139,7 +148,42 @@ void testLed(NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
 }
 
-void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args, const bool cross_validate) {
+void testAccelerometerCommunication(){
+    cout << "Test the read from the Nunchuck Accelerometer" << endl;
+
+    auto reader = new NunchuckReader(NunchuckReader::InitializationMode::NOT_ENCRYPTED);
+    auto dataStore = new NunchuckDataStore();
+    auto sampler = new NunchuckDataSampler(reader, dataStore);
+    for(int i = 0; i < 20;  i++){
+        NunchuckData values = dataStore->fetch();
+        cout << "Accelerometer: [ " <<
+             values.getAccelerationValues().X << " on X,  " <<
+             values.getAccelerationValues().Y << " on Y,  " <<
+             values.getAccelerationValues().Z << " on Z ]"  << endl;
+        std::this_thread::sleep_for(chrono::milliseconds(1000));
+    }
+
+    sampler->notifyStop();
+    sampler->join();
+
+    cout << "-----------------------------------------------" << endl;
+    cout << "Bye Bye" << endl;
+    free(sampler);
+    free(dataStore);
+    free(reader);
+}
+
+void testFingerPrintCalculation(){
+
+    std::string uid = fingerprint::getUID();
+
+    std::cout << "Fp: " << uid << std::endl;
+
+    std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
+}
+
+void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
+                                   const bool cross_validate) {
 
     std::vector<phd::devices::accelerometer::ml::Features> features;
     std::vector<int> labels;
@@ -195,7 +239,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
     labels.clear();
 }
 
-void testAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {
+void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {
 
     cout << "Testing Classifier against Test Set..." << endl;
 
