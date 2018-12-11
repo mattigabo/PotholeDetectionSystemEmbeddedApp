@@ -27,6 +27,7 @@
 #include <execution/observers/camera.h>
 #include <execution/observables/gps.h>
 #include <execution/test.h>
+#include <execution/utils.h>
 
 using namespace std;
 using namespace phd::io;
@@ -127,9 +128,16 @@ int main(int argc, char *argv[]) {
 
             std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
 
-            testC();
+            cout << toJSON(phd::devices::gps::Coordinates{1.0, 1.0, 1.0}, uid) << endl;
+            cout << toJSON(uid) << endl;
+
+//            testC();
 
         } else {
+
+            cout << "Registering Device on Server..." << endl;
+            registerDeviceOnServer(toJSON(fingerprint::getUID()), serverConfig);
+
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
 
             SerialPort *serialPort = initSerialPort(serialPortName);

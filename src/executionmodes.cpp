@@ -71,7 +71,7 @@ void runObservationMode(bool poison_pill,
 
     while(!poison_pill) {
 
-        std::string position = toJSON(gpsDataStore->fetch());
+        std::string position = toJSON(gpsDataStore->fetch(), std::__cxx11::string());
 
         Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
@@ -110,7 +110,7 @@ void testGPSCommunication(GPSDataStore* storage){
 
 void testHTTPCommunication(ServerConfig serverConfig){
     Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
-    sendDataToServer(toJSON(pointNearUniversity), serverConfig);
+    sendDataToServer(toJSON(pointNearUniversity, std::__cxx11::string()), serverConfig);
 }
 
 void testLed(NotificationLeds notificationLeds){
