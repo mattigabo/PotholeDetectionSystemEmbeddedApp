@@ -48,7 +48,7 @@
 #include <linux/sockios.h>
 #endif //defined(__linux__)
 
-#ifndef __arm__ WINDOWS
+#if !defined(__arm__) && !defined(WINDOWS)
 #import <cpuid.h>
 #endif
 
@@ -235,7 +235,7 @@ namespace fingerprint {
 
 #ifdef WINDOWS
         __cpuid(cpu_info, 0 );
-#elseifdef LINUX __arm__
+#elseif defined(LINUX) && defined(__arm__)
         info = getArmCPUInfo();
 #else
         __cpuid(0, cpu_info[0] , cpu_info[1], cpu_info[2], cpu_info[3]);
