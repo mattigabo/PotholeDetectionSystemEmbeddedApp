@@ -205,7 +205,7 @@ namespace fingerprint {
     }
 #endif
 
-    const std::regex serialRegex("[0-9]+");
+    const std::regex serialRegex("[0-9a-zA-Z]+");
     const std::string getCpuInfoCommand("cat /proc/cpuinfo | grep Serial  2>&1");
 
     std::vector<u32> getArmCPUInfo(){
@@ -224,7 +224,7 @@ namespace fingerprint {
             std::smatch match;
 
             if (std::regex_search(tmp.begin(), tmp.end(), match, serialRegex)) {
-                serialNumber =  std::string(match[match.size() - 2l]);
+                serialNumber =  std::string(match[match.size() - 1]);
             }
         }
         unsigned int result = std::stoul(serialNumber, 0,10);
