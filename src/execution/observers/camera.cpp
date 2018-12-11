@@ -6,6 +6,7 @@
 #include <execution/observables/camera.h>
 #include <execution/observables/gps.h>
 #include <execution/utils.h>
+#include <fingerprint.h>
 
 namespace observers {
     namespace camera {
@@ -57,7 +58,7 @@ namespace observers {
                 if (std::find(l.begin(), l.end(), 1) != l.end() ||
                     std::find(l.begin(), l.end(), 2) != l.end()) {
 
-                    std::string position = toJSON(gpsWithLabels.first);
+                    std::string position = toJSON(gpsWithLabels.first, fingerprint::getUID());
 
                     sendDataToServer(position, serverConfig);
                 }

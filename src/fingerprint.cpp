@@ -30,6 +30,9 @@
 
 #include <assert.h>
 
+#include <sys/resource.h>
+#include <sys/utsname.h>
+
 //#include <netdb.h>
 //#include <netinet/in.h>
 //#include <netinet/in_systm.h>
@@ -53,9 +56,6 @@
 #if !defined(__arm__) && !defined(WINDOWS)
 #import <cpuid.h>
 #endif
-
-#include <sys/resource.h>
-#include <sys/utsname.h>
 
 #if !defined(u8)
 typedef uint8_t u8;
@@ -159,7 +159,7 @@ namespace fingerprint {
     }
 
 
-#if WINDOWS
+#ifdef WINDOWS
     DWORD getVolumeSerialNumber() {
         DWORD serialNumber = 0;
 
@@ -322,8 +322,6 @@ namespace fingerprint {
         computed = true;
         return id;
     }
-
-
 
     std::string getUID(){
         // get the name of the computer
