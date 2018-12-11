@@ -28,6 +28,8 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
+#include <assert.h>
+
 //#include <netdb.h>
 //#include <netinet/in.h>
 //#include <netinet/in_systm.h>
