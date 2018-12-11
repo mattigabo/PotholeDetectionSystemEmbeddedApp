@@ -235,7 +235,7 @@ namespace fingerprint {
 
 #ifdef WINDOWS
         __cpuid(cpu_info, 0 );
-#elseif defined(LINUX) && defined(__arm__)
+#elif defined(LINUX) && defined(__arm__)
         info = getArmCPUInfo();
 #else
         __cpuid(0, cpu_info[0] , cpu_info[1], cpu_info[2], cpu_info[3]);
