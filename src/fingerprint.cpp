@@ -22,7 +22,6 @@
 #include <windows.h>
 #include <intrin.h>
 #else
-#import <cpuid.h>
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -48,6 +47,10 @@
 #include <linux/if.h>
 #include <linux/sockios.h>
 #endif //defined(__linux__)
+
+#ifndef __arm__ WINDOWS
+#import <cpuid.h>
+#endif
 
 #include <sys/resource.h>
 #include <sys/utsname.h>
