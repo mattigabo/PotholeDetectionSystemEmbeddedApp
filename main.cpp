@@ -27,6 +27,8 @@
 #include <execution/test.h>
 #include <execution/utils.h>
 
+#include <fingerprint.h>
+
 using namespace std;
 using namespace phd::io;
 using namespace phd::devices::networking;
@@ -124,9 +126,6 @@ int main(int argc, char *argv[]) {
         } else if (mode == "-fp") {
 
             testFingerPrintCalculation();
-
-            cout << toJSON(phd::devices::gps::Coordinates{1.0, 1.0, 1.0}, uid) << endl;
-            cout << toJSON(uid) << endl;
 //            testB();
 //            testC();
 
@@ -147,7 +146,7 @@ int main(int argc, char *argv[]) {
             } else if (mode == "-gps") {
                 testGPSCommunication(gpsDataStore);
 
-                observables::gps::createGPSObservable(gpsDataStore, observables::gps::GPS_REFRESH_RATE);
+                observables::gps::createGPSDataStream(gpsDataStore, observables::gps::GPS_REFRESH_PERIOD);
 
             } else {
                 showHelper();
