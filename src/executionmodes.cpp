@@ -26,12 +26,10 @@
 #include <networking.h>
 #include <accelerometer/ml.h>
 #include <accelerometer/utils.h>
-
-#include <nunchuckdata.h>
-#include <nunchuckreader.h>
-#include <nunchuckdatasampler.h>
+#include <accelerometer/accelerometer.h>
 
 #include <execution/utils.h>
+#include <execution/observables/accelerometer.h>
 #include <fingerprint.h>
 
 #include <fstream>
@@ -44,10 +42,17 @@ using namespace phd::io;
 using namespace phd::devices::networking;
 using namespace phd::devices::serialport;
 using namespace phd::devices::gps;
-
-using namespace nunchuckadapter;
+using namespace phd::devices::accelerometer;
 
 using namespace rapidjson;
+
+namespace Rx {
+    using namespace rxcpp;
+    using namespace rxcpp::sources;
+    using namespace rxcpp::operators;
+    using namespace rxcpp::util;
+}
+using namespace Rx;
 
 Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, Mat &image,
                                const Configuration &config) {
@@ -80,7 +85,7 @@ void runObservationMode(bool poison_pill,
 
     while(!poison_pill) {
 
-        std::string position = toJSON(gpsDataStore->fetch(), std::__cxx11::string());
+        std::string position = toJSON(gpsDataStore->fetch(), std::string());
 
         Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
@@ -119,7 +124,7 @@ void testGPSCommunication(GPSDataStore* storage){
 
 void testHTTPCommunication(ServerConfig serverConfig){
     Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
-    sendDataToServer(toJSON(pointNearUniversity, std::__cxx11::string()), serverConfig);
+    sendDataToServer(toJSON(pointNearUniversity, std::string()), serverConfig);
 }
 
 void testLed(NotificationLeds notificationLeds){
@@ -148,29 +153,44 @@ void testLed(NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
 }
 
-void testAccelerometerCommunication(){
-    cout << "Test the read from the Nunchuck Accelerometer" << endl;
-
-    auto reader = new NunchuckReader(NunchuckReader::InitializationMode::NOT_ENCRYPTED);
-    auto dataStore = new NunchuckDataStore();
-    auto sampler = new NunchuckDataSampler(reader, dataStore);
+void testAccelerometerWithoutRxCpp(Accelerometer *accelerometer){
     for(int i = 0; i < 20;  i++){
-        NunchuckData values = dataStore->fetch();
+        Acceleration values = accelerometer->fetch();
         cout << "Accelerometer: [ " <<
-             values.getAccelerationValues().X << " on X,  " <<
-             values.getAccelerationValues().Y << " on Y,  " <<
-             values.getAccelerationValues().Z << " on Z ]"  << endl;
+             values.X << " on X,  " <<
+             values.Y << " on Y,  " <<
+             values.Z << " on Z ]"  << endl;
         std::this_thread::sleep_for(chrono::milliseconds(1000));
     }
+}
 
-    sampler->notifyStop();
-    sampler->join();
+void testAccelerometerWithRxCpp(Accelerometer *accelerometer){
+    auto accelerationStream = observables::accelerometer::createAccelerometerValuesStream(
+            accelerometer,
+            observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
+    );
+    accelerationStream.subscribe([](const Acceleration values) {
+        cout << "Accelerometer: [ " <<
+             values.X << " on X,  " <<
+             values.Y << " on Y,  " <<
+             values.Z << " on Z ]"  << endl;
+    },[](){
+        cout << "OnCompleted\n" << endl;
+    });
+}
 
+void testAccelerometerCommunication(){
+    cout << "Test the read from the Nunchuck Accelerometer" << endl;
+    auto accelerometer = new Accelerometer();
+
+
+    testAccelerometerWithRxCpp(accelerometer);
+
+    std::this_thread::sleep_for(chrono::milliseconds(5000));
+
+    free(accelerometer);
     cout << "-----------------------------------------------" << endl;
     cout << "Bye Bye" << endl;
-    free(sampler);
-    free(dataStore);
-    free(reader);
 }
 
 void testFingerPrintCalculation(){

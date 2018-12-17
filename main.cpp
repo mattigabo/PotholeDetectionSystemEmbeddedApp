@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
             } else if (mode == "-gps") {
                 testGPSCommunication(gpsDataStore);
 
-                observables::gps::createGPSDataStream(gpsDataStore, observables::gps::GPS_REFRESH_PERIOD);
+                observables::gps::createGPSObservable(gpsDataStore, observables::gps::GPS_REFRESH_PERIOD);
 
             } else {
                 showHelper();
