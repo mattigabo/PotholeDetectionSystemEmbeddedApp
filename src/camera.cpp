@@ -5,6 +5,7 @@
 #include "camera.h"
 #include <iostream>
 #include <opencv2/highgui.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/video.hpp>
 
 namespace phd::devices::camera {
@@ -23,7 +24,7 @@ namespace phd::devices::camera {
             pi_camera.read(capture);
         } else {
             std::cerr << "Cannot open Raspi Camera" << std::endl;
-            exit(-1);
+            capture = cv::Mat::zeros(128, 128, CV_32SC3);
         }
 
         pi_camera.release();

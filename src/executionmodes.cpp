@@ -124,7 +124,11 @@ void testGPSWithoutRxCpp(GPSDataStore* storage){
 }
 
 void testGPSWithRxCpp(GPSDataStore* storage){
-    observables::gps::createGPSObservable(storage, observables::gps::GPS_REFRESH_PERIOD);
+    auto src = observables::gps::createGPSObservable(storage, observables::gps::GPS_REFRESH_PERIOD);
+
+    src.as_blocking().subscribe([](phd::devices::gps::Coordinates c) {
+        std::cout << c.longitude << "|" << c.latitude << std::endl;
+    });
 }
 
 void testHTTPCommunication(ServerConfig serverConfig){

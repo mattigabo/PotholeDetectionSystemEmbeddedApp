@@ -16,6 +16,7 @@
 #include <networking.h>
 #include <configurationutils.h>
 #include <executionmodes.h>
+#include <camera.h>
 #include <accelerometer/ml.h>
 #include <phdetection/io.hpp>
 
@@ -135,7 +136,13 @@ int main(int argc, char *argv[]) {
             GPSDataUpdater* updater;
             SerialPort *serialPort = nullptr;
 
-            auto mockedMode = argc > 3 && std::string(argv[3]) == "-mocked";
+            auto mockedMode = false;
+            if(argc >= 4) {
+                mockedMode = std::string(argv[3]) == "-mocked" || std::string(argv[2]) == "-mocked";
+            } else if(argc >= 3){
+                mockedMode = std::string(argv[2]) == "-mocked";
+            }
+
             if(mockedMode){
                 updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
             } else {
