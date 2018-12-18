@@ -178,7 +178,7 @@ void testAccelerometerWithRxCpp(Accelerometer *accelerometer){
             accelerometer,
             observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
     );
-    accelerationStream.subscribe([](const Acceleration values) {
+    accelerationStream.as_blocking().subscribe([](const Acceleration values) {
         cout << "Accelerometer: [ " <<
              values.X << " on X,  " <<
              values.Y << " on Y,  " <<
@@ -200,7 +200,7 @@ void testAccelerometerCommunication(bool withoutRx){
         testAccelerometerWithRxCpp(accelerometer);
     }
 
-    std::this_thread::sleep_for(chrono::milliseconds(5000));
+    //std::this_thread::sleep_for(chrono::milliseconds(5000));
 
     free(accelerometer);
     cout << "-----------------------------------------------" << endl;

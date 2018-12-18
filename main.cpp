@@ -66,7 +66,6 @@ SerialPort* initSerialPort(string portName){
 int main(int argc, char *argv[]) {
 
 //    cout << phd::io::GetCurrentWorkingDir() << endl;
-
     const string root = phd::io::getParentDirectory(string(dirname(argv[0])));
 
     config_folder = root + config_folder;
@@ -128,6 +127,7 @@ int main(int argc, char *argv[]) {
         } else if (mode == "-fp") {
 
             testFingerPrintCalculation();
+            //testA();
 //            testB();
 //            testC();
 

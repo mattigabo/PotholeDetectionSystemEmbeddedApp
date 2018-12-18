@@ -13,12 +13,12 @@ namespace observables{
 
             streamDataGenerationClock.connect();
 
-            return streamDataGenerationClock.map([&](long v){
+            auto accelerationValuesStream = streamDataGenerationClock.map([source](long v){
                 phd::devices::accelerometer::Acceleration acceleration = source->fetch();
                 return acceleration;
             });
 
-            //return accelerationValuesStream;
+            return accelerationValuesStream;
         }
     }
 }
