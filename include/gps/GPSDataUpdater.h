@@ -15,19 +15,30 @@
 using  namespace phd::devices::serialport;
 
 namespace phd::devices::gps {
-/**
- * This class represent an autonomous worker that continuously read and parse NMEA data from serial port
- * and update the GPSDataStore passed as  argument at the constuctor
- */
+    /**
+     * This class represent an autonomous worker that continuously read and parse NMEA data from serial port
+     * and update the GPSDataStore passed as  argument at the constuctor
+     */
     class GPSDataUpdater {
     public:
+        /**
+         * Create a GPSDataUpdater
+         * @param storage an initialized data storage where the updater will save the parsed data
+         * @param dataSource an opened serial port where the the updater read data
+         * */
         GPSDataUpdater(GPSDataStore *storage, SerialPort *dataSource);
 
         void kill();
 
         void join();
 
-    private:
+    protected:
+        /**
+        * Create a GPSDataUpdater
+        * @param storage an initialized data storage where the updater will save the gps data
+        * */
+        explicit GPSDataUpdater(GPSDataStore *storage);
+
         std::thread soul;
         bool should_live;
         std::function<void(void)> behaviour;
@@ -35,6 +46,11 @@ namespace phd::devices::gps {
         SerialPort *data_source;
 
         void Live();
+    };
+
+    class SimulatedGPSDataUpdater : public GPSDataUpdater{
+    public:
+        explicit SimulatedGPSDataUpdater(GPSDataStore *storage);
     };
 }
 

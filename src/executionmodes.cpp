@@ -9,6 +9,7 @@
 #include <thread>
 #include <time.h>
 #include <assert.h>
+#include <fstream>
 
 #include <phdetection/ontologies.hpp>
 #include <phdetection/core.hpp>
@@ -30,9 +31,9 @@
 
 #include <execution/utils.h>
 #include <execution/observables/accelerometer.h>
-#include <fingerprint.h>
+#include <execution/observables/gps.h>
 
-#include <fstream>
+#include <fingerprint.h>
 
 using namespace std;
 using namespace cv;
@@ -112,7 +113,7 @@ void runObservationMode(bool poison_pill,
     }
 }
 
-void testGPSCommunication(GPSDataStore* storage){
+void testGPSWithoutRxCpp(GPSDataStore* storage){
     for(int i=0; i < 100; i++) {
         Coordinates coordinates = storage->fetch();
         cout << "LATITUDE: " << coordinates.latitude <<
@@ -120,6 +121,10 @@ void testGPSCommunication(GPSDataStore* storage){
              " ALTITUDE: " << coordinates.altitude << endl;
         std::this_thread::sleep_for(1s);
     }
+}
+
+void testGPSWithRxCpp(GPSDataStore* storage){
+    observables::gps::createGPSObservable(storage, observables::gps::GPS_REFRESH_PERIOD);
 }
 
 void testHTTPCommunication(ServerConfig serverConfig){
@@ -179,12 +184,17 @@ void testAccelerometerWithRxCpp(Accelerometer *accelerometer){
     });
 }
 
-void testAccelerometerCommunication(){
-    cout << "Test the read from the Nunchuck Accelerometer" << endl;
+void testAccelerometerCommunication(bool withoutRx){
+    cout << "Test the read from the Nunchuck Accelerometer..." << endl;
     auto accelerometer = new Accelerometer();
 
-
-    testAccelerometerWithRxCpp(accelerometer);
+    if(withoutRx) {
+        cout << "without RxCpp" << endl;
+        testAccelerometerWithoutRxCpp(accelerometer);
+    } else {
+        cout << "with RxCpp" << endl;
+        testAccelerometerWithRxCpp(accelerometer);
+    }
 
     std::this_thread::sleep_for(chrono::milliseconds(5000));
 

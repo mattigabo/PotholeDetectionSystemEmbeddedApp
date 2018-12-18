@@ -22,13 +22,14 @@ void runObservationMode(bool poison_pill,
         CVArgs cvConfig,
         ServerConfig serverConfig);
 
-void testGPSCommunication(GPSDataStore* storage);
+void testGPSWithoutRxCpp(GPSDataStore* storage);
+void testGPSWithRxCpp(GPSDataStore* storage);
 
 void testHTTPCommunication(ServerConfig serverConfig);
 
 void testLed(NotificationLeds notificationLeds);
 
-void testAccelerometerCommunication();
+void testAccelerometerCommunication(bool withoutRx);
 
 void testFingerPrintCalculation();
 

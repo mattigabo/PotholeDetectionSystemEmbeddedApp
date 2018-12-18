@@ -6,10 +6,10 @@
 #include "minmea/minmea.h"
 
 namespace phd::devices::gps {
-/**
- * This function parse NMEA data string. The NMEA sentence considered is
- * the GGA type (Global Positioning System Fix Data. Time, Position and fix related data for a GPS receiver)
- * */
+    /**
+     * This function parse NMEA data string. The NMEA sentence considered is
+     * the GGA type (Global Positioning System Fix Data. Time, Position and fix related data for a GPS receiver)
+     * */
     Coordinates parseNMEAData(const char *line) {
         Coordinates result;
         switch (minmea_sentence_id(line, false)) {
@@ -37,12 +37,12 @@ namespace phd::devices::gps {
         }
     }
 
-    /**
-     * @param storage an initialized data storage where the updater will save the parsed data
-     * @param dataSource an opened serial port where the the updater read data
-     * */
-    GPSDataUpdater::GPSDataUpdater(GPSDataStore *storage, SerialPort *dataSource) {
+    GPSDataUpdater::GPSDataUpdater(GPSDataStore *storage){
         this->storage = storage;
+        should_live = true;
+    }
+
+    GPSDataUpdater::GPSDataUpdater(GPSDataStore *storage, SerialPort *dataSource): GPSDataUpdater(storage) {
         this->data_source = dataSource;
 
         this->behaviour = [&]() {
@@ -57,7 +57,6 @@ namespace phd::devices::gps {
         };
 
         soul = std::thread(&GPSDataUpdater::Live, this);
-        should_live = true;
     }
 
     void GPSDataUpdater::kill() {
@@ -66,5 +65,19 @@ namespace phd::devices::gps {
 
     void GPSDataUpdater::join() {
         soul.join();
+    }
+
+    SimulatedGPSDataUpdater::SimulatedGPSDataUpdater(GPSDataStore *storage): GPSDataUpdater(storage) {
+        this->behaviour = [&]() {
+            try {
+                Coordinates coordinates = {.latitude=43.9414, .longitude=12.7188, .altitude=0};
+                this->storage->update(coordinates);
+                std::this_thread::sleep_for(1s);
+            } catch (const string msg) {
+                //cerr << msg << endl;
+            }
+        };
+
+        soul = std::thread(&SimulatedGPSDataUpdater::Live, this);
     }
 }
