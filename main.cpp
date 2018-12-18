@@ -38,9 +38,10 @@ using namespace phd::configurations;
 
 Configuration phdConfig;
 ServerConfig serverConfig;
+CVArgs cvConfig;
 string serialPortName;
-
 string config_folder = "/res/config";
+
 NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
 
 void showHelper(void) {
@@ -111,7 +112,6 @@ int main(int argc, char *argv[]) {
             auto svmConfig = loadSVMOptions(argv[2]);
 
             trainAccelerometerMlAlgorithm(svmConfig, false);
-//            testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-cross-train" && argc > 2) {
 
@@ -128,10 +128,9 @@ int main(int argc, char *argv[]) {
         } else if (mode == "-fp") {
 
             testFingerPrintCalculation();
-//            testB();
-//            testC();
 
         } else if (mode == "-gps"){
+
             auto gpsDataStore = new GPSDataStore();
             GPSDataUpdater* updater;
             SerialPort *serialPort = nullptr;
@@ -155,7 +154,11 @@ int main(int argc, char *argv[]) {
             if(withoutRx){
                 testGPSWithoutRxCpp(gpsDataStore);
             } else {
-                testGPSWithRxCpp(gpsDataStore);
+                cvConfig = loadCVArgs(config_folder + "/config.json");
+                std::cout << "Mocked mode with Reactive Extensions..." << std::endl;
+                observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
+
+//                testGPSWithRxCpp(gpsDataStore);
             }
 
             updater->kill();
@@ -167,6 +170,7 @@ int main(int argc, char *argv[]) {
                 serialPort->closePort();
                 delete (serialPort);
             }
+
         } else if (mode == "-o") {
 
             cout << "Registering Device on Server..." << endl;
@@ -178,7 +182,7 @@ int main(int argc, char *argv[]) {
             auto gpsDataStore = new GPSDataStore();
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
-            CVArgs cvConfig = loadCVArgs(config_folder + "/config.json");
+            cvConfig = loadCVArgs(config_folder + "/config.json");
             runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
 
             updater->kill();

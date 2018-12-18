@@ -89,13 +89,14 @@ else ()
             src/accelerometer/utils.cpp include/accelerometer/utils.h
             include/fingerprint.h src/fingerprint.cpp
             include/execution/modes.h
-            include/execution/observers/camera.h
+            include/execution/observers/camera.h src/execution/observers/camera.cpp
             include/execution/observables/camera.h src/execution/observables/camera.cpp
             src/execution/utils.cpp include/execution/utils.h
             src/execution/observables/gps.cpp include/execution/observables/gps.h
-            src/execution/test.cpp include/execution/test.h include/accelerometer/accelerometer.h
-            src/accelerometer/accelerometer.cpp include/execution/observables/accelerometer.h
-            src/execution/observables/accellerometer.cpp)
+            src/execution/test.cpp include/execution/test.h
+            include/accelerometer/accelerometer.h src/accelerometer/accelerometer.cpp
+            include/execution/observables/accelerometer.h src/execution/observables/accellerometer.cpp
+    )
 
     # linking
     target_link_libraries(
