@@ -19,7 +19,7 @@ namespace observers {
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1500L);
             auto camera_obs = observables::camera::createCameraObservable(gps_obs);
 
-            camera_obs.map([&](GPSWithMat image) {
+            camera_obs.map([cvConfig](GPSWithMat image) {
 
                 if (cvConfig.rotate) {
                     cv::rotate(image.second, image.second, cv::ROTATE_180);
@@ -27,14 +27,14 @@ namespace observers {
 
                 return image;
 
-            }).map([&](GPSWithMat gpsWithCapture){
+            }).map([phdConfig](GPSWithMat gpsWithCapture){
 
                 std::vector<phd::ontologies::Features> features =
                         phd::getFeatures(gpsWithCapture.second, phdConfig);
 
                 return GPSWithFeatures(gpsWithCapture.first, features);
 
-            }).map([&](GPSWithFeatures gpsWithFeatures){
+            }).map([cvConfig](GPSWithFeatures gpsWithFeatures){
                 cv::Mat labels;
 
                 try {
@@ -46,11 +46,11 @@ namespace observers {
 
                 return GPSWithMat(gpsWithFeatures.first, labels);
 
-            }).filter([&](GPSWithMat gpsWithLabels){
+            }).filter([](GPSWithMat gpsWithLabels){
 
                 return gpsWithLabels.second.rows != 0;
 
-            }).subscribe([&](GPSWithMat gpsWithLabels){
+            }).subscribe([serverConfig](GPSWithMat gpsWithLabels){
                 auto labels = gpsWithLabels.second.row(0);
 
                 vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);

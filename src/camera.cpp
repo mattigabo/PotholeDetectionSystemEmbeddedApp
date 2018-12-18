@@ -24,7 +24,7 @@ namespace phd::devices::camera {
             pi_camera.read(capture);
         } else {
             std::cerr << "Cannot open Raspi Camera" << std::endl;
-            capture = cv::Mat::zeros(128, 128, CV_32SC3);
+            capture = cv::Mat(128, 128, CV_8SC3, cv::Scalar(255, 255, 255));
         }
 
         pi_camera.release();
