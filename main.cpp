@@ -16,6 +16,7 @@
 #include <networking.h>
 #include <configurationutils.h>
 #include <executionmodes.h>
+#include <camera.h>
 #include <accelerometer/ml.h>
 #include <phdetection/io.hpp>
 
@@ -127,10 +128,19 @@ int main(int argc, char *argv[]) {
             std::cout << "Fp: " << uid << std::endl;
 
             std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
+//
+//            cout << toJSON(phd::devices::gps::Coordinates{1.0, 1.0, 1.0}, uid) << endl;
+//            cout << toJSON(uid) << endl;
 
-            cout << toJSON(phd::devices::gps::Coordinates{1.0, 1.0, 1.0}, uid) << endl;
-            cout << toJSON(uid) << endl;
-//            testB();
+
+//            auto capture = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
+//
+//            cv::imshow("Capture", capture);
+//
+//            cv::waitKey(0);
+
+//            testA();
+            
 //            testC();
 
         } else {
@@ -150,7 +160,11 @@ int main(int argc, char *argv[]) {
             } else if (mode == "-gps") {
                 testGPSCommunication(gpsDataStore);
 
-                observables::gps::createGPSObservable(gpsDataStore, observables::gps::GPS_REFRESH_RATE);
+                auto src = observables::gps::createGPSObservable(gpsDataStore, observables::gps::GPS_REFRESH_RATE);
+
+                src.as_blocking().subscribe([](phd::devices::gps::Coordinates c) {
+                    std::cout << c.longitude << "|" << c.latitude << std::endl;
+                });
 
             } else {
                 showHelper();
