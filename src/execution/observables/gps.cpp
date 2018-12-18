@@ -16,10 +16,7 @@ namespace observables {
 
             tick_tock.connect();
 
-            return tick_tock.map([&](long v) {
-
-                std::cout << "banane" << std::endl;
-
+            return tick_tock.map([gpsDataStore](long v) {
                 phd::devices::gps::Coordinates c = gpsDataStore->fetch();
 
                 std::cout << c.longitude << "|" << c.latitude <<  std::endl;
