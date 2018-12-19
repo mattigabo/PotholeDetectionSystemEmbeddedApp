@@ -10,6 +10,23 @@
 
 namespace phd::devices::camera {
 
+    cv::Mat getDummyImage() {
+
+        static cv::Mat dummy_img;
+        static bool only_once = false;
+
+        if (!only_once) {
+
+
+            dummy_img = cv::Mat(128, 128, CV_8UC3, cv::Scalar(1, 1, 1));
+            std::cout << "OCV Image Type:" << dummy_img.type() << std::endl;
+            std::cout << dummy_img.channels() << std::endl;
+            only_once = true;
+        }
+
+        return dummy_img;
+    }
+
     cv::Mat fetch(const int device_id) {
 
         cv::VideoCapture pi_camera;
@@ -24,7 +41,7 @@ namespace phd::devices::camera {
             pi_camera.read(capture);
         } else {
             std::cerr << "Cannot open Raspi Camera" << std::endl;
-            capture = cv::Mat(128, 128, CV_8SC3, cv::Scalar(255, 255, 255));
+            capture = getDummyImage();
         }
 
         pi_camera.release();
