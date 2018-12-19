@@ -98,9 +98,9 @@ int main(int argc, char *argv[]) {
 
         auto poison_pill = false;
 
-        cout << "Loading Core Configuration..." << endl;
+        cout << "Loading Computer Vision Configuration..." << endl;
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
-        cout << "Core Configuration Loaded" << endl;
+        cout << "Computer Vision Configuration Loaded" << endl;
 
         serverConfig = loadServerConfig(config_folder + "/config.json");
         cout << "Server Configuration Loaded\n" << endl;
