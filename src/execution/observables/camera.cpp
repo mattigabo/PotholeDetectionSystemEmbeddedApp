@@ -10,7 +10,7 @@ namespace observables {
         rxcpp::observable<GPSWithMat>
         createCameraObservable(const rxcpp::observable<phd::devices::gps::Coordinates> &coordinates) {
 
-            return coordinates.map([&](phd::devices::gps::Coordinates c) {
+            return coordinates.map([](phd::devices::gps::Coordinates c) {
                 auto image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
                 return std::pair<phd::devices::gps::Coordinates, cv::Mat>(c, image);
             });

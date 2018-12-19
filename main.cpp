@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     } else {
         cout << "Error " << initResult;
     }
-    cout << endl;
+    cout << "\n"<< endl;
 
     if (argc < 2) {
         showHelper();
@@ -94,12 +94,16 @@ int main(int argc, char *argv[]) {
             withoutRx = std::string(argv[2]) == "-withoutRx";
         }
 
-        cout << mode << " mode: ON" << endl;
+        cout << mode << " mode: ON \n" << endl;
 
         auto poison_pill = false;
 
+        cout << "Loading Core Configuration..." << endl;
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
+        cout << "Core Configuration Loaded" << endl;
+
         serverConfig = loadServerConfig(config_folder + "/config.json");
+        cout << "Server Configuration Loaded\n" << endl;
 
         if (mode == "-http") {
             testHTTPCommunication(serverConfig);
