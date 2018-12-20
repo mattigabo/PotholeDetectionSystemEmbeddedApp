@@ -243,22 +243,24 @@ namespace fingerprint {
     }
 
     std::vector<u32> getCPUInfo() {
-        int cpu_info[4] = { 0, 0, 0, 0 };
         std::vector<u32> info;
 
-#ifdef WINDOWS
-        __cpuid(cpu_info, 0 );
-#elif defined(LINUX) && defined(__arm__)
+#if defined(LINUX) && defined(__arm__)
         info = getArmCPUInfo();
 #else
+        int cpu_info[4] = { 0, 0, 0, 0 };
+
+        #ifdef WINDOWS
+        __cpuid(cpu_info, 0 );
+        #else
         __cpuid(0, cpu_info[0] , cpu_info[1], cpu_info[2], cpu_info[3]);
-#endif
+        #endif
 
 
         for (int i = 0; i < 4; ++i) {
             info.emplace_back((u32) cpu_info[i]);
         }
-
+#endif
         return info;
     }
 
