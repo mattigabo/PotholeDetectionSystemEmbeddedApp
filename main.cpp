@@ -156,15 +156,11 @@ int main(int argc, char *argv[]) {
             }
 
             if(withoutRx){
-//                testGPSWithoutRxCpp(gpsDataStore);
                 std::cout << "Mocked mode withOUT Reactive Extensions..." << std::endl;
-                runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
+                testGPSWithoutRxCpp(gpsDataStore);
             } else {
-                cvConfig = loadCVArgs(config_folder + "/config.json");
                 std::cout << "Mocked mode with Reactive Extensions..." << std::endl;
-                observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
-
-//                testGPSWithRxCpp(gpsDataStore);
+                testGPSWithRxCpp(gpsDataStore);
             }
 
             updater->kill();
