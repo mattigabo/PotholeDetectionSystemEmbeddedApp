@@ -205,7 +205,7 @@ namespace fingerprint {
     }
 #endif
 
-    const std::regex serialRegex("[0-9a-z]+");
+    const std::regex serialRegex("[: ]");
 
     std::string extractSerialNumber(std::string readString){
         std::string serialNumber;
