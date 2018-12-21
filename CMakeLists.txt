@@ -96,7 +96,7 @@ else ()
             src/execution/test.cpp include/execution/test.h
             include/accelerometer/accelerometer.h src/accelerometer/accelerometer.cpp
             include/execution/observables/accelerometer.h src/execution/observables/accellerometer.cpp
-    )
+            include/execution/observers/accelerometer.h src/execution/observers/accelerometer.cpp)
 
     # linking
     target_link_libraries(

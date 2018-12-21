@@ -9,8 +9,8 @@
 
 void testA();
 
-void testB();
+void testZip();
 
-void testC();
+void testBufferValues();
 
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_TEST_H

@@ -78,7 +78,7 @@ void testA() {
     t.join();
 }
 
-void testB() {
+void testZip() {
 
     auto period_A = std::chrono::milliseconds(10);
     auto period_B = std::chrono::milliseconds(50);
@@ -137,7 +137,7 @@ void testB() {
     });
 }
 
-void testC() {
+void testBufferValues() {
 
     std::mt19937 rng;
     rng.seed(std::random_device()());
