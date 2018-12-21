@@ -4,20 +4,8 @@
 
 #ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_OBSERVABLES_GPS_H
 #define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_OBSERVABLES_GPS_H
+
 #include "rxcpp/rx.hpp"
-
-#include <chrono>
-#include <vector>
-#include <string>
-#include <thread>
-#include <time.h>
-
-#include <phdetection/ontologies.hpp>
-#include <phdetection/core.hpp>
-#include <phdetection/svm.hpp>
-#include <phdetection/bayes.hpp>
-
-#include <camera.h>
 #include <gps/GPSDataStore.h>
 
 namespace observables {

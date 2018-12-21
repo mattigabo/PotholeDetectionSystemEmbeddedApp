@@ -11,23 +11,28 @@
 #include <nunchuckreader.h>
 #include <nunchuckdatasampler.h>
 
-namespace phd::devices::accelerometer {
-    typedef struct Acceleration {
-        float X;
-        float Y;
-        float Z;
-    } Acceleration;
+namespace phd {
+    namespace devices {
+        namespace accelerometer {
 
-    class Accelerometer{
-    public:
-        Accelerometer();
-        ~Accelerometer();
-        Acceleration fetch();
-    private:
-        nunchuckadapter::NunchuckReader* reader;
-        nunchuckadapter::NunchuckDataStore* dataStore;
-        nunchuckadapter::NunchuckDataSampler* dataSampler;
-    };
+            struct Acceleration {
+                float X;
+                float Y;
+                float Z;
+            };
+
+            class Accelerometer{
+            public:
+                Accelerometer();
+                ~Accelerometer();
+                Acceleration fetch();
+            private:
+                nunchuckadapter::NunchuckReader* reader;
+                nunchuckadapter::NunchuckDataStore* dataStore;
+                nunchuckadapter::NunchuckDataSampler* dataSampler;
+            };
+        }
+    }
 }
 
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELERATION_H

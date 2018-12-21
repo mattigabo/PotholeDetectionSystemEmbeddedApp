@@ -7,29 +7,33 @@
 
 #include <mutex>
 
-namespace phd::devices::gps {
+namespace phd {
+    namespace devices {
+        namespace gps {
 
-    typedef struct Coordinates {
-        double latitude;
-        double longitude;
-        double altitude;
-    } Coordinates;
+            struct Coordinates {
+                double latitude;
+                double longitude;
+                double altitude;
+            };
 
-    /**
-     * This class offers a thread safe storage to store and read GPS data
-     * */
-    class GPSDataStore {
-    public:
-        GPSDataStore();
+            /**
+            * This class offers a thread safe storage to store and read GPS data
+            * */
+            class GPSDataStore {
+            public:
+                GPSDataStore();
 
-        void update(const Coordinates updatedValue);
+                void update(const Coordinates updatedValue);
 
-        Coordinates fetch();
+                Coordinates fetch();
 
-    private:
-        Coordinates internal_store;
-        std::mutex internal_mutex;
-    };
+            private:
+                Coordinates internal_store;
+                std::mutex internal_mutex;
+            };
 
+        }
+    }
 }
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H

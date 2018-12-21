@@ -13,6 +13,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <execution/utils.h>
 
+using namespace std;
 
 const vector<pair<string, string>> httpHeaders({
    pair<string, string>("Accept", "application/json"),
@@ -44,9 +45,7 @@ std::string toJSON(phd::devices::gps::Coordinates coordinates, std::string token
     return buffer.GetString();
 }
 
-
-
-void sendDataToServer(std::string payload, ServerConfig serverConfig){
+void sendDataToServer(std::string payload, phd::configurations::ServerConfig serverConfig){
     CURLcode res = phd::devices::networking::HTTP::POST(
             phd::devices::networking::getURL(serverConfig),
             httpHeaders,

@@ -3,14 +3,18 @@
 //
 #include <raspberrypi/raspberrypiutils.h>
 
-namespace  phd::raspberry::utils {
-    bool wiringPiInitialized = false;
+namespace  phd {
+    namespace raspberry {
+        namespace utils {
+            bool wiringPiInitialized = false;
 
-    void setupWiringPiIfNotInitialized(){
-        if(!wiringPiInitialized){
-#ifdef __RASPBERRYPI_PLATFORM__
-            wiringPiSetup();
-#endif
+            void setupWiringPiIfNotInitialized(){
+                if(!wiringPiInitialized){
+                    #ifdef __RASPBERRYPI_PLATFORM__
+                    wiringPiSetup();
+                #endif
+                }
+            }
+
         }
-    }
-}
+    }}

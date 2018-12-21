@@ -74,29 +74,39 @@ else ()
 
     add_executable(
             PotholeDetectionSystemEmbeddedApp main.cpp
-            src/camera.cpp include/camera.h
-            src/networking.cpp include/networking.h
-            src/serialport/SerialPort.cpp include/serialport/SerialPort.h
-            src/serialport/SerialPortUtils.cpp include/serialport/SerialPortUtils.h
-            src/serialport/SigrokSerialPortWrapper.cpp include/serialport/SigrokSerialPortWrapper.h
-            src/gps/GPSDataStore.cpp include/gps/GPSDataStore.h
-            src/gps/GPSDataUpdater.cpp include/gps/GPSDataUpdater.h
-            include/configurationutils.h src/configurationutils.cpp
-            include/executionmodes.h src/executionmodes.cpp
-            include/raspberrypi/Led.h src/raspberrypi/Led.cpp
-            include/raspberrypi/raspberrypiutils.h src/raspberrypi/raspberrypiutils.cpp
-            src/accelerometer/ml.cpp include/accelerometer/ml.h
-            src/accelerometer/utils.cpp include/accelerometer/utils.h
-            include/fingerprint.h src/fingerprint.cpp
-            include/execution/modes.h
-            include/execution/observers/camera.h src/execution/observers/camera.cpp
-            include/execution/observables/camera.h src/execution/observables/camera.cpp
-            src/execution/utils.cpp include/execution/utils.h
-            src/execution/observables/gps.cpp include/execution/observables/gps.h
-            src/execution/test.cpp include/execution/test.h
-            include/accelerometer/accelerometer.h src/accelerometer/accelerometer.cpp
-            include/execution/observables/accelerometer.h src/execution/observables/accellerometer.cpp
-            include/execution/observers/accelerometer.h src/execution/observers/accelerometer.cpp)
+
+            include/camera.h                                src/camera.cpp
+            include/networking.h                            src/networking.cpp
+
+            include/serialport/SerialPort.h                 src/serialport/SerialPort.cpp
+            include/serialport/SerialPortUtils.h            src/serialport/SerialPortUtils.cpp
+            include/serialport/SigrokSerialPortWrapper.h    src/serialport/SigrokSerialPortWrapper.cpp
+
+            include/gps/GPSDataStore.h                      src/gps/GPSDataStore.cpp
+            include/gps/GPSDataUpdater.h                    src/gps/GPSDataUpdater.cpp
+            include/configurationutils.h                    src/configurationutils.cpp
+            include/executionmodes.h                        src/executionmodes.cpp
+
+            include/raspberrypi/Led.h                       src/raspberrypi/Led.cpp
+            include/raspberrypi/raspberrypiutils.h          src/raspberrypi/raspberrypiutils.cpp
+
+            include/accelerometer/features.h                src/accelerometer/features.cpp
+            include/accelerometer/utils.h                   src/accelerometer/utils.cpp
+            include/accelerometer/accelerometer.h           src/accelerometer/accelerometer.cpp
+
+            include/fingerprint.h                           src/fingerprint.cpp
+
+            include/execution/modes.h                       src/execution/modes.cpp
+            include/execution/utils.h                       src/execution/utils.cpp
+            include/execution/test.h                        src/execution/test.cpp
+
+            include/execution/observers/camera.h            src/execution/observers/camera.cpp
+            include/execution/observers/accelerometer.h     src/execution/observers/accelerometer.cpp
+
+            include/execution/observables/camera.h          src/execution/observables/camera.cpp
+            include/execution/observables/gps.h             src/execution/observables/gps.cpp
+            include/execution/observables/accelerometer.h   src/execution/observables/accelerometer.cpp
+    )
 
     # linking
     target_link_libraries(

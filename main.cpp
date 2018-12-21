@@ -17,7 +17,7 @@
 #include <configurationutils.h>
 #include <executionmodes.h>
 #include <camera.h>
-#include <accelerometer/ml.h>
+#include <accelerometer/features.h>
 #include <phdetection/io.hpp>
 
 #include <raspberrypi/raspberrypiutils.h>
@@ -34,6 +34,7 @@ using namespace phd::io;
 using namespace phd::devices::networking;
 using namespace phd::devices::serialport;
 using namespace phd::devices::gps;
+using namespace phd::devices::raspberry::led;
 using namespace phd::configurations;
 
 Configuration phdConfig;

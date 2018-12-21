@@ -7,13 +7,19 @@
 
 #include <list>
 #include <string>
-using namespace std;
-namespace phd::devices::serialport {
-    class SerialPortUtils {
-    public:
-        static list<string> listAvaiablePorts();
 
-        static void checkForException(int operationResultCode, string operationName);
-    };
+using namespace std;
+
+namespace phd {
+    namespace devices {
+        namespace serialport {
+            class SerialPortUtils {
+            public:
+                static list<string> listAvaiablePorts();
+
+                static void checkForException(int operationResultCode, string operationName);
+            };
+        }
+    }
 }
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_SERIALPORTUTILS_H

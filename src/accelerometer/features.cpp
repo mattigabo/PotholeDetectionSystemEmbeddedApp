@@ -2,7 +2,7 @@
 // Created by Xander on 01/11/2018.
 //
 
-#include "accelerometer/ml.h"
+#include "accelerometer/features.h"
 #include <math.h>
 #include <algorithm>
 #include <iostream>
@@ -12,7 +12,7 @@
 namespace phd {
     namespace devices {
         namespace accelerometer {
-            namespace ml {
+            namespace data {
 
                 std::vector<float> getWindow(const std::vector<float> &stream, const int window, const int slider) {
 
@@ -94,18 +94,18 @@ namespace phd {
                         ft.thresholds_overpass_count++;
 
                     if (assign_confidence(ft.relative_std_dev, std_thresholds.relative_std_dev_threshold,
-                                          ft.relative_std_dev_confidence))
+                            ft.relative_std_dev_confidence))
                         ft.thresholds_overpass_count++;
 
                     if (assign_confidence(ft.max_min_diff, std_thresholds.max_min_diff_threshold,
-                                          ft.max_min_diff_confidence))
+                            ft.max_min_diff_confidence))
                         ft.thresholds_overpass_count++;
 
                     ft.confidences_sum = ft.mean_confidence + ft.std_dev_confidence + ft.relative_std_dev_confidence +
-                                         ft.max_min_diff_confidence;
+                            ft.max_min_diff_confidence;
 
                     if (assign_confidence(ft.confidences_sum, std_thresholds.sum_threshold,
-                                          ft.confidences_sum_confidence))
+                            ft.confidences_sum_confidence))
                         ft.thresholds_overpass_count++;
 
                     return ft;
@@ -144,7 +144,7 @@ namespace phd {
                 }
 
                 void cross_train(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                                 const phd::configurations::SVMParams params) {
+                        const phd::configurations::SVMParams params) {
 
                     std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
@@ -163,14 +163,14 @@ namespace phd {
                     auto train_data = cv::ml::TrainData::create(features, cv::ml::ROW_SAMPLE, labels);
 
                     svm->trainAuto(train_data,
-                                   params.k_fold,
-                                   cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C),
-                                   cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA),
-                                   cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P),
-                                   cv::ml::SVM::getDefaultGrid(cv::ml::SVM::NU),
-                                   cv::ml::SVM::getDefaultGrid(cv::ml::SVM::COEF),
-                                   cv::ml::SVM::getDefaultGrid(cv::ml::SVM::DEGREE),
-                                   params.balanced_folding);
+                            params.k_fold,
+                            cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C),
+                            cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA),
+                            cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P),
+                            cv::ml::SVM::getDefaultGrid(cv::ml::SVM::NU),
+                            cv::ml::SVM::getDefaultGrid(cv::ml::SVM::COEF),
+                            cv::ml::SVM::getDefaultGrid(cv::ml::SVM::DEGREE),
+                            params.balanced_folding);
 
                     std::cout << "Finished." << std::endl;
 
@@ -180,7 +180,7 @@ namespace phd {
                 }
 
                 void train(const cv::Mat &features, const cv::Mat &labels, const std::string &model,
-                           const phd::configurations::SVMParams params) {
+                        const phd::configurations::SVMParams params) {
 
                     std::cout << "FT size " << features.rows << "*" << features.cols << std::endl;
 
@@ -230,6 +230,33 @@ namespace phd {
                     svm->clear();
 
                     return labels;
+                }
+
+                Features toFeatures(const std::vector<phd::devices::accelerometer::Acceleration> &window, const Axis &acceleration_axis) {
+
+                    std::vector<float> axis_values;
+
+                    switch (acceleration_axis) {
+                        case Axis::X:
+                            std::for_each(window.begin(), window.end(),
+                                    [&axis_values](phd::devices::accelerometer::Acceleration a) {
+                                axis_values.push_back(a.X);
+                            });
+                            break;
+                            case Axis::Y:
+                                std::for_each(window.begin(), window.end(),
+                                        [&axis_values](phd::devices::accelerometer::Acceleration a) {
+                                    axis_values.push_back(a.Y);
+                                });
+                                break;
+                                default:
+                                    std::for_each(window.begin(), window.end(),
+                                            [&axis_values](phd::devices::accelerometer::Acceleration a) {
+                                        axis_values.push_back(a.Z);
+                                    });
+                    }
+
+                    return getFeatures(axis_values);
                 }
             }
         }

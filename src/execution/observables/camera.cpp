@@ -4,6 +4,11 @@
 
 #include "execution/observables/camera.h"
 
+#include <chrono>
+#include <string>
+#include <thread>
+#include <time.h>
+
 namespace observables {
     namespace  camera {
 

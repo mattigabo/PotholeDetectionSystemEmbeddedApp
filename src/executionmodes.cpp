@@ -25,7 +25,7 @@
 #include <serialport/SerialPort.h>
 #include <camera.h>
 #include <networking.h>
-#include <accelerometer/ml.h>
+#include <accelerometer/features.h>
 #include <accelerometer/utils.h>
 #include <accelerometer/accelerometer.h>
 
@@ -35,32 +35,15 @@
 
 #include <fingerprint.h>
 
-using namespace std;
-using namespace cv;
-using namespace cv::ml;
-
-using namespace phd::io;
-using namespace phd::devices::networking;
-using namespace phd::devices::serialport;
-using namespace phd::devices::gps;
-using namespace phd::devices::accelerometer;
-
 using namespace rapidjson;
+using namespace std;
 
-namespace Rx {
-    using namespace rxcpp;
-    using namespace rxcpp::sources;
-    using namespace rxcpp::operators;
-    using namespace rxcpp::util;
-}
-using namespace Rx;
-
-Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, Mat &image,
-                               const Configuration &config) {
+cv::Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, cv::Mat &image,
+                               const phd::io::Configuration &phdConfig) {
 
     //cout << endl << "---------------" << image << endl;
 
-    auto features = phd::getFeatures(image, config);
+    auto features = phd::getFeatures(image, phdConfig);
 
     cv::Mat labels;
 
@@ -77,10 +60,10 @@ Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, 
 }
 
 void runObservationMode(bool poison_pill,
-        GPSDataStore* gpsDataStore,
-        Configuration phdConfig,
-        CVArgs cvConfig,
-        ServerConfig serverConfig){
+        phd::devices::gps::GPSDataStore* gpsDataStore,
+        phd::io::Configuration phdConfig,
+        phd::configurations::CVArgs cvConfig,
+        phd::configurations::ServerConfig serverConfig){
 
     std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
 
@@ -88,7 +71,7 @@ void runObservationMode(bool poison_pill,
 
         std::string position = toJSON(gpsDataStore->fetch(), std::string());
 
-        Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
+        cv::Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
         if (cvConfig.rotate) {
             cv::rotate(image, image, cv::ROTATE_180);
@@ -97,7 +80,7 @@ void runObservationMode(bool poison_pill,
 //        cv::imshow("Capture", image);
 //        waitKey(0);
 
-        Mat labels = extractFeaturesAndClassify(cvConfig.method, cvConfig.bayes, cvConfig.svm, image, phdConfig);
+        cv::Mat labels = extractFeaturesAndClassify(cvConfig.method, cvConfig.bayes, cvConfig.svm, image, phdConfig);
         if(labels.rows != 0) {
             labels = labels.row(0);
 
@@ -113,9 +96,9 @@ void runObservationMode(bool poison_pill,
     }
 }
 
-void testGPSWithoutRxCpp(GPSDataStore* storage){
+void testGPSWithoutRxCpp(phd::devices::gps::GPSDataStore* storage){
     for(int i=0; i < 100; i++) {
-        Coordinates coordinates = storage->fetch();
+        phd::devices::gps::Coordinates coordinates = storage->fetch();
         cout << "LATITUDE: " << coordinates.latitude <<
              " LONGITUDE:" << coordinates.longitude <<
              " ALTITUDE: " << coordinates.altitude << endl;
@@ -123,7 +106,7 @@ void testGPSWithoutRxCpp(GPSDataStore* storage){
     }
 }
 
-void testGPSWithRxCpp(GPSDataStore* storage){
+void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage){
     auto src = observables::gps::createGPSObservable(storage, observables::gps::GPS_REFRESH_PERIOD);
 
     src.as_blocking().subscribe([](phd::devices::gps::Coordinates c) {
@@ -131,12 +114,12 @@ void testGPSWithRxCpp(GPSDataStore* storage){
     });
 }
 
-void testHTTPCommunication(ServerConfig serverConfig){
-    Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
+void testHTTPCommunication(phd::configurations::ServerConfig serverConfig){
+    phd::devices::gps::Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
     sendDataToServer(toJSON(pointNearUniversity, std::string()), serverConfig);
 }
 
-void testLed(NotificationLeds notificationLeds){
+void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds){
     cout << "Test LED that notify the program execution" << endl;
     notificationLeds.programInExecution.switchOn();
     std::this_thread::sleep_for(1s);
@@ -162,9 +145,9 @@ void testLed(NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
 }
 
-void testAccelerometerWithoutRxCpp(Accelerometer *accelerometer){
+void testAccelerometerWithoutRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
     for(int i = 0; i < 20;  i++){
-        Acceleration values = accelerometer->fetch();
+        phd::devices::accelerometer::Acceleration values = accelerometer->fetch();
         cout << "Accelerometer: [ " <<
              values.X << " on X,  " <<
              values.Y << " on Y,  " <<
@@ -173,12 +156,12 @@ void testAccelerometerWithoutRxCpp(Accelerometer *accelerometer){
     }
 }
 
-void testAccelerometerWithRxCpp(Accelerometer *accelerometer){
+void testAccelerometerWithRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
     auto accelerationStream = observables::accelerometer::createAccelerometerValuesStream(
             accelerometer,
             observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
     );
-    accelerationStream.as_blocking().subscribe([](const Acceleration values) {
+    accelerationStream.as_blocking().subscribe([](const phd::devices::accelerometer::Acceleration values) {
         cout << "Accelerometer: [ " <<
              values.X << " on X,  " <<
              values.Y << " on Y,  " <<
@@ -190,7 +173,7 @@ void testAccelerometerWithRxCpp(Accelerometer *accelerometer){
 
 void testAccelerometerCommunication(bool withoutRx){
     cout << "Test the read from the Nunchuck Accelerometer..." << endl;
-    auto accelerometer = new Accelerometer();
+    auto accelerometer = new phd::devices::accelerometer::Accelerometer();
 
     if(withoutRx) {
         cout << "without RxCpp" << endl;
@@ -219,7 +202,7 @@ void testFingerPrintCalculation(){
 void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
                                    const bool cross_validate) {
 
-    std::vector<phd::devices::accelerometer::ml::Features> features;
+    std::vector<phd::devices::accelerometer::data::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
@@ -245,7 +228,7 @@ void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::con
 
     const cv::Mat train_data = toMat(features);
     const cv::Mat normalized_train_data =
-            phd::devices::accelerometer::ml::normalize(
+            phd::devices::accelerometer::data::normalize(
                     train_data,
                     args.norm_range.first,
                     args.norm_range.second,
@@ -253,7 +236,7 @@ void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::con
                 );
 
     if (cross_validate) {
-        phd::devices::accelerometer::ml::cross_train(
+        phd::devices::accelerometer::data::cross_train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -261,7 +244,7 @@ void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::con
         );
 
     } else {
-        phd::devices::accelerometer::ml::train(
+        phd::devices::accelerometer::data::train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -277,7 +260,7 @@ void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::conf
 
     cout << "Testing Classifier against Test Set..." << endl;
 
-    std::vector<phd::devices::accelerometer::ml::Features> features;
+    std::vector<phd::devices::accelerometer::data::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
@@ -301,17 +284,17 @@ void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::conf
         exit(-3);
     }
 
-    const cv::Mat test_data = phd::devices::accelerometer::ml::toMat(features);
+    const cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
 
     const cv::Mat normalized_test_data =
-            phd::devices::accelerometer::ml::normalize(
+            phd::devices::accelerometer::data::normalize(
                     test_data,
                     args.norm_range.first,
                     args.norm_range.second,
                     args.norm_method
             );
 
-    auto test_labels = phd::devices::accelerometer::ml::classify(normalized_test_data, args.model);
+    auto test_labels = phd::devices::accelerometer::data::classify(normalized_test_data, args.model);
     float tp = 0, fp = 0, fn = 0, tn = 0;
 
     for (int i = 0; i < labels.size(); ++i) {

@@ -12,32 +12,36 @@
 #include <vector>
 #include "configurationutils.h"
 
-using namespace phd::configurations;
+//using namespace phd::configurations;
 
-namespace phd::devices::networking {
+namespace phd{
+    namespace devices {
+        namespace networking {
 
 
-    std::string getURL(std::string protocol, std::string hostname, int port, std::string api);
-    std::string getURL(ServerConfig config);
+            std::string getURL(std::string protocol, std::string hostname, int port, std::string api);
+            std::string getURL(phd::configurations::ServerConfig config);
 
-    namespace HTTP {
+            namespace HTTP {
 
-        CURLcode init();
+                CURLcode init();
 
-        CURLcode POST (
-                std::string url,
-                std::vector<std::pair<std::string, std::string>> headers,
-                std::string &payload
-            );
+                CURLcode POST (
+                        std::string url,
+                        std::vector<std::pair<std::string, std::string>> headers,
+                        std::string &payload
+                        );
 
-        CURLcode GET (
-                std::string url,
-                std::vector<std::pair<std::string, std::string>> headers,
-                std::vector<std::pair<std::string, std::string>> params
-            );
+                CURLcode GET (
+                        std::string url,
+                        std::vector<std::pair<std::string, std::string>> headers,
+                        std::vector<std::pair<std::string, std::string>> params
+                        );
 
-        void close();
-    };
+                void close();
+            };
+        }
+    }
 }
 
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_NETWORKING_H

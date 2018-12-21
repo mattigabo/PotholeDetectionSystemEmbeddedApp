@@ -3,10 +3,17 @@
 //
 
 #include "serialport/SerialPort.h"
-namespace phd::devices::serialport {
 
-    SerialPort::SerialPort(string name) {
-        port_name = name;
+
+using namespace std;
+
+namespace phd {
+    namespace devices {
+        namespace serialport {
+
+            SerialPort::SerialPort(string name) {
+                port_name = name;
+            }
+        }
     }
-
 }

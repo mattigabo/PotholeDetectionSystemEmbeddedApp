@@ -7,11 +7,7 @@
 
 #include "rxcpp/rx.hpp"
 
-#include <chrono>
 #include <vector>
-#include <string>
-#include <thread>
-#include <time.h>
 
 #include <phdetection/ontologies.hpp>
 #include <phdetection/core.hpp>

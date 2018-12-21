@@ -8,6 +8,8 @@
 #include <execution/utils.h>
 #include <fingerprint.h>
 
+using namespace std;
+
 namespace observers {
     namespace camera {
 

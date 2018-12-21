@@ -11,28 +11,30 @@
 #include <string>
 #include <chrono>
 
-using namespace std;
+namespace phd {
+    namespace devices {
+        namespace serialport {
+            class SigrokSerialPortWrapper : public SerialPort {
+            public:
+                static const size_t READ_BUFFER_LENGTH = 10000;
+                static const int READING_TIMEOUT_MILLISECONDS = 1000;
+                SigrokSerialPortWrapper(std::string name);
+                void initPort();
+                void openPort(OperationMode mode);
+                void closePort();
+                std::string readLine();
 
-namespace phd::devices::serialport {
-    class SigrokSerialPortWrapper : public SerialPort {
-    public:
-        static const size_t READ_BUFFER_LENGTH = 10000;
-        static const int READING_TIMEOUT_MILLISECONDS = 1000;
-        SigrokSerialPortWrapper(string name);
-        void initPort();
-        void openPort(OperationMode mode);
-        void closePort();
-        string readLine();
-
-    private:
-        void blockingRead();
-        void fetchDataUntilNewLineIsFounded();
-        void cleanReadingBuffer();
-        string extractLine();
-        sp_port **port_structure_pointer;
-        char *reading_buffer;
-        string internal_buffer;
-    };
+            private:
+                void blockingRead();
+                void fetchDataUntilNewLineIsFounded();
+                void cleanReadingBuffer();
+                std::string extractLine();
+                sp_port **port_structure_pointer;
+                char *reading_buffer;
+                std::string internal_buffer;
+            };
+        }
+    }
 }
 
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_SIGROKSERIALPORTWRAPPER_H

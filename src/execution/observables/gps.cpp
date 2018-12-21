@@ -4,6 +4,19 @@
 
 #include "execution/observables/gps.h"
 
+#include <chrono>
+#include <vector>
+#include <string>
+#include <thread>
+#include <time.h>
+
+#include <phdetection/ontologies.hpp>
+#include <phdetection/core.hpp>
+#include <phdetection/svm.hpp>
+#include <phdetection/bayes.hpp>
+
+#include <camera.h>
+
 namespace observables {
     namespace gps {
 

@@ -2,27 +2,33 @@
 // Created by Xander on 01/11/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_OBSERVERS_ACCELEROMETER_H
-#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_OBSERVERS_ACCELEROMETER_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_FEATURES_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_FEATURES_H
 
 #include <vector>
 #include <string>
 #include <opencv2/core.hpp>
-#include "configurationutils.h"
+#include <configurationutils.h>
+#include <accelerometer/accelerometer.h>
 
 namespace phd {
+
     namespace devices {
+
         namespace accelerometer {
-            namespace ml {
+
+            namespace data {
 
                 const float g = 9.8196f; // m/s^2
                 const int n_features = 12;
 
                 enum Axis {
-                    X, Y, Z
+                    X = 1,
+                    Y = 2,
+                    Z = 3
                 };
 
-                typedef struct Features {
+                struct Features {
                     float mean;
                     float mean_confidence;
                     float std_dev;
@@ -35,15 +41,15 @@ namespace phd {
                     float confidences_sum;
                     float confidences_sum_confidence;
                     int thresholds_overpass_count;
-                } Features;
+                };
 
-                typedef struct Thresholds {
+                struct Thresholds {
                     float mean_threshold;
                     float std_dev_threshold;
                     float relative_std_dev_threshold;
                     float max_min_diff_threshold;
                     float sum_threshold;
-                } Thresholds;
+                };
 
                 const Thresholds std_thresholds = {
                         .mean_threshold = g * 0.3f,
@@ -53,12 +59,12 @@ namespace phd {
                         .sum_threshold = 3.0f
                 };
 
-                typedef struct Coefficients {
+                struct Coefficients {
                     float high_confidence_score;
                     float low_confidence_score;
                     int windows_size;
                     int C;
-                } Coefficients;
+                };
 
                 const Coefficients std_coefficients = {
                         .high_confidence_score = 0.8,
@@ -91,6 +97,14 @@ namespace phd {
                 * @return The compound structure encapsulating the features
                 */
                 Features getFeatures(const std::vector<float> &window);
+
+                /**
+                *
+                * @param window
+                * @param acceleration_axis
+                * @return
+                */
+                Features toFeatures(const std::vector<phd::devices::accelerometer::Acceleration> &window, const Axis &acceleration_axis);
 
                 /**
                 *

@@ -15,7 +15,11 @@
 #include<wiringPi.h>
 
 #endif
-namespace phd::raspberry::utils {
-    void setupWiringPiIfNotInitialized();
+namespace phd {
+    namespace raspberry {
+        namespace utils {
+            void setupWiringPiIfNotInitialized();
+        }
+    }
 }
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_RASPBERRYPIUTILS_H

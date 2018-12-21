@@ -19,6 +19,8 @@
 
 #include <execution/utils.h>
 
+using namespace std;
+
 class ThreadSafeUpdater {
 public:
     ThreadSafeUpdater () = default;

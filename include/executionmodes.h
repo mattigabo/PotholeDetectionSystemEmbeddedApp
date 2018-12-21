@@ -11,23 +11,18 @@
 #include <configurationutils.h>
 #include <raspberrypi/Led.h>
 
-using namespace phd::devices::gps;
-using namespace phd::configurations;
-using namespace phd::devices::raspberry::led;
-using namespace phd::io;
-
 void runObservationMode(bool poison_pill,
-        GPSDataStore* gpsDataStore,
-        Configuration phdConfig,
-        CVArgs cvConfig,
-        ServerConfig serverConfig);
+        phd::devices::gps::GPSDataStore* gpsDataStore,
+        phd::io::Configuration phdConfig,
+        phd::configurations::CVArgs cvConfig,
+        phd::configurations::ServerConfig serverConfig);
 
-void testGPSWithoutRxCpp(GPSDataStore* storage);
-void testGPSWithRxCpp(GPSDataStore* storage);
+void testGPSWithoutRxCpp(phd::devices::gps::GPSDataStore* storage);
+void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage);
 
-void testHTTPCommunication(ServerConfig serverConfig);
+void testHTTPCommunication(phd::configurations::ServerConfig serverConfig);
 
-void testLed(NotificationLeds notificationLeds);
+void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds);
 
 void testAccelerometerCommunication(bool withoutRx);
 

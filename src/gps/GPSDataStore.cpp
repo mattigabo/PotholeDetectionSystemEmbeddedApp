@@ -5,22 +5,26 @@
 #include "gps/GPSDataStore.h"
 #include <cmath>
 
-namespace phd::devices::gps {
+namespace phd {
+    namespace devices {
+        namespace gps {
 
-    GPSDataStore::GPSDataStore() {
-        internal_store = Coordinates{NAN, NAN, NAN};
-    }
+            GPSDataStore::GPSDataStore() {
+                internal_store = Coordinates{NAN, NAN, NAN};
+            }
 
-    void GPSDataStore::update(const Coordinates updatedValue) {
-        //Acquire the mutex and automatic release when exit from this scope
-        std::lock_guard <std::mutex> lock(internal_mutex);
+            void GPSDataStore::update(const Coordinates updatedValue) {
+                //Acquire the mutex and automatic release when exit from this scope
+                std::lock_guard <std::mutex> lock(internal_mutex);
 
-        internal_store = updatedValue;
-    }
+                internal_store = updatedValue;
+            }
 
-    Coordinates GPSDataStore::fetch() {
-        //Acquire the mutex and automatic release when exit from this scope
-        std::lock_guard <std::mutex> lock(internal_mutex);
-        return internal_store;
-    }
-}
+            Coordinates GPSDataStore::fetch() {
+                //Acquire the mutex and automatic release when exit from this scope
+                std::lock_guard <std::mutex> lock(internal_mutex);
+                return internal_store;
+            }
+
+        }
+    }}

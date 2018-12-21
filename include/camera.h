@@ -7,10 +7,14 @@
 
 #include <opencv2/core.hpp>
 
-namespace phd::devices::camera {
+namespace phd {
+    namespace devices {
+        namespace camera {
 
-    cv::Mat fetch(int device_id);
+            cv::Mat fetch(int device_id);
 
+        }
+    }
 }
 
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CAMERA_H
