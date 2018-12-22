@@ -22,7 +22,8 @@
 
 #include <raspberrypi/raspberrypiutils.h>
 
-#include <execution/observables/camera.h>
+#include <execution/observables/gps.h>
+#include <execution/observers/accelerometer.h>
 #include <execution/observers/camera.h>
 #include <execution/test.h>
 #include <execution/utils.h>
@@ -127,8 +128,38 @@ int main(int argc, char *argv[]) {
 
         } else if (mode == "-test" && argc > 2) {
 
-            auto svmConfig = loadSVMOptions(argv[2]);
+            auto svmConfig = loadSVMOptions(config_folder + "/config.json");
+            auto gpsDataStore = new GPSDataStore();
+            auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
+            auto accelerometer = new phd::devices::accelerometer::Accelerometer();
+            auto axis = phd::devices::accelerometer::data::Axis::Z;
+
             testAccelerometerMlAlgorithm(svmConfig);
+
+            std::cout << "RUNNING RX Accelerometer data stream classification." << std::endl;
+
+            observers::accelerometer::runAccelerometerObserver(
+                    gpsDataStore,
+                    accelerometer,
+                    axis,
+                    phdConfig,
+                    svmConfig,
+                    serverConfig
+            );
+
+            observers::camera::runCameraObserver(
+                    gpsDataStore,
+                    phdConfig,
+                    cvConfig,
+                    serverConfig
+            );
+
+            observables::gps::createGPSObservable(gpsDataStore, 2000L).as_blocking().subscribe();
+
+            updater->kill();
+            updater->join();
+            delete (updater);
+            delete (gpsDataStore);
 
         } else if (mode == "-fp") {
 
@@ -186,7 +217,10 @@ int main(int argc, char *argv[]) {
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
             cvConfig = loadCVArgs(config_folder + "/config.json");
-            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
+
+//            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
+
+            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
 
             updater->kill();
             updater->join();

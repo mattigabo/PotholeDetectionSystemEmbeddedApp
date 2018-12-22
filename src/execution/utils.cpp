@@ -86,7 +86,7 @@ std::string toJSON(std::string token) {
 void registerDeviceOnServer(std::string payload, phd::configurations::ServerConfig serverConfig) {
 
     CURLcode res = phd::devices::networking::HTTP::POST(
-            phd::devices::networking::getURL(serverConfig) + "/register",
+            phd::devices::networking::getURL(serverConfig) + "register",
             httpHeaders,
             payload);
 

@@ -52,21 +52,36 @@ namespace observers {
 
                 return gpsWithLabels.second.rows != 0;
 
-            }).subscribe([serverConfig](GPSWithMat gpsWithLabels){
+            }).filter([](GPSWithMat gpsWithLabels){
                 auto labels = gpsWithLabels.second.row(0);
 
                 vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
 
-                if (std::find(l.begin(), l.end(), 1) != l.end() ||
-                    std::find(l.begin(), l.end(), 2) != l.end()) {
+                auto is_ph_label_present = std::find(l.begin(), l.end(), 1) != l.end() ||
+                                           std::find(l.begin(), l.end(), 2) != l.end();
 
-                    std::string position = toJSON(gpsWithLabels.first, fingerprint::getUID());
-
-                    sendDataToServer(position, serverConfig);
+                if (is_ph_label_present) {
+                    std::cout << "PH found from Camera @ [" <<
+                            gpsWithLabels.first.longitude << "," << gpsWithLabels.first.latitude
+                            << "]" << std::endl;
+                } else {
+                    std::cout << "NO PH found from camera @ [" <<
+                              gpsWithLabels.first.longitude << "," << gpsWithLabels.first.latitude
+                              << "]" << std::endl;
                 }
+
+                return is_ph_label_present;
+
+            }).map([](GPSWithMat gpsWithLabels) {
+                return gpsWithLabels.first;
+            }).subscribe([serverConfig](phd::devices::gps::Coordinates coordinates){
+
+                std::string position = toJSON(coordinates, fingerprint::getUID());
+
+                sendDataToServer(position, serverConfig);
             });
 
-            gps_obs.as_blocking().subscribe();
+//            gps_obs.as_blocking().subscribe();
         }
 
     }

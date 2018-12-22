@@ -247,9 +247,11 @@ namespace phd{
                 config.test_set = (*json)["svm"]["test-set"].GetString();
                 config.model = (*json)["svm"]["model"].GetString();
                 config.norm_method = norm_parser((*json)["svm"]["norm-method"].GetString());
-                if ((*json)["svm"]["norm-range"].GetArray().Size() > 2 &&
-                (*json)["svm"]["norm-range"].GetArray()[0].IsNumber() &&
-                (*json)["svm"]["norm-range"].GetArray()[1].IsNumber()) {
+
+                if ((*json)["svm"]["norm-range"].GetArray().Size() >= 2 &&
+                    (*json)["svm"]["norm-range"].GetArray()[0].IsNumber() &&
+                    (*json)["svm"]["norm-range"].GetArray()[1].IsNumber()) {
+
                     float first = (*json)["svm"]["norm-range"].GetArray()[0].GetFloat();
                     float second = (*json)["svm"]["norm-range"].GetArray()[1].GetFloat();
                     config.norm_range = std::pair<float, float>(first, second);
