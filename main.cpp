@@ -57,7 +57,7 @@ void showHelper(void) {
     cout << "-accelerometer [== Test Accelerometer]" <<
             "[-withoutRx = to test accelerometer data reading without the use of RxCpp Functions]" << endl;
     cout << "-train <config-file> [ == Train and Test the SVM classifier against the given train-set(s) and test-set(s)]" << endl;
-    cout << "-test <config-file> [ == Trained Classify against the given test-set]" << endl;
+    cout << "-test [ == Trained Classify against the given test-set]" << endl;
 }
 
 SerialPort* initSerialPort(string portName){
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
             trainAccelerometerMlAlgorithm(svmConfig, true);
             testAccelerometerMlAlgorithm(svmConfig);
 
-        } else if (mode == "-test" && argc > 2) {
+        } else if (mode == "-test") {
 
             auto svmConfig = loadSVMOptions(config_folder + "/config.json");
             auto gpsDataStore = new GPSDataStore();
