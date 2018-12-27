@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
         if (mode == "-http") {
             phd::test::network::testHTTPCommunication(serverConfig);
         } else if (mode == "-led") {
-            testLed(notificationLeds);
+            phd::test::led::testLed(notificationLeds);
         } else if (mode == "-accelerometer") {
             phd::test::accelerometer::testAccelerometerCommunication(withoutRx);
         } else if (mode == "-train" && argc > 2) {

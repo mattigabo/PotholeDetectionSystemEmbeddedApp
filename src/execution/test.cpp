@@ -103,6 +103,35 @@ namespace phd{
             }
         }
 
+        namespace led {
+            void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds){
+                cout << "Test LED that notify the program execution" << endl;
+                notificationLeds.programInExecution.switchOn();
+                std::this_thread::sleep_for(1s);
+                notificationLeds.programInExecution.switchOff();
+                std::this_thread::sleep_for(1s);
+
+                cout << "Test LED that notify the valid gps data" << endl;
+                notificationLeds.validGpsData.switchOn();
+                std::this_thread::sleep_for(1s);
+                notificationLeds.validGpsData.switchOff();
+                std::this_thread::sleep_for(1s);
+
+                cout << "Test LED that notify that the data is being transferred to the server" << endl;
+                notificationLeds.serverDataTransfering.switchOn();
+                std::this_thread::sleep_for(1s);
+                notificationLeds.serverDataTransfering.switchOff();
+                std::this_thread::sleep_for(1s);
+
+                cout << "Test LED that notify that the camera is taking a picture" << endl;
+                notificationLeds.cameraIsShooting.switchOn();
+                std::this_thread::sleep_for(1s);
+                notificationLeds.cameraIsShooting.switchOff();
+                std::this_thread::sleep_for(1s);
+            }
+
+        }
+
         namespace rx{
             class ThreadSafeUpdater {
             public:

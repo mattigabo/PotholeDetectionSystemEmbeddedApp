@@ -27,6 +27,10 @@ namespace phd{
             void testHTTPCommunication(phd::configurations::ServerConfig serverConfig);
         }
 
+        namespace led{
+            void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds);
+        }
+
         namespace rx {
             void testA();
 
