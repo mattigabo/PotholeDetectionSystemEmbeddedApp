@@ -19,6 +19,7 @@ using namespace std;
 namespace phd{
     namespace devices {
         namespace networking {
+            const int TIMEOUT_SECONDS = 20;
 
             string getURL(const phd::configurations::ServerConfig config) {
                 return getURL(config.protocol, config.hostname, config.port, config.api);
@@ -66,6 +67,7 @@ namespace phd{
                     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, _headers);
                     curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.x");
                     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.data());
+                    curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_SECONDS);
 
                     CURLcode res = curl_easy_perform(curl);
                     curl_slist_free_all(_headers);
@@ -96,6 +98,7 @@ namespace phd{
                     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
                     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, _headers);
                     curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.x");
+                    curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_SECONDS);
 
                     CURLcode res = curl_easy_perform(curl);
                     curl_slist_free_all(_headers);

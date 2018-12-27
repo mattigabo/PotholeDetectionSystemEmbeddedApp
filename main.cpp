@@ -41,6 +41,7 @@ using namespace phd::configurations;
 Configuration phdConfig;
 ServerConfig serverConfig;
 CVArgs cvConfig;
+MLOptions<SVMParams> svmConfig;
 string serialPortName;
 string config_folder = "/res/config";
 
@@ -127,8 +128,8 @@ int main(int argc, char *argv[]) {
             testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-test") {
-
-            auto svmConfig = loadSVMOptions(config_folder + "/config.json");
+            cvConfig = loadCVArgs(config_folder + "/config.json");
+            svmConfig = loadSVMOptions(config_folder + "/config.json");
             auto gpsDataStore = new GPSDataStore();
             auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
             auto accelerometer = new phd::devices::accelerometer::Accelerometer();
