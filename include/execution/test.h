@@ -31,6 +31,10 @@ namespace phd{
             void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds);
         }
 
+        namespace fingerprint{
+            void testFingerPrintCalculation();
+        }
+
         namespace rx {
             void testA();
 

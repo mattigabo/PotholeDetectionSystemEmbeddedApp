@@ -96,16 +96,6 @@ void runObservationMode(bool poison_pill,
     }
 }
 
-
-void testFingerPrintCalculation(){
-
-    std::string uid = fingerprint::getUID();
-
-    std::cout << "Fp: " << uid << std::endl;
-
-    std::cout << "Validation: " << fingerprint::validateUID(uid) << std::endl;
-}
-
 void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
                                    const bool cross_validate) {
 

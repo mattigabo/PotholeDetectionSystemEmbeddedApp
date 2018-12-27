@@ -210,9 +210,7 @@ int main(int argc, char *argv[]) {
         } else if (mode == "-observers") {
             testObservers(config_folder);
         } else if (mode == "-fp") {
-
-            testFingerPrintCalculation();
-
+            phd::test::fingerprint::testFingerPrintCalculation();
         } else if (mode == "-gps"){
             testGPS(argc, argv, config_folder, withoutRx);
         } else if (mode == "-o") {

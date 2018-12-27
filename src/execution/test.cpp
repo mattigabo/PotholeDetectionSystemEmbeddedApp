@@ -18,6 +18,8 @@
 #include <random>
 
 
+#include <fingerprint.h>
+
 #include <accelerometer/features.h>
 #include <accelerometer/utils.h>
 #include <accelerometer/accelerometer.h>
@@ -130,6 +132,17 @@ namespace phd{
                 std::this_thread::sleep_for(1s);
             }
 
+        }
+
+        namespace fingerprint{
+            void testFingerPrintCalculation(){
+
+                std::string uid = ::fingerprint::getUID();
+
+                std::cout << "Fp: " << uid << std::endl;
+
+                std::cout << "Validation: " << ::fingerprint::validateUID(uid) << std::endl;
+            }
         }
 
         namespace rx{
