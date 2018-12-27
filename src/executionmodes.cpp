@@ -96,24 +96,6 @@ void runObservationMode(bool poison_pill,
     }
 }
 
-void testGPSWithoutRxCpp(phd::devices::gps::GPSDataStore* storage){
-    for(int i=0; i < 100; i++) {
-        phd::devices::gps::Coordinates coordinates = storage->fetch();
-        cout << "LATITUDE: " << coordinates.latitude <<
-             " LONGITUDE:" << coordinates.longitude <<
-             " ALTITUDE: " << coordinates.altitude << endl;
-        std::this_thread::sleep_for(1s);
-    }
-}
-
-void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage){
-    auto src = observables::gps::createGPSObservable(storage, observables::gps::GPS_REFRESH_PERIOD);
-
-    src.as_blocking().subscribe([](phd::devices::gps::Coordinates c) {
-        std::cout << c.longitude << "|" << c.latitude << std::endl;
-    });
-}
-
 void testHTTPCommunication(phd::configurations::ServerConfig serverConfig){
     phd::devices::gps::Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
     sendDataToServer(toJSON(pointNearUniversity, std::string()), serverConfig);
@@ -143,51 +125,6 @@ void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds){
     std::this_thread::sleep_for(1s);
     notificationLeds.cameraIsShooting.switchOff();
     std::this_thread::sleep_for(1s);
-}
-
-void testAccelerometerWithoutRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
-    for(int i = 0; i < 20;  i++){
-        phd::devices::accelerometer::Acceleration values = accelerometer->fetch();
-        cout << "Accelerometer: [ " <<
-             values.X << " on X,  " <<
-             values.Y << " on Y,  " <<
-             values.Z << " on Z ]"  << endl;
-        std::this_thread::sleep_for(chrono::milliseconds(1000));
-    }
-}
-
-void testAccelerometerWithRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
-    auto accelerationStream = observables::accelerometer::createAccelerometerValuesStream(
-            accelerometer,
-            observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
-    );
-    accelerationStream.as_blocking().subscribe([](const phd::devices::accelerometer::Acceleration values) {
-        cout << "Accelerometer: [ " <<
-             values.X << " on X,  " <<
-             values.Y << " on Y,  " <<
-             values.Z << " on Z ]"  << endl;
-    },[](){
-        cout << "OnCompleted\n" << endl;
-    });
-}
-
-void testAccelerometerCommunication(bool withoutRx){
-    cout << "Test the read from the Nunchuck Accelerometer..." << endl;
-    auto accelerometer = new phd::devices::accelerometer::Accelerometer();
-
-    if(withoutRx) {
-        cout << "without RxCpp" << endl;
-        testAccelerometerWithoutRxCpp(accelerometer);
-    } else {
-        cout << "with RxCpp" << endl;
-        testAccelerometerWithRxCpp(accelerometer);
-    }
-
-    //std::this_thread::sleep_for(chrono::milliseconds(5000));
-
-    free(accelerometer);
-    cout << "-----------------------------------------------" << endl;
-    cout << "Bye Bye" << endl;
 }
 
 void testFingerPrintCalculation(){

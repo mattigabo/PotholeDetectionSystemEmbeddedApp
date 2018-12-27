@@ -5,12 +5,30 @@
 #ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_TEST_H
 #define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_TEST_H
 
+#include <gps/GPSDataStore.h>
+#include <raspberrypi/Led.h>
+
 #include "rxcpp/rx.hpp"
 
-void testA();
+namespace phd{
+    namespace test{
+        namespace gps{
+            void testGPSWithoutRxCpp(phd::devices::gps::GPSDataStore* storage);
+            void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage);
+        }
 
-void testZip();
+        namespace accelerometer{
+            void testAccelerometerCommunication(bool withoutRx);
+        }
 
-void testBufferValues();
+        namespace rx {
+            void testA();
+
+            void testZip();
+
+            void testBufferValues();
+        }
+    }
+}
 
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_TEST_H

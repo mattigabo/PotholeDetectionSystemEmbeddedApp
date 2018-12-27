@@ -17,14 +17,9 @@ void runObservationMode(bool poison_pill,
         phd::configurations::CVArgs cvConfig,
         phd::configurations::ServerConfig serverConfig);
 
-void testGPSWithoutRxCpp(phd::devices::gps::GPSDataStore* storage);
-void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage);
-
 void testHTTPCommunication(phd::configurations::ServerConfig serverConfig);
 
 void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds);
-
-void testAccelerometerCommunication(bool withoutRx);
 
 void testFingerPrintCalculation();
 

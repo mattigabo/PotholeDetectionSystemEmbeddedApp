@@ -210,7 +210,6 @@ namespace phd {
                 }
 
                 cv::Mat classify(const cv::Mat &features, const std::string &model) {
-
                     cv::Mat labels = cv::Mat(0, 0, CV_32SC1);
 
                     cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::load(model);
