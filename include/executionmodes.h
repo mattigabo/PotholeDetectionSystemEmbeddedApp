@@ -17,8 +17,6 @@ void runObservationMode(bool poison_pill,
         phd::configurations::CVArgs cvConfig,
         phd::configurations::ServerConfig serverConfig);
 
-void testHTTPCommunication(phd::configurations::ServerConfig serverConfig);
-
 void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds);
 
 void testFingerPrintCalculation();

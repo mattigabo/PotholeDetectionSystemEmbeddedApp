@@ -8,6 +8,8 @@
 #include <gps/GPSDataStore.h>
 #include <raspberrypi/Led.h>
 
+#include <networking.h>
+
 #include "rxcpp/rx.hpp"
 
 namespace phd{
@@ -19,6 +21,10 @@ namespace phd{
 
         namespace accelerometer{
             void testAccelerometerCommunication(bool withoutRx);
+        }
+
+        namespace network{
+            void testHTTPCommunication(phd::configurations::ServerConfig serverConfig);
         }
 
         namespace rx {

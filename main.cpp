@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
         cout << "Server Configuration Loaded\n" << endl;
 
         if (mode == "-http") {
-            testHTTPCommunication(serverConfig);
+            phd::test::network::testHTTPCommunication(serverConfig);
         } else if (mode == "-led") {
             testLed(notificationLeds);
         } else if (mode == "-accelerometer") {

@@ -96,6 +96,13 @@ namespace phd{
             }
         }
 
+        namespace network{
+            void testHTTPCommunication(phd::configurations::ServerConfig serverConfig){
+                phd::devices::gps::Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
+                sendDataToServer(toJSON(pointNearUniversity, std::string()), serverConfig);
+            }
+        }
+
         namespace rx{
             class ThreadSafeUpdater {
             public:

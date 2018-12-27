@@ -96,10 +96,7 @@ void runObservationMode(bool poison_pill,
     }
 }
 
-void testHTTPCommunication(phd::configurations::ServerConfig serverConfig){
-    phd::devices::gps::Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
-    sendDataToServer(toJSON(pointNearUniversity, std::string()), serverConfig);
-}
+
 
 void testLed(phd::devices::raspberry::led::NotificationLeds notificationLeds){
     cout << "Test LED that notify the program execution" << endl;
