@@ -38,13 +38,7 @@ using namespace phd::devices::gps;
 using namespace phd::devices::raspberry::led;
 using namespace phd::configurations;
 
-Configuration phdConfig;
-ServerConfig serverConfig;
-CVArgs cvConfig;
-MLOptions<SVMParams> svmConfig;
-const string config_folder_suffix = "/res/config";
-
-NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
+typedef Configuration PhDConfig;
 
 void showHelper(void) {
     cout << "Execution modes" << endl;
@@ -79,14 +73,13 @@ void initCURL(){
     cout << "\n"<< endl;
 }
 
-void testGPS(int argc, char *argv[], string config_folder, bool withoutRx){
+void testGPS(int argc, char *argv[], string &config_folder, bool withoutRx){
     cout << "Testing the gps" << endl;
 
     auto gpsDataStore = new GPSDataStore();
     GPSDataUpdater* updater;
 
-
-    string serialPortName = "";
+    string serialPortName;
     SerialPort *serialPort = nullptr;
 
     auto mockedMode = false;
@@ -124,10 +117,8 @@ void testGPS(int argc, char *argv[], string config_folder, bool withoutRx){
     }
 }
 
-void testObservers(string config_folder){
+void testObservers(CVArgs &cvConfig, PhDConfig &phdConfig, MLOptions<SVMParams> &svmConfig, ServerConfig &serverConfig){
 
-    cvConfig = loadCVArgs(config_folder + "/config.json");
-    svmConfig = loadSVMOptions(config_folder + "/config.json");
     auto gpsDataStore = new GPSDataStore();
     auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
     auto accelerometer = new phd::devices::accelerometer::Accelerometer();
@@ -163,6 +154,10 @@ int main(int argc, char *argv[]) {
 
 //    cout << phd::io::GetCurrentWorkingDir() << endl;
 
+    const string config_folder_suffix = "/res/config";
+
+    const NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
+
     const string root = phd::io::getParentDirectory(string(dirname(argv[0])));
 
     auto config_folder = root + config_folder_suffix;
@@ -182,17 +177,25 @@ int main(int argc, char *argv[]) {
             withoutRx = std::string(argv[2]) == "-withoutRx";
         }
 
-        cout << mode << " mode: ON \n" << endl;
+        cout << mode << " mode is ACTIVE." << endl << endl;
 
         auto poison_pill = false;
 
+        cout << "Loading Computer Vision arguments..." << endl;
+        CVArgs cvArgs = loadCVArgs(config_folder + "/config.json");;
+        cout << "Computer Vision arguments Loaded." << endl << endl;
+
         cout << "Loading Computer Vision Configuration..." << endl;
-        phdConfig = loadProgramConfiguration(config_folder + "/config.json");
-        cout << "Computer Vision Configuration Loaded." << endl;
+        PhDConfig phdConfig = loadProgramConfiguration(config_folder + "/config.json");
+        cout << "Computer Vision Configuration Loaded." << endl << endl;
+
+        cout << "Loading Accelerometer SVM Configuration..." << endl;
+        MLOptions<SVMParams> svmConfig = loadSVMOptions(config_folder + "/config.json");
+        cout << "Accelerometer SVM Configuration Loaded." << endl << endl;
 
         cout << "Loading Server Configuration..." << endl;
-        serverConfig = loadServerConfig(config_folder + "/config.json");
-        cout << "Server Configuration Loaded." << endl;
+        ServerConfig serverConfig = loadServerConfig(config_folder + "/config.json");
+        cout << "Server Configuration Loaded." << endl << endl;
 
         if (mode == "-http") {
 
@@ -226,7 +229,7 @@ int main(int argc, char *argv[]) {
 
         } else if (mode == "-observers") {
 
-            testObservers(config_folder);
+            testObservers(cvArgs, phdConfig, svmConfig, serverConfig);
 
         } else if (mode == "-fp") {
 
@@ -238,25 +241,23 @@ int main(int argc, char *argv[]) {
 
         } else if (mode == "-o") {
 
-            cout << "Registering Device on Server..." << endl;
-            registerDeviceOnServer(toJSON(fingerprint::getUID()), serverConfig);
+            const string fp = fingerprint::getUID();
+
+            cout << "Registering Device " << fp <<" on Server..." << endl;
+
+            registerDeviceOnServer(toJSON(fp), serverConfig);
 
             string serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
             SerialPort *serialPort = initSerialPort(serialPortName);
 
             auto gpsDataStore = new GPSDataStore();
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
-
             auto accelerometer = new phd::devices::accelerometer::Accelerometer();
-
-            cvConfig = loadCVArgs(config_folder + "/config.json");
-            svmConfig = loadSVMOptions(config_folder + "/config.json");
-
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 
-//            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
+//            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvArgs, serverConfig);
 
-//            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
+//            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvArgs, serverConfig);
 
             observers::accelerometer::runAccelerometerObserver(
                     gpsDataStore,
