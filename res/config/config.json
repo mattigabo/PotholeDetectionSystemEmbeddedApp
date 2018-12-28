@@ -40,5 +40,20 @@
   },
   "gps":{
     "serialPort": "/dev/cu.BT-GPS0055BB-SerialPort"
+  },
+  "svm": {
+    "train-set": "D:/Xander/Download/data/Training/P12-E.json",
+    "test-set": "D:/Xander/Download/data/Test/P12-P.json",
+    "model": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/svm/accelerometer.P12.cross.2fold.i900.test.yml",
+    "norm-method": "MIN-MAX",
+    "norm-range": [0.1, 0.9],
+    "kernel": "RBF",
+    "type": "C_SVC",
+    "k-fold": 2,
+    "balanced-folding": true,
+    "max-iter": 900,
+    "epsilon": 0.001,
+    "C": 5.0000000000000000e-001,
+    "gamma": 5.0625000000000009e-001
   }
 }
