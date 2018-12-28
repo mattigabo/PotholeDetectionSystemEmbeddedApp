@@ -29,7 +29,7 @@ else ()
 
     message("Init git submodules...")
     execute_process(COMMAND "git submodule init")
-    execute_process(COMMAND "git submodule update")
+    execute_process(COMMAND "git submodule update --recursive")
 
     #    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
     set(RapidJSON_DIR "${PROJECT_SOURCE_DIR}/lib/RapidJSON")
