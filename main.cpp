@@ -103,10 +103,10 @@ int main(int argc, char *argv[]) {
 
         cout << "Loading Computer Vision Configuration..." << endl;
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
-        cout << "Computer Vision Configuration Loaded" << endl;
+        cout << "Computer Vision Configuration Loaded." << endl;
 
         serverConfig = loadServerConfig(config_folder + "/config.json");
-        cout << "Server Configuration Loaded\n" << endl;
+        cout << "Server Configuration Loaded." << endl;
 
         if (mode == "-http") {
             testHTTPCommunication(serverConfig);
@@ -128,6 +128,7 @@ int main(int argc, char *argv[]) {
             testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-test") {
+
             cvConfig = loadCVArgs(config_folder + "/config.json");
             svmConfig = loadSVMOptions(config_folder + "/config.json");
             auto gpsDataStore = new GPSDataStore();
