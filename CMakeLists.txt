@@ -28,8 +28,8 @@ else ()
     message("$ENV{LibSerialPort_DIR}")
 
     message("Init git submodules...")
-    execute_process(COMMAND git submodule init)
-    execute_process(COMMAND git submodule foreach git pull origin master)
+    execute_process(COMMAND "git submodule init")
+    execute_process(COMMAND "git submodule update --recursive")
 
     #    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
     set(RapidJSON_DIR "${PROJECT_SOURCE_DIR}/lib/RapidJSON")
@@ -47,7 +47,19 @@ else ()
         set_property(TARGET libserialport PROPERTY IMPORTED_LOCATION /usr/local/lib/libserialport.a)
         set(LibSerialPort_INCLUDE /usr/local/include/)
     else()
-        find_package(CURL REQUIRED PATHS "$ENV{CURL_DIR}/CMAKE")
+        find_package(CURL REQUIRED PATHS "$ENV{CURL_DIR}/CMAKE" "$ENV{CURL_DIR}/CMake" "$ENV{CURL_DIR}/lib/cmake/CURL")
+
+        if ("${CURL_INCLUDE_DIRS}" STREQUAL "" OR "${CURL_LIBRARIES}" STREQUAL "")
+            set(CURL_INCLUDE_DIRS "$ENV{CURL_DIR}/include/")
+            set(CURL_BINARIES "$ENV{CURL_DIR}/bin/")
+            file(GLOB CURL_LIBRARIES "$ENV{CURL_DIR}/lib/lib*")
+        endif()
+
+        message("CURL found.")
+        message("Headers: "${CURL_INCLUDE_DIRS})
+        message("Libraries: "${CURL_LIBRARIES})
+        message("Binaries: "${CURL_BINARIES})
+
         if (${WIN32})
             add_library(libserialport STATIC IMPORTED)
             set_property(TARGET libserialport PROPERTY IMPORTED_LOCATION "$ENV{LibSerialPort_DIR}/lib/libserialport.dll.a")
@@ -59,6 +71,14 @@ else ()
             set(LibSerialPort_INCLUDE /usr/local/include/)
         endif()
     endif()
+
+#    message(OCV:"${OpenCV_INCLUDE_DIRS}")
+#    message(RJ:"${RapidJSON_DIR}/include")
+#    message(MinMEA:"${MiNMEA_INCLUDE_DIRS}")
+#    message(PHD:"${PotholeDetection_INCLUDE_DIRS}")
+#    message(CURL:"${CURL_INCLUDE_DIRS}")
+#    message(LSP:"${LibSerialPort_INCLUDE}")
+#    message(PROJECT:"${PROJECT_SOURCE_DIR}/include")
 
     include_directories(
             "${OpenCV_INCLUDE_DIRS}"
