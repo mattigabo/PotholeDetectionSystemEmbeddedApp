@@ -26,7 +26,8 @@ namespace phd{
             string(" folder inside the program directory. ");
         }
 
-        void loadFromJSON(const string path_to_config, function<void(Document*)> loadLogic, string errorMessage) {
+        void loadFromJSON(const string &path_to_config, function<void(Document*)> &loadLogic, string &errorMessage) {
+
             ifstream json(path_to_config, fstream::in);
 
             IStreamWrapper wrapper(json);

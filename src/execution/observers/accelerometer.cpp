@@ -3,6 +3,8 @@
 //
 #include "execution/observers/accelerometer.h"
 
+#include <future>
+
 #include <chrono>
 #include <string>
 #include <thread>
@@ -93,7 +95,9 @@ namespace observers {
                 return gpsWithLabels.first;
             }).subscribe([serverConfig](phd::devices::gps::Coordinates coordinates) {
                 std::string position = toJSON(coordinates, fingerprint::getUID());
-                sendDataToServer(position, serverConfig);
+                auto f = std::async(std::launch::async, [position, serverConfig]() {
+                    sendDataToServer(position, serverConfig);
+                });
             });
 
 //            accelerometer_obs.as_blocking().subscribe();

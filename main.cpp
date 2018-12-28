@@ -30,6 +30,8 @@
 
 #include <fingerprint.h>
 
+#include <future>
+
 using namespace std;
 using namespace phd::io;
 using namespace phd::devices::networking;
@@ -233,7 +235,7 @@ int main(int argc, char *argv[]) {
 
         } else if (mode == "-fp") {
 
-            phd::test::fingerprint::testFingerPrintCalculation();
+                phd::test::fingerprint::testFingerPrintCalculation();
 
         } else if (mode == "-gps"){
 
@@ -244,8 +246,9 @@ int main(int argc, char *argv[]) {
             const string fp = fingerprint::getUID();
 
             cout << "Registering Device " << fp <<" on Server..." << endl;
-
-            registerDeviceOnServer(toJSON(fp), serverConfig);
+//            auto f = std::async(std::launch::async, [fp, serverConfig]() {
+                registerDeviceOnServer(toJSON(fp), serverConfig);
+//            }
 
             string serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
             SerialPort *serialPort = initSerialPort(serialPortName);
