@@ -42,8 +42,7 @@ Configuration phdConfig;
 ServerConfig serverConfig;
 CVArgs cvConfig;
 MLOptions<SVMParams> svmConfig;
-string serialPortName;
-string config_folder_suffix = "/res/config";
+const string config_folder_suffix = "/res/config";
 
 NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
 
@@ -85,6 +84,9 @@ void testGPS(int argc, char *argv[], string config_folder, bool withoutRx){
 
     auto gpsDataStore = new GPSDataStore();
     GPSDataUpdater* updater;
+
+
+    string serialPortName = "";
     SerialPort *serialPort = nullptr;
 
     auto mockedMode = false;
@@ -123,6 +125,7 @@ void testGPS(int argc, char *argv[], string config_folder, bool withoutRx){
 }
 
 void testObservers(string config_folder){
+
     cvConfig = loadCVArgs(config_folder + "/config.json");
     svmConfig = loadSVMOptions(config_folder + "/config.json");
     auto gpsDataStore = new GPSDataStore();
@@ -191,27 +194,33 @@ int main(int argc, char *argv[]) {
         cout << "Server Configuration Loaded\n" << endl;
 
         if (mode == "-http") {
+
             phd::test::network::testHTTPCommunication(serverConfig);
+
         } else if (mode == "-led") {
+
             phd::test::led::testLed(notificationLeds);
+
         } else if (mode == "-accelerometer") {
+
             phd::test::accelerometer::testAccelerometerCommunication(withoutRx);
+
         } else if (mode == "-train" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
-            trainAccelerometerMlAlgorithm(svmConfig, false);
+            phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, false);
 
         } else if (mode == "-cross-train" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
 
-            trainAccelerometerMlAlgorithm(svmConfig, true);
-            testAccelerometerMlAlgorithm(svmConfig);
+            phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, true);
+            phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-test") {
 
             auto svmConfig = loadSVMOptions(argv[2]);
-            testAccelerometerMlAlgorithm(svmConfig);
+            phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-observers") {
 
@@ -230,17 +239,31 @@ int main(int argc, char *argv[]) {
             cout << "Registering Device on Server..." << endl;
             registerDeviceOnServer(toJSON(fingerprint::getUID()), serverConfig);
 
-            serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
+            string serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
             SerialPort *serialPort = initSerialPort(serialPortName);
 
             auto gpsDataStore = new GPSDataStore();
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
+            auto accelerometer = new phd::devices::accelerometer::Accelerometer();
+
             cvConfig = loadCVArgs(config_folder + "/config.json");
+            svmConfig = loadSVMOptions(config_folder + "/config.json");
+
+            auto axis = phd::devices::accelerometer::data::Axis::Z;
 
 //            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
 
-            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
+//            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
+
+            observers::accelerometer::runAccelerometerObserver(
+                    gpsDataStore,
+                    accelerometer,
+                    axis,
+                    phdConfig,
+                    svmConfig,
+                    serverConfig
+                );
 
             updater->kill();
             updater->join();

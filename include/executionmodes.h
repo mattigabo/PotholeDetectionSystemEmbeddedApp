@@ -17,9 +17,4 @@ void runObservationMode(bool poison_pill,
         phd::configurations::CVArgs cvConfig,
         phd::configurations::ServerConfig serverConfig);
 
-void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
-                                   const bool cross_validate);
-
-void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args);
-
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H
