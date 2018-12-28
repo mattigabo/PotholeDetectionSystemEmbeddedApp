@@ -48,10 +48,17 @@ else ()
         set(LibSerialPort_INCLUDE /usr/local/include/)
     else()
         find_package(CURL REQUIRED PATHS "$ENV{CURL_DIR}/CMAKE" "$ENV{CURL_DIR}/CMake" "$ENV{CURL_DIR}/lib/cmake/CURL")
+
         if ("${CURL_INCLUDE_DIRS}" STREQUAL "" OR "${CURL_LIBRARIES}" STREQUAL "")
             set(CURL_INCLUDE_DIRS "$ENV{CURL_DIR}/include/")
+            set(CURL_BINARIES "$ENV{CURL_DIR}/bin/")
             file(GLOB CURL_LIBRARIES "$ENV{CURL_DIR}/lib/lib*")
         endif()
+
+        message("CURL found.")
+        message("Headers: "${CURL_INCLUDE_DIRS})
+        message("Libraries: "${CURL_LIBRARIES})
+        message("Binaries: "${CURL_BINARIES})
 
         if (${WIN32})
             add_library(libserialport STATIC IMPORTED)

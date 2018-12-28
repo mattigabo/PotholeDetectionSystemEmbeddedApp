@@ -58,6 +58,7 @@ void showHelper(void) {
     cout << "-accelerometer [== Test Accelerometer]" <<
             "[-withoutRx = to test accelerometer data reading without the use of RxCpp Functions]" << endl;
     cout << "-train <config-file> [ == Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
+    cout << "-cross-train <config-file> [ == Cross-fold validate and Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
     cout << "-test [ == Test the trained SVM classifier for the accelerometer against the given test-set]" << endl;
     cout << "-observers [ == Test the observers]" << endl;
 }
@@ -200,19 +201,30 @@ int main(int argc, char *argv[]) {
             auto svmConfig = loadSVMOptions(argv[2]);
             trainAccelerometerMlAlgorithm(svmConfig, false);
 
-        } else if (mode == "-crosstrain" && argc > 2) {
+        } else if (mode == "-cross-train" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
 
             trainAccelerometerMlAlgorithm(svmConfig, true);
             testAccelerometerMlAlgorithm(svmConfig);
 
+        } else if (mode == "-test") {
+
+            auto svmConfig = loadSVMOptions(argv[2]);
+            testAccelerometerMlAlgorithm(svmConfig);
+
         } else if (mode == "-observers") {
+
             testObservers(config_folder);
+
         } else if (mode == "-fp") {
+
             phd::test::fingerprint::testFingerPrintCalculation();
+
         } else if (mode == "-gps"){
+
             testGPS(argc, argv, config_folder, withoutRx);
+
         } else if (mode == "-o") {
 
             cout << "Registering Device on Server..." << endl;
