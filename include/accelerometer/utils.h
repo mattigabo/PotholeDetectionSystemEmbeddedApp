@@ -2,35 +2,41 @@
 // Created by Xander on 26/11/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_UTILS_H
-#define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_UTILS_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_UTILS_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_UTILS_H
 
 #include <vector>
 #include <string>
 #include <functional>
-#include "accelerometer/ml.h"
+#include "accelerometer/features.h"
 
-namespace phd::devices::accelerometer::utils {
+namespace phd {
+    namespace devices{
+        namespace accelerometer {
+            namespace utils {
 
-    typedef struct Anomaly {
-        int starts;
-        int ends;
-        std::string type;
-    } Anomaly;
+                typedef struct Anomaly {
+                    int starts;
+                    int ends;
+                    std::string type;
+                } Anomaly;
 
-    typedef struct RawData {
-        std::vector<Anomaly> anomalies;
-        std::vector<float> x;
-        std::vector<float> y;
-        std::vector<float> z;
-    } RawData;
+                typedef struct RawData {
+                    std::vector<Anomaly> anomalies;
+                    std::vector<float> x;
+                    std::vector<float> y;
+                    std::vector<float> z;
+                } RawData;
 
-    RawData readJSONDataset(const std::string &dataset);
+                RawData readJSONDataset(const std::string &dataset);
 
-    bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
-            std::vector<phd::devices::accelerometer::ml::Features> &features, std::vector<int> &labels);
+                bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
+                        std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels);
 
+            }
+        }
+    }
 }
 
-#endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_ACCELEROMETER_UTILS_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_ACCELEROMETER_UTILS_H
 

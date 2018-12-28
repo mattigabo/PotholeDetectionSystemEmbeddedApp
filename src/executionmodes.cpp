@@ -9,6 +9,7 @@
 #include <thread>
 #include <time.h>
 #include <assert.h>
+#include <fstream>
 
 #include <phdetection/ontologies.hpp>
 #include <phdetection/core.hpp>
@@ -21,59 +22,28 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/istreamwrapper.h>
 
-
 #include <serialport/SerialPort.h>
 #include <camera.h>
 #include <networking.h>
-#include <accelerometer/ml.h>
+#include <accelerometer/features.h>
 #include <accelerometer/utils.h>
+#include <accelerometer/accelerometer.h>
 
-using namespace std;
-using namespace cv;
-using namespace cv::ml;
+#include <execution/utils.h>
+#include <execution/observables/accelerometer.h>
+#include <execution/observables/gps.h>
 
-using namespace phd::io;
-using namespace phd::devices::networking;
-using namespace phd::devices::serialport;
-using namespace phd::devices::gps;
+#include <fingerprint.h>
 
 using namespace rapidjson;
+using namespace std;
 
-const vector<pair<string, string>> httpHeaders({
-       pair<string, string>("Accept", "application/json"),
-       pair<string, string>("Content-Type","application/json"),
-       pair<string, string>("charset","utf-8")
-});
-
-std::string toJSON(phd::devices::gps::Coordinates coordinates) {
-    rapidjson::Document document;
-
-    document.Parse("{}");
-
-    assert(document.IsObject());
-
-    document.AddMember("lat", rapidjson::Value(coordinates.latitude), document.GetAllocator());
-    document.AddMember("lng", rapidjson::Value(coordinates.longitude), document.GetAllocator());
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
-
-    return buffer.GetString();
-}
-
-void sendDataToServer(string payload, ServerConfig serverConfig){
-    CURLcode res = HTTP::POST(getURL(serverConfig), httpHeaders, payload);
-
-    cout << "HTTP Response Code:" << res << endl;
-}
-
-Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, Mat &image,
-                               const Configuration &config) {
+cv::Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, cv::Mat &image,
+                               const phd::io::Configuration &phdConfig) {
 
     //cout << endl << "---------------" << image << endl;
 
-    auto features = phd::getFeatures(image, config);
+    auto features = phd::getFeatures(image, phdConfig);
 
     cv::Mat labels;
 
@@ -90,27 +60,27 @@ Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, 
 }
 
 void runObservationMode(bool poison_pill,
-        GPSDataStore* gpsDataStore,
-        Configuration phdConfig,
-        CVArgs cvConfig,
-        ServerConfig serverConfig){
+        phd::devices::gps::GPSDataStore* gpsDataStore,
+        phd::io::Configuration phdConfig,
+        phd::configurations::CVArgs cvConfig,
+        phd::configurations::ServerConfig serverConfig){
 
     std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
 
     while(!poison_pill) {
 
-        std::string position = toJSON(gpsDataStore->fetch());
+        std::string position = toJSON(gpsDataStore->fetch(), std::string());
 
-        Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
+        cv::Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
 
         if (cvConfig.rotate) {
             cv::rotate(image, image, cv::ROTATE_180);
         }
 
-//                cv::imshow("Capture", image);
-//                waitKey(0);
+//        cv::imshow("Capture", image);
+//        waitKey(0);
 
-        Mat labels = extractFeaturesAndClassify(cvConfig.method, cvConfig.bayes, cvConfig.svm, image, phdConfig);
+        cv::Mat labels = extractFeaturesAndClassify(cvConfig.method, cvConfig.bayes, cvConfig.svm, image, phdConfig);
         if(labels.rows != 0) {
             labels = labels.row(0);
 
@@ -126,60 +96,10 @@ void runObservationMode(bool poison_pill,
     }
 }
 
-void testGPSCommunication(GPSDataStore* storage){
-    for(int i=0; i < 100; i++) {
-        Coordinates coordinates = storage->fetch();
-        cout << "LATITUDE: " << coordinates.latitude <<
-             " LONGITUDE:" << coordinates.longitude <<
-             " ALTITUDE: " << coordinates.altitude << endl;
-        std::this_thread::sleep_for(1s);
-    }
-}
+void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
+                                   const bool cross_validate) {
 
-void testHTTPCommunication(ServerConfig serverConfig){
-    Coordinates pointNearUniversity = {44.147618, 12.235476, 0};
-    sendDataToServer(toJSON(pointNearUniversity), serverConfig);
-}
-
-void testLed(NotificationLeds notificationLeds){
-    cout << "Test LED that notify the program execution" << endl;
-    notificationLeds.programInExecution.switchOn();
-    std::this_thread::sleep_for(1s);
-    notificationLeds.programInExecution.switchOff();
-    std::this_thread::sleep_for(1s);
-
-    cout << "Test LED that notify the valid gps data" << endl;
-    notificationLeds.validGpsData.switchOn();
-    std::this_thread::sleep_for(1s);
-    notificationLeds.validGpsData.switchOff();
-    std::this_thread::sleep_for(1s);
-
-    cout << "Test LED that notify that the data is being transferred to the server" << endl;
-    notificationLeds.serverDataTransfering.switchOn();
-    std::this_thread::sleep_for(1s);
-    notificationLeds.serverDataTransfering.switchOff();
-    std::this_thread::sleep_for(1s);
-
-    cout << "Test LED that notify that the camera is taking a picture" << endl;
-    notificationLeds.cameraIsShooting.switchOn();
-    std::this_thread::sleep_for(1s);
-    notificationLeds.cameraIsShooting.switchOff();
-    std::this_thread::sleep_for(1s);
-}
-
-template <typename T>
-void print_vector(const std::vector<T> v) {
-    cout << "[";
-    for (int i = 0; i < v.size(); ++i) {
-        cout << v.at(i);
-        cout << (i + 1 < v.size() ? ", " : "");
-    }
-    cout << "]" << endl;
-}
-
-void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args, const bool cross_validate) {
-
-    std::vector<phd::devices::accelerometer::ml::Features> features;
+    std::vector<phd::devices::accelerometer::data::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
@@ -205,7 +125,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
 
     const cv::Mat train_data = toMat(features);
     const cv::Mat normalized_train_data =
-            phd::devices::accelerometer::ml::normalize(
+            phd::devices::accelerometer::data::normalize(
                     train_data,
                     args.norm_range.first,
                     args.norm_range.second,
@@ -213,7 +133,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
                 );
 
     if (cross_validate) {
-        phd::devices::accelerometer::ml::cross_train(
+        phd::devices::accelerometer::data::cross_train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -221,7 +141,7 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
         );
 
     } else {
-        phd::devices::accelerometer::ml::train(
+        phd::devices::accelerometer::data::train(
                 normalized_train_data,
                 cv::Mat(cv::Size(1, static_cast<int>(labels.size())), CV_32SC1, labels.data()),
                 args.model,
@@ -233,11 +153,11 @@ void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations
     labels.clear();
 }
 
-void testAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {
+void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {
 
     cout << "Testing Classifier against Test Set..." << endl;
 
-    std::vector<phd::devices::accelerometer::ml::Features> features;
+    std::vector<phd::devices::accelerometer::data::Features> features;
     std::vector<int> labels;
 
     auto sliding_function = [](int window) { return window - 1; };
@@ -261,17 +181,17 @@ void testAccelerometer(const phd::configurations::MLOptions<phd::configurations:
         exit(-3);
     }
 
-    const cv::Mat test_data = phd::devices::accelerometer::ml::toMat(features);
+    const cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
 
     const cv::Mat normalized_test_data =
-            phd::devices::accelerometer::ml::normalize(
+            phd::devices::accelerometer::data::normalize(
                     test_data,
                     args.norm_range.first,
                     args.norm_range.second,
                     args.norm_method
             );
 
-    auto test_labels = phd::devices::accelerometer::ml::classify(normalized_test_data, args.model);
+    auto test_labels = phd::devices::accelerometer::data::classify(normalized_test_data, args.model);
     float tp = 0, fp = 0, fn = 0, tn = 0;
 
     for (int i = 0; i < labels.size(); ++i) {

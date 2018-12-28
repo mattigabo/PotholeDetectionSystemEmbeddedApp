@@ -2,42 +2,46 @@
 // Created by Xander on 27/9/2018.
 //
 
-#ifndef POTHOLEDETECTIONEMBEDDEDAPP_NETWORKING_H
-#define POTHOLEDETECTIONEMBEDDEDAPP_NETWORKING_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_NETWORKING_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_NETWORKING_H
 
 #include <string>
 #include <stdio.h>
 #include <iostream>
 #include <curl/curl.h>
 #include <vector>
+
 #include "configurationutils.h"
 
-using namespace phd::configurations;
 
-namespace phd::devices::networking {
+namespace phd{
+    namespace devices {
+        namespace networking {
 
 
-    std::string getURL(std::string protocol, std::string hostname, int port, std::string api);
-    std::string getURL(ServerConfig config);
+            std::string getURL(std::string protocol, std::string hostname, int port, std::string api);
+            std::string getURL(phd::configurations::ServerConfig config);
 
-    namespace HTTP {
+            namespace HTTP {
 
-        CURLcode init();
+                CURLcode init();
 
-        CURLcode POST (
-                std::string url,
-                std::vector<std::pair<std::string, std::string>> headers,
-                std::string &payload
-            );
+                CURLcode POST (
+                        std::string url,
+                        std::vector<std::pair<std::string, std::string>> headers,
+                        std::string &payload
+                        );
 
-        CURLcode GET (
-                std::string url,
-                std::vector<std::pair<std::string, std::string>> headers,
-                std::vector<std::pair<std::string, std::string>> params
-            );
+                CURLcode GET (
+                        std::string url,
+                        std::vector<std::pair<std::string, std::string>> headers,
+                        std::vector<std::pair<std::string, std::string>> params
+                        );
 
-        void close();
-    };
+                void close();
+            };
+        }
+    }
 }
 
-#endif //POTHOLEDETECTIONEMBEDDEDAPP_NETWORKING_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_NETWORKING_H

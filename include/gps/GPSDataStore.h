@@ -2,33 +2,38 @@
 // Created by Matteo Gabellini on 06/10/2018.
 //
 
-#ifndef POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
-#define POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H
 
 #include <mutex>
 
-namespace phd::devices::gps {
-    typedef struct Coordinates {
-        double latitude;
-        double longitude;
-        double altitude;
-    } Coordinates;
+namespace phd {
+    namespace devices {
+        namespace gps {
 
-    /**
-     * This class offers a thread safe storage to store and read GPS data
-     * */
-    class GPSDataStore {
-    public:
-        GPSDataStore();
+            struct Coordinates {
+                double latitude;
+                double longitude;
+                double altitude;
+            };
 
-        void update(const Coordinates updatedValue);
+            /**
+            * This class offers a thread safe storage to store and read GPS data
+            * */
+            class GPSDataStore {
+            public:
+                GPSDataStore();
 
-        Coordinates fetch();
+                void update(const Coordinates updatedValue);
 
-    private:
-        Coordinates internal_store;
-        std::mutex internal_mutex;
-    };
+                Coordinates fetch();
 
+            private:
+                Coordinates internal_store;
+                std::mutex internal_mutex;
+            };
+
+        }
+    }
 }
-#endif //POTHOLEDETECTIONEMBEDDEDAPP_GPSDATASTORE_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_GPSDATASTORE_H

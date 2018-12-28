@@ -2,8 +2,8 @@
 // Created by Matteo Gabellini on 29/10/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_RASPBERRYPIUTILS_H
-#define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_RASPBERRYPIUTILS_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_RASPBERRYPIUTILS_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_RASPBERRYPIUTILS_H
 
 /*
  * to date, unfortunately this is the only mode to distinguish the RaspberryPi architecture
@@ -15,7 +15,11 @@
 #include<wiringPi.h>
 
 #endif
-namespace phd::raspberry::utils {
-    void setupWiringPiIfNotInitialized();
+namespace phd {
+    namespace raspberry {
+        namespace utils {
+            void setupWiringPiIfNotInitialized();
+        }
+    }
 }
-#endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_RASPBERRYPIUTILS_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_RASPBERRYPIUTILS_H

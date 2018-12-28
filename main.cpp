@@ -16,10 +16,17 @@
 #include <networking.h>
 #include <configurationutils.h>
 #include <executionmodes.h>
-#include <accelerometer/ml.h>
+#include <camera.h>
+#include <accelerometer/features.h>
 #include <phdetection/io.hpp>
 
 #include <raspberrypi/raspberrypiutils.h>
+
+#include <execution/observables/gps.h>
+#include <execution/observers/accelerometer.h>
+#include <execution/observers/camera.h>
+#include <execution/test.h>
+#include <execution/utils.h>
 
 #include <fingerprint.h>
 
@@ -28,23 +35,31 @@ using namespace phd::io;
 using namespace phd::devices::networking;
 using namespace phd::devices::serialport;
 using namespace phd::devices::gps;
+using namespace phd::devices::raspberry::led;
 using namespace phd::configurations;
 
 Configuration phdConfig;
 ServerConfig serverConfig;
+CVArgs cvConfig;
+MLOptions<SVMParams> svmConfig;
 string serialPortName;
+string config_folder_suffix = "/res/config";
 
-string config_folder = "/res/config";
 NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
 
 void showHelper(void) {
-
+    cout << "Execution modes" << endl;
     cout << "-o [== Run Observation process on the RasPi Camera]" << endl;
-    cout << "-gps [== Test the gps communication]" << endl;
+    cout << "-gps [== Test the gps communication] " <<
+            "[-withoutRx = to test gps data reading without the use of RxCpp Functions] " <<
+            "[-mocked = use the simulated implementation of the gps updater]" << endl;
     cout << "-http [== Test HTTP communication]" << endl;
     cout << "-led [== Test LED]" << endl;
-    cout << "-train <config-file> [ == Train and Test the SVM classifier against the given train-set(s) and test-set(s)]" << endl;
-    cout << "-test <config-file> [ == Trained Classify against the given test-set]" << endl;
+    cout << "-accelerometer [== Test Accelerometer]" <<
+            "[-withoutRx = to test accelerometer data reading without the use of RxCpp Functions]" << endl;
+    cout << "-train <config-file> [ == Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
+    cout << "-test [ == Test the trained SVM classifier for the accelerometer against the given test-set]" << endl;
+    cout << "-observers [ == Test the observers]" << endl;
 }
 
 SerialPort* initSerialPort(string portName){
@@ -53,8 +68,91 @@ SerialPort* initSerialPort(string portName){
     return sp;
 }
 
-void initLedStructures(){
+void initCURL(){
+    CURLcode initResult =  HTTP::init();
+    cout << "cURL Global Initialization: ";
+    if(initResult == CURLE_OK){
+        cout << "OK";
+    } else {
+        cout << "Error " << initResult;
+    }
+    cout << "\n"<< endl;
+}
 
+void testGPS(int argc, char *argv[], string config_folder, bool withoutRx){
+    cout << "Testing the gps" << endl;
+
+    auto gpsDataStore = new GPSDataStore();
+    GPSDataUpdater* updater;
+    SerialPort *serialPort = nullptr;
+
+    auto mockedMode = false;
+    if(argc >= 4) {
+        mockedMode = std::string(argv[3]) == "-mocked" || std::string(argv[2]) == "-mocked";
+    } else if(argc >= 3){
+        mockedMode = std::string(argv[2]) == "-mocked";
+    }
+
+    if(mockedMode){
+        updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
+    } else {
+        serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
+        serialPort = initSerialPort(serialPortName);
+
+        updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+    }
+
+    if(withoutRx){
+        std::cout << "Mocked mode withOUT Reactive Extensions..." << std::endl;
+        phd::test::gps::testGPSWithoutRxCpp(gpsDataStore);
+    } else {
+        std::cout << "Mocked mode with Reactive Extensions..." << std::endl;
+        phd::test::gps::testGPSWithRxCpp(gpsDataStore);
+    }
+
+    updater->kill();
+    updater->join();
+    delete (updater);
+    delete (gpsDataStore);
+
+    if(serialPort != nullptr) {
+        serialPort->closePort();
+        delete (serialPort);
+    }
+}
+
+void testObservers(string config_folder){
+    cvConfig = loadCVArgs(config_folder + "/config.json");
+    svmConfig = loadSVMOptions(config_folder + "/config.json");
+    auto gpsDataStore = new GPSDataStore();
+    auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
+    auto accelerometer = new phd::devices::accelerometer::Accelerometer();
+    auto axis = phd::devices::accelerometer::data::Axis::Z;
+
+    std::cout << "RUNNING RX Accelerometer data stream classification." << std::endl;
+    observers::accelerometer::runAccelerometerObserver(
+            gpsDataStore,
+            accelerometer,
+            axis,
+            phdConfig,
+            svmConfig,
+            serverConfig
+    );
+
+    std::cout << "RUNNING RX Camera data stream classification." << std::endl;
+    observers::camera::runCameraObserver(
+            gpsDataStore,
+            phdConfig,
+            cvConfig,
+            serverConfig
+    );
+
+    observables::gps::createGPSObservable(gpsDataStore, 2000L).as_blocking().subscribe();
+
+    updater->kill();
+    updater->join();
+    delete (updater);
+    delete (gpsDataStore);
 }
 
 int main(int argc, char *argv[]) {
@@ -63,18 +161,10 @@ int main(int argc, char *argv[]) {
 
     const string root = phd::io::getParentDirectory(string(dirname(argv[0])));
 
-    config_folder = root + config_folder;
-
+    auto config_folder = root + config_folder_suffix;
     cout << config_folder << endl;
 
-    CURLcode initResult =  HTTP::init();
-    cout << "cURL Global Initialization: ";
-    if(initResult == CURLE_OK){
-        cout << "OK";
-    } else {
-        cout << "Error " << initResult;
-    }
-    cout << endl;
+    initCURL();
 
     if (argc < 2) {
         showHelper();
@@ -83,65 +173,72 @@ int main(int argc, char *argv[]) {
     } else {
 
         auto mode = std::string(argv[1]);
+        auto withoutRx = false;
+        if(argc > 2){
+            withoutRx = std::string(argv[2]) == "-withoutRx";
+        }
 
-        cout << mode << " mode: ON" << endl;
+        cout << mode << " mode: ON \n" << endl;
 
         auto poison_pill = false;
 
+        cout << "Loading Computer Vision Configuration..." << endl;
         phdConfig = loadProgramConfiguration(config_folder + "/config.json");
-        serverConfig = loadServerConfig(config_folder + "/config.json");
+        cout << "Computer Vision Configuration Loaded" << endl;
 
-        if(mode == "-http"){
-            testHTTPCommunication(serverConfig);
-        } else if(mode == "-led") {
-            testLed(notificationLeds);
+        serverConfig = loadServerConfig(config_folder + "/config.json");
+        cout << "Server Configuration Loaded\n" << endl;
+
+        if (mode == "-http") {
+            phd::test::network::testHTTPCommunication(serverConfig);
+        } else if (mode == "-led") {
+            phd::test::led::testLed(notificationLeds);
+        } else if (mode == "-accelerometer") {
+            phd::test::accelerometer::testAccelerometerCommunication(withoutRx);
         } else if (mode == "-train" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
+            trainAccelerometerMlAlgorithm(svmConfig, false);
 
-            trainAccelerometer(svmConfig, false);
-//            testAccelerometer(svmConfig);
-
-        } else if (mode == "-cross-train" && argc > 2) {
+        } else if (mode == "-crosstrain" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
 
-            trainAccelerometer(svmConfig, true);
-            testAccelerometer(svmConfig);
+            trainAccelerometerMlAlgorithm(svmConfig, true);
+            testAccelerometerMlAlgorithm(svmConfig);
 
-        } else if (mode == "-test" && argc > 2) {
-
-            auto svmConfig = loadSVMOptions(argv[2]);
-            testAccelerometer(svmConfig);
-
+        } else if (mode == "-observers") {
+            testObservers(config_folder);
         } else if (mode == "-fp") {
+            phd::test::fingerprint::testFingerPrintCalculation();
+        } else if (mode == "-gps"){
+            testGPS(argc, argv, config_folder, withoutRx);
+        } else if (mode == "-o") {
 
-            std::string uid = fingerprint::getUID();
+            cout << "Registering Device on Server..." << endl;
+            registerDeviceOnServer(toJSON(fingerprint::getUID()), serverConfig);
 
-            std::cout << "Fp: " << uid << std::endl;
-
-        } else {
             serialPortName = loadSerialPortFromConfig(config_folder + "/config.json");
-
             SerialPort *serialPort = initSerialPort(serialPortName);
+
             auto gpsDataStore = new GPSDataStore();
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
-            if (mode == "-o") {
-                CVArgs cvConfig = loadCVArgs(config_folder + "/config.json");
-                runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
-            } else if (mode == "-gps") {
-                testGPSCommunication(gpsDataStore);
-            } else {
-                showHelper();
-            }
+            cvConfig = loadCVArgs(config_folder + "/config.json");
+
+//            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
+
+            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
 
             updater->kill();
             updater->join();
-            serialPort->closePort();
             delete (updater);
-            delete (serialPort);
             delete (gpsDataStore);
+
+            serialPort->closePort();
+            delete (serialPort);
+        } else {
+            showHelper();
         }
     }
 

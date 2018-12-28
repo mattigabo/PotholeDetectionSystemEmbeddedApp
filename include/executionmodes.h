@@ -2,8 +2,8 @@
 // Created by Matteo Gabellini on 27/10/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
-#define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H
 
 #include <phdetection/io.hpp>
 
@@ -11,25 +11,15 @@
 #include <configurationutils.h>
 #include <raspberrypi/Led.h>
 
-using namespace phd::devices::gps;
-using namespace phd::configurations;
-using namespace phd::devices::raspberry::led;
-using namespace phd::io;
-
 void runObservationMode(bool poison_pill,
-        GPSDataStore* gpsDataStore,
-        Configuration phdConfig,
-        CVArgs cvConfig,
-        ServerConfig serverConfig);
+        phd::devices::gps::GPSDataStore* gpsDataStore,
+        phd::io::Configuration phdConfig,
+        phd::configurations::CVArgs cvConfig,
+        phd::configurations::ServerConfig serverConfig);
 
-void testGPSCommunication(GPSDataStore* storage);
+void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
+                                   const bool cross_validate);
 
-void testHTTPCommunication(ServerConfig serverConfig);
+void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args);
 
-void testLed(NotificationLeds notificationLeds);
-
-void trainAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args, const bool cross_validate);
-
-void testAccelerometer(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args);
-
-#endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_EXECUTIONMODES_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H

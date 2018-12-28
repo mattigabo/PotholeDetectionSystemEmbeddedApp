@@ -4,3 +4,6 @@
 [submodule "lib/RxCpp"]
 	path = lib/RxCpp
 	url = https://github.com/ReactiveX/RxCpp
+[submodule "lib/nunchuck-adapter"]
+	path = lib/nunchuck-adapter
+	url = https://github.com/mattigabo/nunchuck-adapter.git

@@ -2,16 +2,18 @@
 // Created by Xander on 03/12/2018.
 //
 
-#ifndef POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_FINGERPRINT_H
-#define POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_FINGERPRINT_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_FINGERPRINT_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_FINGERPRINT_H
 
 #include <string>
 
 namespace fingerprint {
+
+    std::string extractSerialNumber(std::string readString);
 
     std::string getUID ();
 
     bool validateUID(std::string uid);
 }
 
-#endif //POTHOLEDETECTIONSYSTEMEMBEDDEDAPP_FINGERPRINT_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_FINGERPRINT_H

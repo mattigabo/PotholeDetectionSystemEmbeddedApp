@@ -2,15 +2,19 @@
 // Created by Xander on 26/9/2018.
 //
 
-#ifndef POTHOLEDETECTIONEMBEDDEDAPP_CAMERA_H
-#define POTHOLEDETECTIONEMBEDDEDAPP_CAMERA_H
+#ifndef POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CAMERA_H
+#define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CAMERA_H
 
 #include <opencv2/core.hpp>
 
-namespace phd::devices::camera {
+namespace phd {
+    namespace devices {
+        namespace camera {
 
-    cv::Mat fetch(int device_id);
+            cv::Mat fetch(int device_id);
 
+        }
+    }
 }
 
-#endif //POTHOLEDETECTIONEMBEDDEDAPP_CAMERA_H
+#endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CAMERA_H
