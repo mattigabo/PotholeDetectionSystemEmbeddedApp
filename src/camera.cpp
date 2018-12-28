@@ -18,11 +18,9 @@ namespace phd {
                 static bool only_once = false;
 
                 if (!only_once) {
-
-
                     dummy_img = cv::Mat(128, 128, CV_8UC3, cv::Scalar(1, 1, 1));
-                    std::cout << "OCV Image Type:" << dummy_img.type() << std::endl;
-                    std::cout << dummy_img.channels() << std::endl;
+//                    std::cout << "OCV Image Type:" << dummy_img.type() << std::endl;
+//                    std::cout << dummy_img.channels() << std::endl;
                     only_once = true;
                 }
 

@@ -218,9 +218,10 @@ int main(int argc, char *argv[]) {
             phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, true);
             phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
-        } else if (mode == "-test") {
+        } else if (mode == "-test" && argc > 2) {
 
             auto svmConfig = loadSVMOptions(argv[2]);
+
             phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
         } else if (mode == "-observers") {
