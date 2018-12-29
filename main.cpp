@@ -25,6 +25,7 @@
 #include <execution/observables/gps.h>
 #include <execution/observers/accelerometer.h>
 #include <execution/observers/camera.h>
+#include <execution/observers/gps.h>
 #include <execution/test.h>
 #include <execution/utils.h>
 
@@ -235,6 +236,7 @@ int main(int argc, char *argv[]) {
             testGPS(argc, argv, config_folder, withoutRx);
 
         } else if (mode == "-o") {
+            notificationLeds.programInExecution.switchOn();
 
             cout << "Registering Device on Server..." << endl;
             registerDeviceOnServer(toJSON(fingerprint::getUID()), serverConfig);
@@ -252,6 +254,7 @@ int main(int argc, char *argv[]) {
 
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 
+            observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
 //            runObservationMode(poison_pill, gpsDataStore, phdConfig, cvConfig, serverConfig);
 
 //            observers::camera::runCameraObserver(gpsDataStore, phdConfig, cvConfig, serverConfig);
@@ -272,6 +275,8 @@ int main(int argc, char *argv[]) {
 
             serialPort->closePort();
             delete (serialPort);
+
+            notificationLeds.programInExecution.switchOff();
         } else {
             showHelper();
         }

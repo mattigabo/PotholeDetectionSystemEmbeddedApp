@@ -3,14 +3,19 @@
 //
 
 #include "gps/GPSDataStore.h"
-#include <cmath>
 
 namespace phd {
     namespace devices {
         namespace gps {
 
+            bool coordinatesIsEqual(Coordinates a, Coordinates b){
+                return a.latitude == b.latitude &&
+                       a.longitude == b.longitude &&
+                       a.altitude == b.latitude;
+            }
+
             GPSDataStore::GPSDataStore() {
-                internal_store = Coordinates{NAN, NAN, NAN};
+                internal_store = emptyCoordinates;
             }
 
             void GPSDataStore::update(const Coordinates updatedValue) {
@@ -27,4 +32,5 @@ namespace phd {
             }
 
         }
-    }}
+    }
+}

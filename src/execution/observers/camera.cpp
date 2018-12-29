@@ -80,8 +80,6 @@ namespace observers {
 
                 sendDataToServer(position, serverConfig);
             });
-
-//            gps_obs.as_blocking().subscribe();
         }
 
     }

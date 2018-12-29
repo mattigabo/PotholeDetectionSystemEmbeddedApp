@@ -107,7 +107,7 @@ else ()
             include/configurationutils.h                    src/configurationutils.cpp
             include/executionmodes.h                        src/executionmodes.cpp
 
-            include/raspberrypi/Led.h                       src/raspberrypi/Led.cpp
+            include/raspberrypi/led.h src/raspberrypi/led.cpp
             include/raspberrypi/raspberrypiutils.h          src/raspberrypi/raspberrypiutils.cpp
 
             include/accelerometer/features.h                src/accelerometer/features.cpp
@@ -126,7 +126,7 @@ else ()
             include/execution/observables/camera.h          src/execution/observables/camera.cpp
             include/execution/observables/gps.h             src/execution/observables/gps.cpp
             include/execution/observables/accelerometer.h   src/execution/observables/accelerometer.cpp
-    )
+            include/execution/observers/gps.h src/execution/observers/gps.cpp)
 
     # linking
     target_link_libraries(

@@ -9,7 +9,7 @@
 
 #include <gps/GPSDataStore.h>
 #include <configurationutils.h>
-#include <raspberrypi/Led.h>
+#include <raspberrypi/led.h>
 
 void runObservationMode(bool poison_pill,
         phd::devices::gps::GPSDataStore* gpsDataStore,

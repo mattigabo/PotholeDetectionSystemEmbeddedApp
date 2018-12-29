@@ -34,8 +34,7 @@ namespace observers {
                                       phd::devices::accelerometer::data::Axis &observationAxis,
                                       phd::io::Configuration &phdConfig,
                                       SVMAxelConfig &svmAxelConfig,
-                                      phd::configurations::ServerConfig &serverConfig
-                                      );
+                                      phd::configurations::ServerConfig &serverConfig);
     }
 }
 

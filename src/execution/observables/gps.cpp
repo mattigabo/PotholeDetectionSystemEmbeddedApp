@@ -31,37 +31,8 @@ namespace observables {
 
             return tick_tock.map([gpsDataStore](long v) {
                 phd::devices::gps::Coordinates c = gpsDataStore->fetch();
-
-                std::cout << c.longitude << "|" << c.latitude <<  std::endl;
-
                 return c;
             });
-
-            //    auto gen = [&](rxcpp::subscriber<phd::devices::gps::Coordinates> s, phd::devices::gps::GPSDataStore *gps){
-            //        bool poison_pill = false;
-            //
-            //        while (!poison_pill) {
-            //            if (!s.is_subscribed()) {
-            //                poison_pill = true;
-            //            } else {
-            //                auto coo = gps->fetch();
-            //                s.on_next(coo);
-            //                std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-            //            }
-            //        }
-            //        s.on_completed();
-            //    };
-            //
-            //    rxcpp::connectable_observable<phd::devices::gps::Coordinates> gpsObservable =
-            //            rxcpp::observable<>::create<phd::devices::gps::Coordinates>(
-            //                [&](rxcpp::subscriber<phd::devices::gps::Coordinates> s){
-            //                    std::thread(gen, s, gpsDataStore).join();
-            //                }).publish();
-            //
-            //    gpsObservable.connect();
-            //
-            //    return gpsObservable;
-
         }
     }
 }
