@@ -326,11 +326,12 @@ namespace fingerprint {
     }
 
     std::string getUID(){
-        // get the name of the computer
+
         static std::string buf;
         static bool only_once = false;
 
         if (!only_once) {
+            // get the name of the computer
             u16* id = computeSystemUniqueId();
             for ( u32 i = 0; i < FINGERPRINT_LENGTH; i++ )
             {
@@ -350,10 +351,7 @@ namespace fingerprint {
                 }
             }
             std::transform(buf.begin(), buf.end(), buf.begin(), ::toupper);
-        } else {
-            std::cout << "FP already calculated. Returning stored FP for device." << std::endl;
         }
-
 
         return buf;
     }

@@ -26,7 +26,8 @@ namespace phd{
             string(" folder inside the program directory. ");
         }
 
-        void loadFromJSON(const string path_to_config, function<void(Document*)> loadLogic, string errorMessage) {
+        void loadFromJSON(const string &path_to_config, function<void(Document*)> &loadLogic, string &errorMessage) {
+
             ifstream json(path_to_config, fstream::in);
 
             IStreamWrapper wrapper(json);
@@ -52,6 +53,8 @@ namespace phd{
 
             function<void(Document*)> loadLogic = [&](Document* configRef) {
 
+                cout << "Opened file " << path_to_config << endl;
+
                 assert((*configRef).HasMember("cvArgs"));
                 assert((*configRef)["cvArgs"].HasMember("method"));
                 assert((*configRef)["cvArgs"].HasMember("bayes"));
@@ -62,6 +65,11 @@ namespace phd{
                 args.bayes = (*configRef)["cvArgs"]["bayes"].GetString();
                 args.svm = (*configRef)["cvArgs"]["svm"].GetString();
                 args.rotate = (*configRef)["cvArgs"]["rotate"].GetBool();
+
+                cout << endl << "Classification method: " << args.method << endl
+                << "Bayes Model Location: " << args.bayes << endl
+                << "SVM Model Location: " << args.svm << endl
+                << "Rotate Image: " << (args.rotate ? "True" : "False") << endl << endl;
 
             };
 
@@ -77,7 +85,8 @@ namespace phd{
             string portName;
 
             function<void(Document*)> loadLogic = [&](Document* configRef) {
-                cout << "Serial port configuration Loading... Opened file " << path_to_config << endl;
+
+                cout << "Loading Serial port configuration... Opened file " << path_to_config << endl;
 
                 assert((*configRef).HasMember("gps"));
                 assert((*configRef)["gps"].HasMember("serialPort"));
@@ -97,7 +106,8 @@ namespace phd{
             ServerConfig serverConfig;
 
             function<void(Document*)> loadLogic = [&](Document* configRef) {
-                cout << "Server configuration Loading... Opened file " << path_to_config << endl;
+
+                cout << "Opened file " << path_to_config << endl;
 
                 assert((*configRef).HasMember("server"));
                 assert((*configRef)["server"].HasMember("protocol"));
@@ -109,6 +119,11 @@ namespace phd{
                 serverConfig.hostname = (*configRef)["server"]["hostname"].GetString();
                 serverConfig.port = (*configRef)["server"]["port"].GetInt();
                 serverConfig.api = (*configRef)["server"]["api"].GetString();
+
+                cout << endl << "Protocol: " << serverConfig.protocol << endl
+                    << "Hostname/IP: " << serverConfig.hostname << endl
+                    << "Port: " << serverConfig.port << endl
+                    << "API endpoint: " << serverConfig.api << endl << endl;
 
             };
 
@@ -124,7 +139,8 @@ namespace phd{
             SVMParams params;
 
             function<void (Document*)> parser = [&](Document* json) {
-                cout << "Loading Support Vector Machine Configuration... Opened file " << path_to_config << endl;
+
+                cout << "Opened file " << path_to_config << endl;
 
                 assert((*json).HasMember("svm"));
 
@@ -270,11 +286,11 @@ namespace phd{
                 params.balanced_folding = (*json)["svm"]["balanced-folding"].GetBool();
                 config.params = std::pair<string, SVMParams>("svm", params);
 
-                std::cout << std::endl << "LOADED: " << std::endl
+                std::cout << std::endl
                 << "train-set:" << config.train_set <<  std::endl
                 << "test-set:" << config.test_set <<  std::endl
                 << "model:" << config.model <<  std::endl
-                << "norm:" << (*json)["svm"]["norm-method"].GetString() << " | def: MINMAX" << std::endl
+                << "norm:" << (*json)["svm"]["norm-method"].GetString() << " | def: MIN-MAX" << std::endl
                 << "range:[" << config.norm_range.first << "," << config.norm_range.second << "]" <<  std::endl
                 << "type:" << (*json)["svm"]["type"].GetString() << " | def: C_SVC" << std::endl
                 << "kernel:" << (*json)["svm"]["kernel"].GetString() << " | def: RBF" <<  std::endl

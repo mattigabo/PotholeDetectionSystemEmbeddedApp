@@ -3,6 +3,8 @@
 //
 #include "execution/observers/accelerometer.h"
 
+#include <future>
+
 #include <chrono>
 #include <string>
 #include <thread>
@@ -22,7 +24,8 @@ namespace observers {
                                       phd::devices::accelerometer::data::Axis &observationAxis,
                                       phd::io::Configuration &phdConfig,
                                       SVMAxelConfig &svmAxelConfig,
-                                      phd::configurations::ServerConfig &serverConfig) {
+                                      phd::configurations::ServerConfig &serverConfig,
+                                      phd::devices::raspberry::led::Led *dataTransferingNotificationLed) {
 
             auto accelerometer_obs = observables::accelerometer::createAccelerometerValuesStream(accelerometer,
                     OBSERVATION_PERIOD_AT_50Hz);
@@ -91,9 +94,14 @@ namespace observers {
 
             }).map([] (GPSWithMat gpsWithLabels){
                 return gpsWithLabels.first;
-            }).subscribe([serverConfig](phd::devices::gps::Coordinates coordinates) {
+            }).subscribe([serverConfig, dataTransferingNotificationLed](phd::devices::gps::Coordinates coordinates) {
                 std::string position = toJSON(coordinates, fingerprint::getUID());
-                sendDataToServer(position, serverConfig);
+
+                auto f = std::async(std::launch::async, [position, serverConfig, dataTransferingNotificationLed]() {
+                    dataTransferingNotificationLed->switchOn();
+                    sendDataToServer(position, serverConfig);
+                    dataTransferingNotificationLed->switchOff();
+                });
             });
 
 //            accelerometer_obs.as_blocking().subscribe();

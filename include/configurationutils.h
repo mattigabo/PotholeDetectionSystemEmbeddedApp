@@ -4,8 +4,12 @@
 #include <iostream>
 #include <opencv2/ml.hpp>
 
+#include <phdetection/io.hpp>
+
 namespace phd {
     namespace configurations {
+
+        typedef phd::io::Configuration PhDConfig;
 
         struct ServerConfig {
             std::string protocol;
@@ -40,6 +44,14 @@ namespace phd {
             double C;
             double gamma;
             bool balanced_folding;
+        };
+
+        struct EmbeddedAppConfiguration{
+            CVArgs cvConfig;
+            PhDConfig phdConfig;
+            ServerConfig serverConfig;
+            MLOptions<SVMParams> svmConfig;
+            std::string serialPortName;
         };
 
         CVArgs loadCVArgs(const std::string path_to_config);

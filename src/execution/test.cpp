@@ -32,8 +32,13 @@
 #include <execution/observables/gps.h>
 #include <execution/observables/accelerometer.h>
 
+#include <serialport/SerialPort.h>
+#include <serialport/SigrokSerialPortWrapper.h>
+
+#include <gps/GPSDataStore.h>
+#include <gps/GPSDataUpdater.h>
+
 using namespace std;
-//using namespace rapidjson;
 
 namespace phd{
     namespace test{
@@ -54,6 +59,49 @@ namespace phd{
                 src.as_blocking().subscribe([](phd::devices::gps::Coordinates c) {
                     std::cout << c.longitude << "|" << c.latitude << std::endl;
                 });
+            }
+
+            void testGPS(int argc, char *argv[], string serialPortName, bool withoutRx){
+                cout << "Testing the gps" << endl;
+
+                auto gpsDataStore = new phd::devices::gps::GPSDataStore();
+                phd::devices::gps::GPSDataUpdater* updater;
+
+                phd::devices::serialport::SerialPort *serialPort = nullptr;
+
+                auto mockedMode = false;
+                if(argc >= 4) {
+                    mockedMode = std::string(argv[3]) == "-mocked" || std::string(argv[2]) == "-mocked";
+                } else if(argc >= 3){
+                    mockedMode = std::string(argv[2]) == "-mocked";
+                }
+
+                if(mockedMode){
+                    updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
+                } else {
+                    serialPort = new phd::devices::serialport::SigrokSerialPortWrapper(serialPortName);
+                    serialPort->openPort(phd::devices::serialport::READ);
+
+                    updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+                }
+
+                if(withoutRx){
+                    std::cout << "Mocked mode withOUT Reactive Extensions..." << std::endl;
+                    phd::test::gps::testGPSWithoutRxCpp(gpsDataStore);
+                } else {
+                    std::cout << "Mocked mode with Reactive Extensions..." << std::endl;
+                    phd::test::gps::testGPSWithRxCpp(gpsDataStore);
+                }
+
+                updater->kill();
+                updater->join();
+                delete (updater);
+                delete (gpsDataStore);
+
+                if(serialPort != nullptr) {
+                    serialPort->closePort();
+                    delete (serialPort);
+                }
             }
         }
 

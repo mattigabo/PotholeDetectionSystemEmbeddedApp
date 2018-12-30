@@ -22,6 +22,7 @@ namespace phd{
 
             void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage);
 
+            void testGPS(int argc, char *argv[], std::string serialPortName, bool withoutRx);
         }
 
         namespace accelerometer{

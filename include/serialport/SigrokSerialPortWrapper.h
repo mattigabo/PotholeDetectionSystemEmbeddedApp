@@ -19,6 +19,7 @@ namespace phd {
                 static const size_t READ_BUFFER_LENGTH = 10000;
                 static const int READING_TIMEOUT_MILLISECONDS = 1000;
                 SigrokSerialPortWrapper(std::string name);
+                ~SigrokSerialPortWrapper();
                 void initPort();
                 void openPort(OperationMode mode);
                 void closePort();

@@ -29,69 +29,92 @@
 #include <accelerometer/utils.h>
 #include <accelerometer/accelerometer.h>
 
+#include <gps/GPSDataStore.h>
+#include <gps/GPSDataUpdater.h>
+#include <raspberrypi/led.h>
+
 #include <execution/utils.h>
 #include <execution/observables/accelerometer.h>
 #include <execution/observables/gps.h>
+
+#include <execution/observers/accelerometer.h>
+#include <execution/observers/gps.h>
+#include <execution/observers/camera.h>
 
 #include <fingerprint.h>
 
 using namespace rapidjson;
 using namespace std;
 
-cv::Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model, cv::Mat &image,
-                               const phd::io::Configuration &phdConfig) {
+namespace phd {
+    namespace executionmodes {
 
-    //cout << endl << "---------------" << image << endl;
+        cv::Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model,
+                                           cv::Mat &image,
+                                           const phd::io::Configuration &phdConfig) {
 
-    auto features = phd::getFeatures(image, phdConfig);
+            //cout << endl << "---------------" << image << endl;
 
-    cv::Mat labels;
+            auto features = phd::getFeatures(image, phdConfig);
 
-    try {
-        labels = phd::classify(method, svm_model, bayes_model, features);
-    } catch(phd::UndefinedMethod &ex)  {
-        cerr << "ERROR: " << ex.what() << endl;
-        exit(-1);
-    }
+            cv::Mat labels;
 
-    cout << "LABELS: " << labels << endl;
-
-    return labels;
-}
-
-void runObservationMode(bool poison_pill,
-        phd::devices::gps::GPSDataStore* gpsDataStore,
-        phd::io::Configuration phdConfig,
-        phd::configurations::CVArgs cvConfig,
-        phd::configurations::ServerConfig serverConfig){
-
-    std::cout << "Capture Device ID: " << cv::VideoCaptureAPIs::CAP_ANY << std::endl;
-
-    while(!poison_pill) {
-
-        std::string position = toJSON(gpsDataStore->fetch(), std::string());
-
-        cv::Mat image = phd::devices::camera::fetch(cv::VideoCaptureAPIs::CAP_ANY);
-
-        if (cvConfig.rotate) {
-            cv::rotate(image, image, cv::ROTATE_180);
-        }
-
-//        cv::imshow("Capture", image);
-//        waitKey(0);
-
-        cv::Mat labels = extractFeaturesAndClassify(cvConfig.method, cvConfig.bayes, cvConfig.svm, image, phdConfig);
-        if(labels.rows != 0) {
-            labels = labels.row(0);
-
-            vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
-
-            if (std::find(l.begin(), l.end(), 1) != l.end() ||
-                std::find(l.begin(), l.end(), 2) != l.end()) {
-
-                sendDataToServer(position, serverConfig);
+            try {
+                labels = phd::classify(method, svm_model, bayes_model, features);
+            } catch (phd::UndefinedMethod &ex) {
+                cerr << "ERROR: " << ex.what() << endl;
+                exit(-1);
             }
+
+            cout << "LABELS: " << labels << endl;
+
+            return labels;
         }
-        std::this_thread::sleep_for(chrono::milliseconds(500));
+
+        void doFingerprinting(phd::configurations::ServerConfig serverConfig){
+            const string fp = fingerprint::getUID();
+
+            cout << "Registering Device " << fp << " on Server..." << endl;
+            //            auto f = std::async(std::launch::async, [fp, serverConfig]() {
+            registerDeviceOnServer(toJSON(fp), serverConfig);
+            //            }
+        }
+
+        void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
+                                devices::gps::GPSDataStore *gpsDataStore,
+                                phd::devices::raspberry::led::NotificationLeds notificationLeds,
+                                bool useCamera) {
+
+            notificationLeds.programInExecution.switchOn();
+
+            doFingerprinting(loadedConfig.serverConfig);
+
+            auto accelerometer = new phd::devices::accelerometer::Accelerometer();
+            auto axis = phd::devices::accelerometer::data::Axis::Z;
+
+            observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
+
+            if(useCamera) {
+                std::cout << "RUNNING RX Camera data stream classification." << std::endl;
+                observers::camera::runCameraObserver(gpsDataStore,
+                        loadedConfig.phdConfig,
+                        loadedConfig.cvConfig,
+                        loadedConfig.serverConfig,
+                        &notificationLeds.serverDataTransfering);
+            }
+
+            std::cout << "RUNNING RX Accelerometer data stream classification." << std::endl;
+            observers::accelerometer::runAccelerometerObserver(
+                    gpsDataStore,
+                    accelerometer,
+                    axis,
+                    loadedConfig.phdConfig,
+                    loadedConfig.svmConfig,
+                    loadedConfig.serverConfig,
+                    &notificationLeds.serverDataTransfering
+            );
+
+            notificationLeds.programInExecution.switchOff();
+        }
     }
 }
