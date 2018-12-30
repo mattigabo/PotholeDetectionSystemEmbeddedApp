@@ -8,6 +8,7 @@
     "kernel": "RBF | LINEAR",
     "type": "C_SVC | NU_SVC",
     "k-fold": 2,
+    "balanced-folding": true,
     "max-iter": 1000,
     "epsilon": 0.000001,
     "C": 10,

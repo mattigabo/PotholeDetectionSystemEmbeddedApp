@@ -34,8 +34,8 @@
   },
   "cvArgs":{
     "method": "-multi",
-    "bayes": "./res/bayes/bayes.yml",
-    "svm": "./res/svm/svm.yml",
+    "bayes": "../res/bayes/bayes.yml",
+    "svm": "../res/svm/svm.yml",
     "rotate": true
   },
   "gps":{
