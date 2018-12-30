@@ -17,6 +17,7 @@
 #include <accelerometer/accelerometer.h>
 #include <accelerometer/features.h>
 #include <gps/GPSDataStore.h>
+#include <raspberrypi/led.h>
 
 namespace observers {
 
@@ -34,8 +35,8 @@ namespace observers {
                                       phd::devices::accelerometer::data::Axis &observationAxis,
                                       phd::io::Configuration &phdConfig,
                                       SVMAxelConfig &svmAxelConfig,
-                                      phd::configurations::ServerConfig &serverConfig
-                                      );
+                                      phd::configurations::ServerConfig &serverConfig,
+                                      phd::devices::raspberry::led::Led *dataTransferingNotificationLed);
     }
 }
 

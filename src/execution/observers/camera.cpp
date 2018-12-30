@@ -16,7 +16,8 @@ namespace observers {
         void runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
                                phd::io::Configuration &phdConfig,
                                phd::configurations::CVArgs &cvConfig,
-                               phd::configurations::ServerConfig &serverConfig) {
+                               phd::configurations::ServerConfig &serverConfig,
+                               phd::devices::raspberry::led::Led *dataTransferingNotificationLed) {
 
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1500L);
             auto camera_obs = observables::camera::createCameraObservable(gps_obs);
@@ -74,14 +75,15 @@ namespace observers {
 
             }).map([](GPSWithMat gpsWithLabels) {
                 return gpsWithLabels.first;
-            }).subscribe([serverConfig](phd::devices::gps::Coordinates coordinates){
-
+            }).subscribe([serverConfig, dataTransferingNotificationLed](phd::devices::gps::Coordinates coordinates){
                 std::string position = toJSON(coordinates, fingerprint::getUID());
 
-                sendDataToServer(position, serverConfig);
+                auto f = std::async(std::launch::async, [position, serverConfig, dataTransferingNotificationLed]() {
+                    dataTransferingNotificationLed->switchOn();
+                    sendDataToServer(position, serverConfig);
+                    dataTransferingNotificationLed->switchOff();
+                });
             });
-
-//            gps_obs.as_blocking().subscribe();
         }
 
     }

@@ -22,6 +22,12 @@ namespace phd {
                 this->cleanReadingBuffer();
             }
 
+            SigrokSerialPortWrapper::~SigrokSerialPortWrapper() {
+                this->closePort();
+                delete(reading_buffer);
+                delete(port_structure_pointer);
+            }
+
             void SigrokSerialPortWrapper::initPort() {
                 sp_return resultCode = sp_get_port_by_name(this->port_name.c_str(), port_structure_pointer);
                 SerialPortUtils::checkForException(resultCode, "sp_get_port_by_name in initPort");

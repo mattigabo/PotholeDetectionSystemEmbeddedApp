@@ -31,7 +31,9 @@ namespace phd{
 
             class SerialPort {
             public:
-                SerialPort(std::string name);
+                explicit SerialPort(std::string name);
+
+                //virtual ~SerialPort() = 0;
 
                 virtual void openPort(OperationMode mode) = 0;
 

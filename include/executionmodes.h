@@ -7,14 +7,18 @@
 
 #include <phdetection/io.hpp>
 
-#include <gps/GPSDataStore.h>
 #include <configurationutils.h>
-#include <raspberrypi/Led.h>
+#include <raspberrypi/led.h>
 
-void runObservationMode(bool poison_pill,
-        phd::devices::gps::GPSDataStore* gpsDataStore,
-        phd::io::Configuration phdConfig,
-        phd::configurations::CVArgs cvConfig,
-        phd::configurations::ServerConfig serverConfig);
+#include <serialport/SerialPort.h>
+#include <gps/GPSDataStore.h>
 
+namespace phd {
+    namespace executionmodes {
+        void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
+                                phd::devices::gps::GPSDataStore *gpsDataStore,
+                                phd::devices::raspberry::led::NotificationLeds notificationLeds,
+                                bool useCamera);
+    }
+}
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H

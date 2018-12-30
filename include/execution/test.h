@@ -6,7 +6,7 @@
 #define POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_TEST_H
 
 #include <gps/GPSDataStore.h>
-#include <raspberrypi/Led.h>
+#include <raspberrypi/led.h>
 
 #include <networking.h>
 
@@ -22,6 +22,7 @@ namespace phd{
 
             void testGPSWithRxCpp(phd::devices::gps::GPSDataStore* storage);
 
+            void testGPS(int argc, char *argv[], std::string serialPortName, bool withoutRx);
         }
 
         namespace accelerometer{

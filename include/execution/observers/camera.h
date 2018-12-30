@@ -15,6 +15,8 @@
 #include <networking.h>
 #include <gps/GPSDataStore.h>
 
+#include <raspberrypi/led.h>
+
 namespace observers {
     namespace camera {
 
@@ -24,7 +26,8 @@ namespace observers {
         void runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
                                phd::io::Configuration &phdConfig,
                                phd::configurations::CVArgs &cvConfig,
-                               phd::configurations::ServerConfig &serverConfig);
+                               phd::configurations::ServerConfig &serverConfig,
+                               phd::devices::raspberry::led::Led *dataTransferingNotificationLed);
     }
 }
 

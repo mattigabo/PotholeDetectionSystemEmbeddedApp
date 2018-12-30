@@ -42,9 +42,9 @@
     "serialPort": "/dev/cu.BT-GPS0055BB-SerialPort"
   },
   "svm": {
-    "train-set": "D:/Xander/Download/data/Training/P12-E.json",
-    "test-set": "D:/Xander/Download/data/Test/P12-P.json",
-    "model": "D:/Xander/Documenti/Projects/PotholeDetection_IoT/res/svm/accelerometer.P12.cross.2fold.i900.test.yml",
+    "train-set": "",
+    "test-set": "",
+    "model": "../res/svm/accelerometer.P12.cross.2fold.i900.yml",
     "norm-method": "MIN-MAX",
     "norm-range": [0.1, 0.9],
     "kernel": "RBF",
