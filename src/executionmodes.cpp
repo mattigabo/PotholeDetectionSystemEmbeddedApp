@@ -92,8 +92,6 @@ namespace phd {
             auto accelerometer = new phd::devices::accelerometer::Accelerometer();
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 
-            observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
-
             if(useCamera) {
                 std::cout << "RUNNING RX Camera data stream classification." << std::endl;
                 observers::camera::runCameraObserver(gpsDataStore,
@@ -114,6 +112,8 @@ namespace phd {
                     &notificationLeds.serverDataTransfering
             );
 
+
+            observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
             notificationLeds.programInExecution.switchOff();
         }
     }

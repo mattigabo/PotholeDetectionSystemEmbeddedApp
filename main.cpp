@@ -55,6 +55,8 @@ void showHelper(void) {
     cout << "-train <config-file> [ == Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
     cout << "-cross-train <config-file> [ == Cross-fold validate and Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
     cout << "-test [ == Test the trained SVM classifier for the accelerometer against the given test-set]" << endl;
+    cout << "-observers [ == Test the observers]" <<
+            "-camera [in order to observe also on the RasPi Camera]" << endl;
 }
 
 EmbeddedAppConfiguration loadConfig(string config_folder){
@@ -106,6 +108,7 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
     cout << mode << " mode is ACTIVE." << endl << endl;
 
     NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
+    auto gpsDataStore = new phd::devices::gps::GPSDataStore();
 
     if (mode == "-http") {
 
@@ -141,13 +144,10 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
         phd::test::fingerprint::testFingerPrintCalculation();
     } else if (mode == "-gps"){
         phd::test::gps::testGPS(argc, argv, loadedConfig.serialPortName, withoutRx);
-    }  else if (mode == "-o") {
-        SerialPort *serialPort = initSerialPort(loadedConfig.serialPortName);
+    } else if (mode == "-observers") {
+        auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
 
-        auto gpsDataStore = new phd::devices::gps::GPSDataStore();
-        auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
-
-        bool useCamera = argc > 2 && strcmp(argv[2], "-camera");
+        bool useCamera = argc > 2 && strcmp(argv[2], "-camera") == 0;
         phd::executionmodes::runObservationMode(loadedConfig, gpsDataStore,
                                                 notificationLeds,
                                                 useCamera);
@@ -155,13 +155,26 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
         updater->kill();
         updater->join();
         delete (updater);
-        delete (gpsDataStore);
+    } else if (mode == "-o") {
+        SerialPort *serialPort = initSerialPort(loadedConfig.serialPortName);
+
+        auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+
+        bool useCamera = argc > 2 && strcmp(argv[2], "-camera") == 0;
+        phd::executionmodes::runObservationMode(loadedConfig, gpsDataStore,
+                                                notificationLeds,
+                                                useCamera);
+
+        updater->kill();
+        updater->join();
+        delete (updater);
 
         serialPort->closePort();
         delete (serialPort);
     } else {
         showHelper();
     }
+    delete (gpsDataStore);
 }
 
 int main(int argc, char *argv[]) {
