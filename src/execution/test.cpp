@@ -78,10 +78,10 @@ namespace phd{
 
                 try {
                     if (mockedMode) {
-                        std::cout << "Mocked gps mode ";
+                        std::cout << "Mocked gps mode " << endl;
                         updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
                     } else {
-                        std::cout << "Real gps mode ";
+                        std::cout << "Real gps mode " << endl;
                         serialPort = new phd::devices::serialport::SigrokSerialPortWrapper(serialPortName);
                         serialPort->openPort(phd::devices::serialport::READ);
 
@@ -89,10 +89,10 @@ namespace phd{
                     }
 
                     if (withoutRx) {
-                        std::cout << "withOUT Reactive Extensions..." << std::endl;
+                        std::cout << "Execution withOUT Reactive Extensions..." << std::endl;
                         phd::test::gps::testGPSWithoutRxCpp(gpsDataStore);
                     } else {
-                        std::cout << "with Reactive Extensions..." << std::endl;
+                        std::cout << "Execution with Reactive Extensions..." << std::endl;
                         phd::test::gps::testGPSWithRxCpp(gpsDataStore);
                     }
 
