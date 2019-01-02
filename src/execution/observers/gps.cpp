@@ -13,7 +13,7 @@ namespace observers{
         void runGpsValueChecker(phd::devices::gps::GPSDataStore *gpsDataStore,
                                 phd::devices::raspberry::led::Led *validGpsDataNotificationLed){
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1000L);
-            gps_obs.subscribe([validGpsDataNotificationLed](phd::devices::gps::Coordinates coordinates){
+            gps_obs.as_blocking().subscribe([validGpsDataNotificationLed](phd::devices::gps::Coordinates coordinates){
                 if(phd::devices::gps::coordinatesIsEqual(coordinates,phd::devices::gps::Coordinates{NAN, NAN, NAN})){
                     validGpsDataNotificationLed->switchOn();
                 } else {
