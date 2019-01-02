@@ -159,22 +159,25 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
         delete (updater);
 
     } else if (args.mode == "-o") {
-        SerialPort *serialPort = initSerialPort(loadedConfig.serialPortName);
+        try {
+            SerialPort *serialPort = initSerialPort(loadedConfig.serialPortName);
 
-        auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+            auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
-        phd::executionmodes::runObservationMode(loadedConfig,
-                                                gpsDataStore,
-                                                notificationLeds,
-                                                args);
+            phd::executionmodes::runObservationMode(loadedConfig,
+                                                    gpsDataStore,
+                                                    notificationLeds,
+                                                    args);
 
-        updater->kill();
-        updater->join();
-        delete (updater);
+            updater->kill();
+            updater->join();
+            delete (updater);
 
-        serialPort->closePort();
-        delete (serialPort);
-
+            serialPort->closePort();
+            delete (serialPort);
+        }  catch (const string msg) {
+            cerr << msg << endl;
+        }
     } else {
         showHelper();
     }
