@@ -49,28 +49,6 @@ using namespace std;
 namespace phd {
     namespace executionmodes {
 
-        cv::Mat extractFeaturesAndClassify(const string &method, const string &bayes_model, const string &svm_model,
-                                           cv::Mat &image,
-                                           const phd::io::Configuration &phdConfig) {
-
-            //cout << endl << "---------------" << image << endl;
-
-            auto features = phd::getFeatures(image, phdConfig);
-
-            cv::Mat labels;
-
-            try {
-                labels = phd::classify(method, svm_model, bayes_model, features);
-            } catch (phd::UndefinedMethod &ex) {
-                cerr << "ERROR: " << ex.what() << endl;
-                exit(-1);
-            }
-
-            cout << "LABELS: " << labels << endl;
-
-            return labels;
-        }
-
         void doFingerprinting(phd::configurations::ServerConfig serverConfig){
             const string fp = fingerprint::getUID();
 
@@ -81,9 +59,9 @@ namespace phd {
         }
 
         void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
-                                devices::gps::GPSDataStore *gpsDataStore,
+                                phd::devices::gps::GPSDataStore *gpsDataStore,
                                 phd::devices::raspberry::led::NotificationLeds notificationLeds,
-                                bool useCamera) {
+                                phd::configurations::CommandLineArgs cmdArgs) {
 
             notificationLeds.programInExecution.switchOn();
 
@@ -92,17 +70,18 @@ namespace phd {
             auto accelerometer = new phd::devices::accelerometer::Accelerometer();
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 
-            if(useCamera) {
+            if(cmdArgs.useCamera) {
                 std::cout << "RUNNING RX Camera data stream classification." << std::endl;
-                observers::camera::runCameraObserver(gpsDataStore,
+                auto camera_subs = observers::camera::runCameraObserver(gpsDataStore,
                         loadedConfig.phdConfig,
                         loadedConfig.cvConfig,
                         loadedConfig.serverConfig,
-                        &notificationLeds.serverDataTransfering);
+                        &notificationLeds.serverDataTransfering
+                );
             }
 
             std::cout << "RUNNING RX Accelerometer data stream classification." << std::endl;
-            observers::accelerometer::runAccelerometerObserver(
+            auto axel_subs = observers::accelerometer::runAccelerometerObserver(
                     gpsDataStore,
                     accelerometer,
                     axis,
@@ -112,8 +91,16 @@ namespace phd {
                     &notificationLeds.serverDataTransfering
             );
 
+            if (cmdArgs.saveAxelValues) {
+                auto writer_subs = observers::accelerometer::runAccelerometerValuesWriter(
+                        gpsDataStore,
+                        accelerometer,
+                        cmdArgs.axelOutputLocation
+                );
+            }
 
-            observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
+            auto checker_subs = observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
+
             notificationLeds.programInExecution.switchOff();
         }
     }

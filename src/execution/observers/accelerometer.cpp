@@ -4,7 +4,8 @@
 #include "execution/observers/accelerometer.h"
 
 #include <future>
-
+#include <iostream>
+#include <fstream>
 #include <chrono>
 #include <string>
 #include <thread>
@@ -13,21 +14,26 @@
 #include <execution/observables/accelerometer.h>
 #include <fingerprint.h>
 #include <execution/utils.h>
+#include <execution/observers/accelerometer.h>
+
 
 using namespace phd;
 
 namespace observers {
     namespace accelerometer {
 
-        void runAccelerometerObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
-                                      phd::devices::accelerometer::Accelerometer *accelerometer,
-                                      phd::devices::accelerometer::data::Axis &observationAxis,
-                                      phd::io::Configuration &phdConfig,
-                                      SVMAxelConfig &svmAxelConfig,
-                                      phd::configurations::ServerConfig &serverConfig,
-                                      phd::devices::raspberry::led::Led *dataTransferingNotificationLed) {
+        rxcpp::composite_subscription
+            runAccelerometerObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                     phd::devices::accelerometer::Accelerometer *accelerometer,
+                                     phd::devices::accelerometer::data::Axis &observationAxis,
+                                     phd::io::Configuration &phdConfig,
+                                     SVMAxelConfig &svmAxelConfig,
+                                     phd::configurations::ServerConfig &serverConfig,
+                                     phd::devices::raspberry::led::Led *dataTransferringNotificationLed) {
 
-            auto accelerometer_obs = observables::accelerometer::createAccelerometerValuesStream(accelerometer,
+            auto subscription = rxcpp::composite_subscription();
+
+            auto accelerometer_obs = observables::accelerometer::createAccelerometerObservable(accelerometer,
                     OBSERVATION_PERIOD_AT_50Hz);
 
             auto buffered_accelerations_with_gps = accelerometer_obs.buffer(30)
@@ -94,18 +100,57 @@ namespace observers {
 
             }).map([] (GPSWithMat gpsWithLabels){
                 return gpsWithLabels.first;
-            }).subscribe([serverConfig, dataTransferingNotificationLed](phd::devices::gps::Coordinates coordinates) {
-                std::string position = toJSON(coordinates, fingerprint::getUID());
+            }).subscribe(
+                    subscription,
+                    [subscription, serverConfig, dataTransferringNotificationLed](phd::devices::gps::Coordinates coordinates) {
 
-                auto f = std::async(std::launch::async, [position, serverConfig, dataTransferingNotificationLed]() {
-                    dataTransferingNotificationLed->switchOn();
-                    sendDataToServer(position, serverConfig);
-                    dataTransferingNotificationLed->switchOff();
-                });
-            });
+                        std::string position = toJSON(coordinates, fingerprint::getUID());
 
-//            accelerometer_obs.as_blocking().subscribe();
+                        auto f = std::async(std::launch::async, [position, serverConfig, dataTransferringNotificationLed]() {
+                            dataTransferringNotificationLed->switchOn();
+                            sendDataToServer(position, serverConfig);
+                            dataTransferringNotificationLed->switchOff();
+                        });
 
+                    }, []() {
+                        std::cout << "Axel Stream Classifier has COMPLETED." << std::endl;
+                    }
+            );
+
+            return subscription;
+
+        }
+
+        rxcpp::composite_subscription
+            runAccelerometerValuesWriter(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                         phd::devices::accelerometer::Accelerometer *accelerometer,
+                                         std::string axelOutputLocation) {
+
+            auto output_file = new std::ofstream(axelOutputLocation);
+            auto accelerometer_obs = observables::accelerometer::createAccelerometerObservable(
+                    accelerometer,
+                    observers::accelerometer::OBSERVATION_PERIOD_AT_50Hz
+            );
+
+            auto subscription = rxcpp::composite_subscription();
+
+            accelerometer_obs.subscribe(
+                    subscription,
+                    [subscription, output_file, gpsDataStore](phd::devices::accelerometer::Acceleration axel) {
+                        if (output_file->is_open()) {
+                            auto gps = gpsDataStore->fetch();
+                            (*output_file)
+                                    << axel.X << "," << axel.Y << "," << axel.Z << ","
+                                    << gps.longitude << "," << gps.latitude
+                                    << std::endl;
+                        }
+                    }, [output_file](){
+                        std::cout << "Axel Stream Writer has COMPLETED." << std::endl;
+                        output_file->close();
+                    }
+            );
+
+            return subscription;
         }
     }
 }

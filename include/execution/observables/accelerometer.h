@@ -20,7 +20,7 @@ namespace observables{
        * @return An observable stream of acceleration values
        */
         rxcpp::observable<phd::devices::accelerometer::Acceleration>
-        createAccelerometerValuesStream(phd::devices::accelerometer::Accelerometer *source, const long refresh);
+        createAccelerometerObservable(phd::devices::accelerometer::Accelerometer *source, const long refresh);
     }
 }
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
-
+#include <functional>
 #include <libgen.h>
 
 #include <opencv2/core.hpp>
@@ -99,71 +99,74 @@ void initCURL(){
 }
 
 void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
-    auto mode = std::string(argv[1]);
-    auto withoutRx = false;
-    if(argc > 2){
-        withoutRx = std::string(argv[2]) == "-withoutRx";
-    }
 
-    cout << mode << " mode is ACTIVE." << endl << endl;
+    auto args = parseCommandLine(argc, argv);
+
+    cout << args.mode << " mode is ACTIVE." << endl << endl;
 
     NotificationLeds notificationLeds = { Led(0), Led(1), Led(2), Led(3)};
     auto gpsDataStore = new phd::devices::gps::GPSDataStore();
 
-    if (mode == "-http") {
+    if (args.mode == "-http") {
 
         phd::test::network::testHTTPCommunication(loadedConfig.serverConfig);
 
-    } else if (mode == "-led") {
+    } else if (args.mode == "-led") {
 
         phd::test::led::testLed(notificationLeds);
 
-    } else if (mode == "-accelerometer") {
+    } else if (args.mode == "-accelerometer") {
 
-        phd::test::accelerometer::testAccelerometerCommunication(withoutRx);
+        phd::test::accelerometer::testAccelerometerCommunication(args.withoutRx);
 
-    } else if (mode == "-train" && argc > 2) {
+    } else if (args.mode == "-train" && argc > 2) {
 
         auto svmConfig = loadSVMOptions(argv[2]);
         phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, false);
 
-    } else if (mode == "-cross-train" && argc > 2) {
+    } else if (args.mode == "-cross-train" && argc > 2) {
 
         auto svmConfig = loadSVMOptions(argv[2]);
 
         phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, true);
         phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
-    } else if (mode == "-test" && argc > 2) {
+    } else if (args.mode == "-test" && argc > 2) {
 
         auto svmConfig = loadSVMOptions(argv[2]);
 
         phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
-    }  else if (mode == "-fp") {
+    }  else if (args.mode == "-fp") {
+
         phd::test::fingerprint::testFingerPrintCalculation();
-    } else if (mode == "-gps"){
-        phd::test::gps::testGPS(argc, argv, loadedConfig.serialPortName, withoutRx);
-    } else if (mode == "-observers") {
+
+    } else if (args.mode == "-gps"){
+
+        phd::test::gps::testGPS(argc, argv, loadedConfig.serialPortName, args.withoutRx);
+
+    } else if (args.mode == "-observers") {
+
         auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
 
-        bool useCamera = argc > 2 && strcmp(argv[2], "-camera") == 0;
-        phd::executionmodes::runObservationMode(loadedConfig, gpsDataStore,
+        phd::executionmodes::runObservationMode(loadedConfig,
+                                                gpsDataStore,
                                                 notificationLeds,
-                                                useCamera);
+                                                args);
 
         updater->kill();
         updater->join();
         delete (updater);
-    } else if (mode == "-o") {
+
+    } else if (args.mode == "-o") {
         SerialPort *serialPort = initSerialPort(loadedConfig.serialPortName);
 
         auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
 
-        bool useCamera = argc > 2 && strcmp(argv[2], "-camera") == 0;
-        phd::executionmodes::runObservationMode(loadedConfig, gpsDataStore,
+        phd::executionmodes::runObservationMode(loadedConfig,
+                                                gpsDataStore,
                                                 notificationLeds,
-                                                useCamera);
+                                                args);
 
         updater->kill();
         updater->join();
@@ -171,6 +174,7 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
 
         serialPort->closePort();
         delete (serialPort);
+
     } else {
         showHelper();
     }

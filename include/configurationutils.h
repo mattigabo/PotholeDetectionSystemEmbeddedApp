@@ -54,6 +54,14 @@ namespace phd {
             std::string serialPortName;
         };
 
+        struct CommandLineArgs {
+            std::string mode;
+            bool withoutRx;
+            bool useCamera;
+            bool saveAxelValues;
+            std::string axelOutputLocation;
+        };
+
         CVArgs loadCVArgs(const std::string path_to_config);
 
         std::string loadSerialPortFromConfig(std::string path_to_config);
@@ -61,6 +69,8 @@ namespace phd {
         ServerConfig loadServerConfig(std::string path_to_config);
 
         MLOptions<SVMParams> loadSVMOptions(const std::string &path_to_config);
+
+        CommandLineArgs parseCommandLine(int argc, char* argv[]);
 
     }};
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_CONFIGURATION_UTILS_H

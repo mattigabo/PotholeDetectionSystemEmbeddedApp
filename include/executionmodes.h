@@ -16,9 +16,9 @@
 namespace phd {
     namespace executionmodes {
         void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
-                                phd::devices::gps::GPSDataStore *gpsDataStore,
-                                phd::devices::raspberry::led::NotificationLeds notificationLeds,
-                                bool useCamera);
+                                        phd::devices::gps::GPSDataStore *gpsDataStore,
+                                        phd::devices::raspberry::led::NotificationLeds notificationLeds,
+                                        phd::configurations::CommandLineArgs cmdArgs);
     }
 }
 #endif //POTHOLEDETECTIONSYSTEM_EMBEDDEDAPP_EXECUTIONMODES_H

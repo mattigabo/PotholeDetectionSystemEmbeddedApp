@@ -13,13 +13,16 @@ using namespace std;
 namespace observers {
     namespace camera {
 
-        void runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
-                               phd::io::Configuration &phdConfig,
-                               phd::configurations::CVArgs &cvConfig,
-                               phd::configurations::ServerConfig &serverConfig,
-                               phd::devices::raspberry::led::Led *dataTransferingNotificationLed) {
+        rxcpp::composite_subscription runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                                        phd::io::Configuration &phdConfig,
+                                                        phd::configurations::CVArgs &cvConfig,
+                                                        phd::configurations::ServerConfig &serverConfig,
+                                                        phd::devices::raspberry::led::Led *dataTransferingNotificationLed) {
+
+            auto subscription = rxcpp::composite_subscription();
 
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1500L);
+
             auto camera_obs = observables::camera::createCameraObservable(gps_obs);
 
             camera_obs.map([cvConfig](GPSWithMat image) {
@@ -75,15 +78,23 @@ namespace observers {
 
             }).map([](GPSWithMat gpsWithLabels) {
                 return gpsWithLabels.first;
-            }).subscribe([serverConfig, dataTransferingNotificationLed](phd::devices::gps::Coordinates coordinates){
-                std::string position = toJSON(coordinates, fingerprint::getUID());
+            }).subscribe(
+                    subscription,
+                    [subscription, serverConfig, dataTransferingNotificationLed](phd::devices::gps::Coordinates coordinates){
+                        std::string position = toJSON(coordinates, fingerprint::getUID());
 
-                auto f = std::async(std::launch::async, [position, serverConfig, dataTransferingNotificationLed]() {
-                    dataTransferingNotificationLed->switchOn();
-                    sendDataToServer(position, serverConfig);
-                    dataTransferingNotificationLed->switchOff();
-                });
-            });
+                        auto f = std::async(std::launch::async, [position, serverConfig, dataTransferingNotificationLed]() {
+                            dataTransferingNotificationLed->switchOn();
+                            sendDataToServer(position, serverConfig);
+                            dataTransferingNotificationLed->switchOff();
+                        });
+
+                    }, []() {
+                        std::cout << "Camera Image Classifier has COMPLETED." << std::endl;
+                    }
+            );
+
+            return subscription;
         }
 
     }

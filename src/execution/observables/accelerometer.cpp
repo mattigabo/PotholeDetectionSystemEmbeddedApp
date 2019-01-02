@@ -6,7 +6,7 @@
 namespace observables{
     namespace accelerometer{
         rxcpp::observable<phd::devices::accelerometer::Acceleration>
-        createAccelerometerValuesStream(phd::devices::accelerometer::Accelerometer *source, const long refresh){
+        createAccelerometerObservable(phd::devices::accelerometer::Accelerometer *source, const long refresh){
             auto period = std::chrono::milliseconds(refresh);
             rxcpp::connectable_observable<long> streamDataGenerationClock =
                     rxcpp::observable<>::interval(period, rxcpp::observe_on_event_loop()).publish();

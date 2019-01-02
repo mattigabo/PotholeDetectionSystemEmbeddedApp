@@ -23,11 +23,11 @@ namespace observers {
         typedef std::pair<phd::devices::gps::Coordinates, cv::Mat> GPSWithMat;
         typedef std::pair<phd::devices::gps::Coordinates, std::vector<phd::ontologies::Features>> GPSWithFeatures;
 
-        void runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
-                               phd::io::Configuration &phdConfig,
-                               phd::configurations::CVArgs &cvConfig,
-                               phd::configurations::ServerConfig &serverConfig,
-                               phd::devices::raspberry::led::Led *dataTransferingNotificationLed);
+        rxcpp::composite_subscription runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                                        phd::io::Configuration &phdConfig,
+                                                        phd::configurations::CVArgs &cvConfig,
+                                                        phd::configurations::ServerConfig &serverConfig,
+                                                        phd::devices::raspberry::led::Led *dataTransferingNotificationLed);
     }
 }
 

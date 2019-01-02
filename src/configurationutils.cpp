@@ -9,6 +9,8 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/istreamwrapper.h>
 #include <opencv2/ml.hpp>
+#include <configurationutils.h>
+
 
 using namespace rapidjson;
 using namespace std;
@@ -307,6 +309,42 @@ namespace phd{
             loadFromJSON(path_to_config, parser, errorMessage);
 
             return config;
+        }
+
+        CommandLineArgs parseCommandLine(int argc, char *argv[]) {
+
+            std::cout << "Parsing cmd-line arguments... ";
+
+            auto mode = std::string(argv[1]);
+
+            bool withoutRx = false;
+            bool useCamera = false;
+            bool saveAxelValues = false;
+            string axelOutputLocation = "../res/axel.output";
+
+            auto evaluator = [&withoutRx, &useCamera, &saveAxelValues, &axelOutputLocation](int argc, int idx, char* argv[]) {
+                if (std::strcmp(argv[idx], "-withoutRx") == 0) {
+                    withoutRx = true;
+                } else if (std::strcmp(argv[idx], "-camera") == 0) {
+                    useCamera = true;
+                } else if (std::strcmp(argv[idx], "-save-axel") == 0) {
+                    saveAxelValues = true;
+                    if (argc > idx + 1 && std::string(argv[idx + 1]).at(0) != '-') {
+                        axelOutputLocation = std::string(argv[idx + 1]);
+                    }
+                }
+            };
+
+            if (argc > 2) {
+                for (int i = 2; i < argc; ++i) {
+                    std::cout << argv[i] << "|";
+                    evaluator(argc, i, argv);
+                }
+            }
+
+            std::cout << "." << endl;
+
+            return {mode, withoutRx, useCamera, saveAxelValues, axelOutputLocation};
         }
 
     }};

@@ -118,7 +118,7 @@ namespace phd{
             }
 
             void testAccelerometerWithRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
-                auto accelerationStream = observables::accelerometer::createAccelerometerValuesStream(
+                auto accelerationStream = observables::accelerometer::createAccelerometerObservable(
                         accelerometer,
                         observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
                 );

@@ -30,13 +30,17 @@ namespace observers {
         typedef std::pair<phd::devices::gps::Coordinates, phd::devices::accelerometer::data::Features> GPSWithFeatures;
         typedef phd::configurations::MLOptions<phd::configurations::SVMParams> SVMAxelConfig;
 
-        void runAccelerometerObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
-                                      phd::devices::accelerometer::Accelerometer *accelerometer,
-                                      phd::devices::accelerometer::data::Axis &observationAxis,
-                                      phd::io::Configuration &phdConfig,
-                                      SVMAxelConfig &svmAxelConfig,
-                                      phd::configurations::ServerConfig &serverConfig,
-                                      phd::devices::raspberry::led::Led *dataTransferingNotificationLed);
+        rxcpp::composite_subscription runAccelerometerObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                                               phd::devices::accelerometer::Accelerometer *accelerometer,
+                                                               phd::devices::accelerometer::data::Axis &observationAxis,
+                                                               phd::io::Configuration &phdConfig,
+                                                               SVMAxelConfig &svmAxelConfig,
+                                                               phd::configurations::ServerConfig &serverConfig,
+                                                               phd::devices::raspberry::led::Led *dataTransferringNotificationLed);
+
+        rxcpp::composite_subscription runAccelerometerValuesWriter(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                                                   phd::devices::accelerometer::Accelerometer *accelerometer,
+                                                                   std::string axelOutputLocation);
     }
 }
 
