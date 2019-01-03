@@ -20,14 +20,26 @@
 namespace observers {
     namespace camera {
 
-        typedef std::pair<phd::devices::gps::Coordinates, cv::Mat> GPSWithMat;
-        typedef std::pair<phd::devices::gps::Coordinates, std::vector<phd::ontologies::Features>> GPSWithFeatures;
+        typedef phd::devices::gps::Coordinates GPSCoordinates;
+
+        typedef std::pair<GPSCoordinates, cv::Mat> GPSWithMat;
+        typedef std::pair<GPSCoordinates, std::vector<phd::ontologies::Features>> GPSWithFeatures;
+
+        typedef std::pair<GPSWithMat, cv::Mat> GPSWithMatAndCapture;
+        typedef std::pair<GPSWithMat, std::vector<phd::ontologies::Features>> GPSWithFeaturesAndCapture;
 
         rxcpp::composite_subscription runCameraObserver(phd::devices::gps::GPSDataStore *gpsDataStore,
                                                         phd::io::Configuration &phdConfig,
                                                         phd::configurations::CVArgs &cvConfig,
                                                         phd::configurations::ServerConfig &serverConfig,
-                                                        phd::devices::raspberry::led::Led *dataTransferingNotificationLed);
+                                                        phd::devices::raspberry::led::Led *dataTransferringNotificationLed);
+
+        rxcpp::composite_subscription runCameraObserverWithCaptureSaver(phd::devices::gps::GPSDataStore *gpsDataStore,
+                                                        phd::io::Configuration &phdConfig,
+                                                        phd::configurations::CVArgs &cvConfig,
+                                                        phd::configurations::ServerConfig &serverConfig,
+                                                        phd::devices::raspberry::led::Led *dataTransferringNotificationLed,
+                                                        std::string &posCapturesSaveLocation);
     }
 }
 

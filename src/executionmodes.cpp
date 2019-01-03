@@ -72,12 +72,20 @@ namespace phd {
 
             if(cmdArgs.useCamera) {
                 std::cout << "RUNNING RX Camera data stream classification." << std::endl;
-                auto camera_subs = observers::camera::runCameraObserver(gpsDataStore,
-                        loadedConfig.phdConfig,
-                        loadedConfig.cvConfig,
-                        loadedConfig.serverConfig,
-                        &notificationLeds.serverDataTransfering
-                );
+                if (cmdArgs.savePositiveCaptures) {
+                    auto camera_subs = observers::camera::runCameraObserverWithCaptureSaver(gpsDataStore,
+                                                                            loadedConfig.phdConfig,
+                                                                            loadedConfig.cvConfig,
+                                                                            loadedConfig.serverConfig,
+                                                                            &notificationLeds.serverDataTransfering,
+                                                                            cmdArgs.captureSaveLocation);
+                } else {
+                    auto camera_subs = observers::camera::runCameraObserver(gpsDataStore,
+                                                                            loadedConfig.phdConfig,
+                                                                            loadedConfig.cvConfig,
+                                                                            loadedConfig.serverConfig,
+                                                                            &notificationLeds.serverDataTransfering);
+                }
             }
 
             std::cout << "RUNNING RX Accelerometer data stream classification." << std::endl;
