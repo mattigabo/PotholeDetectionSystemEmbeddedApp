@@ -320,9 +320,16 @@ namespace phd{
             bool withoutRx = false;
             bool useCamera = false;
             bool saveAxelValues = false;
+            bool saveCaptures = false;
             string axelOutputLocation = "../res/axel.output";
+            string capturesSaveLocation = "../res/captures/";
 
-            auto evaluator = [&withoutRx, &useCamera, &saveAxelValues, &axelOutputLocation](int argc, int idx, char* argv[]) {
+            auto evaluator = [&withoutRx,
+                              &useCamera,
+                              &saveAxelValues,
+                              &saveCaptures,
+                              &axelOutputLocation,
+                              &capturesSaveLocation](int argc, int idx, char* argv[]) {
                 if (std::strcmp(argv[idx], "-withoutRx") == 0) {
                     withoutRx = true;
                 } else if (std::strcmp(argv[idx], "-camera") == 0) {
@@ -331,6 +338,13 @@ namespace phd{
                     saveAxelValues = true;
                     if (argc > idx + 1 && std::string(argv[idx + 1]).at(0) != '-') {
                         axelOutputLocation = std::string(argv[idx + 1]);
+                    }
+                } else if (std::strcmp(argv[idx], "-save-capture") == 0) {
+                    saveCaptures = true;
+                    if (argc > idx + 1 && std::string(argv[idx + 1]).at(0) != '-') {
+                        capturesSaveLocation = std::string(argv[idx + 1]);
+                    } else {
+                        phd::io::portable_mkdir(capturesSaveLocation.data());
                     }
                 }
             };
@@ -344,7 +358,7 @@ namespace phd{
 
             std::cout << "." << endl;
 
-            return {mode, withoutRx, useCamera, saveAxelValues, axelOutputLocation};
+            return {mode, withoutRx, useCamera, saveAxelValues, saveCaptures, axelOutputLocation, capturesSaveLocation};
         }
 
     }};

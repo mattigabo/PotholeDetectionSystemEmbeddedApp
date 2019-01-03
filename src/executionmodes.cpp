@@ -73,14 +73,23 @@ namespace phd {
             cout << "--------> Press enter in order to exit from the App <--------" << endl;
 
             rxcpp::composite_subscription camera_subs;
+
             if(cmdArgs.useCamera) {
                 std::cout << "RUNNING RX Camera data stream classification." << std::endl;
-                camera_subs = observers::camera::runCameraObserver(gpsDataStore,
-                        loadedConfig.phdConfig,
-                        loadedConfig.cvConfig,
-                        loadedConfig.serverConfig,
-                        &notificationLeds.serverDataTransfering
-                );
+                if (cmdArgs.savePositiveCaptures) {
+                    camera_subs = observers::camera::runCameraObserverWithCaptureSaver(gpsDataStore,
+                                                                            loadedConfig.phdConfig,
+                                                                            loadedConfig.cvConfig,
+                                                                            loadedConfig.serverConfig,
+                                                                            &notificationLeds.serverDataTransfering,
+                                                                            cmdArgs.captureSaveLocation);
+                } else {
+                    camera_subs = observers::camera::runCameraObserver(gpsDataStore,
+                                                                            loadedConfig.phdConfig,
+                                                                            loadedConfig.cvConfig,
+                                                                            loadedConfig.serverConfig,
+                                                                            &notificationLeds.serverDataTransfering);
+                }
             }
 
             std::cout << "RUNNING RX Accelerometer data stream classification." << std::endl;
@@ -95,6 +104,7 @@ namespace phd {
             );
 
             rxcpp::composite_subscription writer_subs;
+
             if (cmdArgs.saveAxelValues) {
                 writer_subs = observers::accelerometer::runAccelerometerValuesWriter(
                         gpsDataStore,
@@ -104,8 +114,6 @@ namespace phd {
             }
 
             auto checker_subs = observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
-
-
 
             std::cin.ignore();
             if(cmdArgs.useCamera) { camera_subs.unsubscribe(); }

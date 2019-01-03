@@ -59,7 +59,9 @@ namespace phd {
             bool withoutRx;
             bool useCamera;
             bool saveAxelValues;
+            bool savePositiveCaptures;
             std::string axelOutputLocation;
+            std::string captureSaveLocation;
         };
 
         CVArgs loadCVArgs(const std::string path_to_config);
