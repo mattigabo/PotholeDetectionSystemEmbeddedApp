@@ -21,9 +21,9 @@ namespace observers{
                     subscription,
                     [subscription, validGpsDataNotificationLed](phd::devices::gps::Coordinates coordinates){
                         if(phd::devices::gps::coordinatesIsEqual(coordinates,phd::devices::gps::Coordinates{NAN, NAN, NAN})){
-                            validGpsDataNotificationLed->switchOn();
-                        } else {
                             validGpsDataNotificationLed->switchOff();
+                        } else {
+                            validGpsDataNotificationLed->switchOn();
                         }
                     },[]() {
                         std::cout << "GPS Values Checker has COMPLETED." << std::endl;
