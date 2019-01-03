@@ -76,31 +76,37 @@ namespace phd{
                     mockedMode = std::string(argv[2]) == "-mocked";
                 }
 
-                if(mockedMode){
-                    updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
-                } else {
-                    serialPort = new phd::devices::serialport::SigrokSerialPortWrapper(serialPortName);
-                    serialPort->openPort(phd::devices::serialport::READ);
+                try {
+                    if (mockedMode) {
+                        std::cout << "Mocked gps mode " << endl;
+                        updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
+                    } else {
+                        std::cout << "Real gps mode " << endl;
+                        serialPort = new phd::devices::serialport::SigrokSerialPortWrapper(serialPortName);
+                        serialPort->openPort(phd::devices::serialport::READ);
 
-                    updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
-                }
+                        updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+                    }
 
-                if(withoutRx){
-                    std::cout << "Mocked mode withOUT Reactive Extensions..." << std::endl;
-                    phd::test::gps::testGPSWithoutRxCpp(gpsDataStore);
-                } else {
-                    std::cout << "Mocked mode with Reactive Extensions..." << std::endl;
-                    phd::test::gps::testGPSWithRxCpp(gpsDataStore);
-                }
+                    if (withoutRx) {
+                        std::cout << "Execution withOUT Reactive Extensions..." << std::endl;
+                        phd::test::gps::testGPSWithoutRxCpp(gpsDataStore);
+                    } else {
+                        std::cout << "Execution with Reactive Extensions..." << std::endl;
+                        phd::test::gps::testGPSWithRxCpp(gpsDataStore);
+                    }
 
-                updater->kill();
-                updater->join();
-                delete (updater);
-                delete (gpsDataStore);
+                    updater->kill();
+                    updater->join();
+                    delete (updater);
+                    delete (gpsDataStore);
 
-                if(serialPort != nullptr) {
-                    serialPort->closePort();
-                    delete (serialPort);
+                    if (serialPort != nullptr) {
+                        serialPort->closePort();
+                        delete (serialPort);
+                    }
+                }  catch (const string msg) {
+                    cerr << msg << endl;
                 }
             }
         }
