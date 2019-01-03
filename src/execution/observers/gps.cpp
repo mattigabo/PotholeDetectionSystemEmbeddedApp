@@ -17,7 +17,7 @@ namespace observers{
 
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1000L);
 
-            gps_obs.as_blocking().subscribe(
+            gps_obs.subscribe(
                     subscription,
                     [subscription, validGpsDataNotificationLed](phd::devices::gps::Coordinates coordinates){
                         if(phd::devices::gps::coordinatesIsEqual(coordinates,phd::devices::gps::Coordinates{NAN, NAN, NAN})){

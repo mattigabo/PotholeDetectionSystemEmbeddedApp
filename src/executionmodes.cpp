@@ -70,9 +70,12 @@ namespace phd {
             auto accelerometer = new phd::devices::accelerometer::Accelerometer();
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 
+            cout << "--------> Press enter in order to exit from the App <--------" << endl;
+
+            rxcpp::composite_subscription camera_subs;
             if(cmdArgs.useCamera) {
                 std::cout << "RUNNING RX Camera data stream classification." << std::endl;
-                auto camera_subs = observers::camera::runCameraObserver(gpsDataStore,
+                camera_subs = observers::camera::runCameraObserver(gpsDataStore,
                         loadedConfig.phdConfig,
                         loadedConfig.cvConfig,
                         loadedConfig.serverConfig,
@@ -91,8 +94,9 @@ namespace phd {
                     &notificationLeds.serverDataTransfering
             );
 
+            rxcpp::composite_subscription writer_subs;
             if (cmdArgs.saveAxelValues) {
-                auto writer_subs = observers::accelerometer::runAccelerometerValuesWriter(
+                writer_subs = observers::accelerometer::runAccelerometerValuesWriter(
                         gpsDataStore,
                         accelerometer,
                         cmdArgs.axelOutputLocation
@@ -100,6 +104,14 @@ namespace phd {
             }
 
             auto checker_subs = observers::gps::runGpsValueChecker(gpsDataStore, &notificationLeds.validGpsData);
+
+
+
+            std::cin.ignore();
+            if(cmdArgs.useCamera) { camera_subs.unsubscribe(); }
+            axel_subs.unsubscribe();
+            if (cmdArgs.saveAxelValues) { writer_subs.unsubscribe(); }
+            checker_subs.unsubscribe();
 
             notificationLeds.programInExecution.switchOff();
         }
