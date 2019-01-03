@@ -58,6 +58,13 @@ namespace phd {
             //            }
         }
 
+        void switchOffAllLeds(phd::devices::raspberry::led::NotificationLeds notificationLeds){
+            notificationLeds.programInExecution.switchOff();
+            notificationLeds.validGpsData.switchOff();
+            notificationLeds.serverDataTransfering.switchOff();
+            notificationLeds.cameraIsShooting.switchOff();
+        }
+
         void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
                                 phd::devices::gps::GPSDataStore *gpsDataStore,
                                 phd::devices::raspberry::led::NotificationLeds notificationLeds,
@@ -120,8 +127,7 @@ namespace phd {
             axel_subs.unsubscribe();
             if (cmdArgs.saveAxelValues) { writer_subs.unsubscribe(); }
             checker_subs.unsubscribe();
-
-            notificationLeds.programInExecution.switchOff();
+            switchOffAllLeds(notificationLeds);
         }
     }
 }
