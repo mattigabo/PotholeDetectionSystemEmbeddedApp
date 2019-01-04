@@ -36,7 +36,15 @@ namespace observers {
             auto accelerometer_obs = observables::accelerometer::createAccelerometerObservable(accelerometer,
                     OBSERVATION_PERIOD_AT_50Hz);
 
-            auto buffered_accelerations_with_gps = accelerometer_obs.buffer(30)
+            auto buffered_accelerations_with_gps = accelerometer_obs.map([](phd::devices::accelerometer::Acceleration accelerationInG){
+                        phd::devices::accelerometer::Acceleration accInMeterSecondSquared = {
+                                accelerationInG.X * devices::accelerometer::data::g,
+                                accelerationInG.Y * devices::accelerometer::data::g,
+                                accelerationInG.Z * devices::accelerometer::data::g
+                        };
+
+                        return accInMeterSecondSquared;
+                    }).buffer(30)
                     .map([gpsDataStore](std::vector<devices::accelerometer::Acceleration> v){
                         return std::make_pair(gpsDataStore->fetch(), v);
                     });

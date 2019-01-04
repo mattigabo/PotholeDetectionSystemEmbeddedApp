@@ -28,9 +28,9 @@ namespace phd {
             Acceleration Accelerometer::fetch() {
                 NunchuckData values = dataStore->fetch();
                 Acceleration result = {
-                        (float)values.getAccelerationValues().X,
-                        (float)values.getAccelerationValues().Y,
-                        (float)values.getAccelerationValues().Z
+                        values.getAccelerationValues().X,
+                        values.getAccelerationValues().Y,
+                        values.getAccelerationValues().Z
                 };
                 return result;
             }
