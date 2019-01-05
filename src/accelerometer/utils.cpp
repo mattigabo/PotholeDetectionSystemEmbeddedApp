@@ -104,6 +104,7 @@ namespace phd {
                             accelerationInG.Y * devices::accelerometer::data::g,
                             accelerationInG.Z * devices::accelerometer::data::g
                     };
+                    return accInMeterSecondSquared;
                 }
 
 

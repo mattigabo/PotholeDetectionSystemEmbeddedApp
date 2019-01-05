@@ -14,6 +14,7 @@
 #include <execution/observables/accelerometer.h>
 #include <fingerprint.h>
 #include <execution/utils.h>
+#include <accelerometer/utils.h>
 #include <execution/observers/accelerometer.h>
 
 

@@ -118,7 +118,7 @@ namespace phd{
                 phd::devices::accelerometer::utils::printAccelerationValues(
                         phd::devices::accelerometer::utils::convertToMSSquared(values),
                         "m/s^2");
-                cout << "----------------------------------------------" << endl
+                cout << "----------------------------------------------" << endl;
             }
 
             void testAccelerometerWithoutRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
