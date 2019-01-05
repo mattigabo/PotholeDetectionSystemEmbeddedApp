@@ -30,6 +30,10 @@ namespace phd {
 
                 RawData readJSONDataset(const std::string &dataset);
 
+                void printAccelerationValues(Acceleration acceleration, std::string measureUnit);
+
+                Acceleration convertToMSSquared(Acceleration accelerationInG);
+
                 bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
                         std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels);
 

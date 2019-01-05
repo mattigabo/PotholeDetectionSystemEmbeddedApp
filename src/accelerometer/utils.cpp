@@ -91,6 +91,22 @@ namespace phd {
                     return rawData;
                 }
 
+                void printAccelerationValues(Acceleration acceleration, std::string measureUnit){
+                    std::cout << "Accelerometer: [ " <<
+                        acceleration.X << " " << measureUnit << " on X,  " <<
+                        acceleration.Y << " " << measureUnit << " on Y,  " <<
+                        acceleration.Z << " " << measureUnit << " on Z ]"  << std::endl;
+                }
+
+                Acceleration convertToMSSquared(Acceleration accelerationInG){
+                    phd::devices::accelerometer::Acceleration accInMeterSecondSquared = {
+                            accelerationInG.X * devices::accelerometer::data::g,
+                            accelerationInG.Y * devices::accelerometer::data::g,
+                            accelerationInG.Z * devices::accelerometer::data::g
+                    };
+                }
+
+
                 bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
                         std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels){
 

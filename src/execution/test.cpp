@@ -115,10 +115,10 @@ namespace phd{
             void testAccelerometerWithoutRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
                 for(int i = 0; i < 20;  i++){
                     phd::devices::accelerometer::Acceleration values = accelerometer->fetch();
-                    cout << "Accelerometer: [ " <<
-                         values.X << " on X,  " <<
-                         values.Y << " on Y,  " <<
-                         values.Z << " on Z ]"  << endl;
+                    phd::devices::accelerometer::utils::printAccelerationValues(values, "g");
+                    phd::devices::accelerometer::utils::printAccelerationValues(
+                            phd::devices::accelerometer::utils::convertToMSSquared(values),
+                            "m/s^2");
                     std::this_thread::sleep_for(chrono::milliseconds(1000));
                 }
             }
@@ -129,10 +129,10 @@ namespace phd{
                         observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
                 );
                 accelerationStream.as_blocking().subscribe([](const phd::devices::accelerometer::Acceleration values) {
-                    cout << "Accelerometer: [ " <<
-                         values.X << " on X,  " <<
-                         values.Y << " on Y,  " <<
-                         values.Z << " on Z ]"  << endl;
+                    phd::devices::accelerometer::utils::printAccelerationValues(values, "g");
+                    phd::devices::accelerometer::utils::printAccelerationValues(
+                            phd::devices::accelerometer::utils::convertToMSSquared(values),
+                            "m/s^2");
                 },[](){
                     cout << "OnCompleted\n" << endl;
                 });
