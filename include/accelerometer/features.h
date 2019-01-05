@@ -19,7 +19,7 @@ namespace phd {
 
             namespace data {
 
-                const float g = 9.8196f; // m/s^2
+                const float g = 9.80665f; // m/s^2
                 const int n_features = 12;
 
                 enum Axis {
