@@ -20,7 +20,7 @@ namespace observers{
             gps_obs.subscribe(
                     subscription,
                     [subscription, validGpsDataNotificationLed](phd::devices::gps::Coordinates coordinates){
-                        if(phd::devices::gps::coordinatesIsEqual(coordinates,phd::devices::gps::Coordinates{NAN, NAN, NAN})){
+                        if(phd::devices::gps::isInvalid(coordinates)){
                             validGpsDataNotificationLed->switchOff();
                         } else {
                             validGpsDataNotificationLed->switchOn();

@@ -22,6 +22,7 @@ namespace phd {
 
             bool coordinatesIsEqual(Coordinates a, Coordinates b);
 
+            bool isInvalid(Coordinates cord);
             /**
             * This class offers a thread safe storage to store and read GPS data
             * */

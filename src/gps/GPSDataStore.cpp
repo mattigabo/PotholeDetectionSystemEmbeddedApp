@@ -14,6 +14,10 @@ namespace phd {
                        a.altitude == b.latitude;
             }
 
+            bool isInvalid(Coordinates cord){
+                return isnan(cord.latitude) && isnan(cord.longitude) && isnan(cord.altitude);
+            }
+
             GPSDataStore::GPSDataStore() {
                 internal_store = emptyCoordinates;
             }
