@@ -224,7 +224,8 @@ namespace phd{
                 std::vector<phd::devices::accelerometer::data::Features> features;
                 std::vector<int> labels;
 
-                auto sliding_function = [](int window) { return window - 1; };
+//                auto sliding_function = [](int window) { return window - 1; };
+                auto sliding_function = [](int window) { return window / 2; };
 
                 if (phd::io::is_dir(args.test_set.data())) {
                     vector<cv::String> globs;

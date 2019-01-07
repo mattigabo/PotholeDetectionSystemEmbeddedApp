@@ -33,6 +33,8 @@ namespace phd {
             cv::NormTypes norm_method;
             std::pair<float, float> norm_range;
             std::pair<std::string, T> params;
+            int window;
+            int slider;
         };
 
         struct SVMParams {

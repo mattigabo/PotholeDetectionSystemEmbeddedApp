@@ -10,6 +10,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <opencv2/ml.hpp>
 #include <configurationutils.h>
+#include <accelerometer/utils.h>
 
 
 using namespace rapidjson;
@@ -154,6 +155,12 @@ namespace phd{
                 assert((*json)["svm"].HasMember("model"));
                 assert((*json)["svm"]["model"].IsString());
 
+                // Features Options
+                assert((*json)["svm"].HasMember("window"));
+                assert((*json)["svm"]["window"].IsInt());
+                assert((*json)["svm"].HasMember("slider"));
+                assert((*json)["svm"]["slider"].IsInt());
+
                 // normalization options
                 assert((*json)["svm"].HasMember("norm-method"));
                 assert((*json)["svm"]["norm-method"].IsString());
@@ -278,6 +285,22 @@ namespace phd{
                     config.norm_range = std::pair<float, float>(0.1, 0.9);
                 }
 
+                config.window = [](Document* json) {
+                    if ((*json)["svm"]["window"].GetInt() <= 0) {
+                        return phd::devices::accelerometer::data::std_coefficients.windows_size;
+                    } else {
+                        return (*json)["svm"]["window"].GetInt();
+                    }
+                } (json);
+
+                config.slider = [](Document* json) {
+                    if ((*json)["svm"]["slider"].GetInt() <= 0) {
+                        return phd::devices::accelerometer::data::std_coefficients.windows_size / 2;
+                    } else {
+                        return (*json)["svm"]["slider"].GetInt();
+                    }
+                } (json);
+
                 params.k_fold = (*json)["svm"]["k-fold"].GetInt();
                 params.max_iter = (*json)["svm"]["max-iter"].GetInt();
                 params.epsilon = (*json)["svm"]["epsilon"].GetDouble();
@@ -292,6 +315,8 @@ namespace phd{
                 << "train-set:" << config.train_set <<  std::endl
                 << "test-set:" << config.test_set <<  std::endl
                 << "model:" << config.model <<  std::endl
+                << "window:" << config.window <<  std::endl
+                << "slider:" << config.slider <<  std::endl
                 << "norm:" << (*json)["svm"]["norm-method"].GetString() << " | def: MIN-MAX" << std::endl
                 << "range:[" << config.norm_range.first << "," << config.norm_range.second << "]" <<  std::endl
                 << "type:" << (*json)["svm"]["type"].GetString() << " | def: C_SVC" << std::endl

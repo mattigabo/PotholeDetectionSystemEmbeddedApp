@@ -32,9 +32,6 @@ namespace observers {
                                      phd::configurations::ServerConfig &serverConfig,
                                      phd::devices::raspberry::led::Led *dataTransferringNotificationLed) {
 
-            int buffer_size = phd::devices::accelerometer::data::std_coefficients.windows_size;
-            int slider = buffer_size / 2;
-
             auto subscription = rxcpp::composite_subscription();
 
             auto accelerometer_obs = observables::accelerometer::createAccelerometerObservable(accelerometer,
@@ -42,7 +39,7 @@ namespace observers {
 
             auto buffered_accelerations_with_gps = accelerometer_obs.map([](phd::devices::accelerometer::Acceleration accelerationInG){
                         return phd::devices::accelerometer::utils::convertToMSSquared(accelerationInG);
-                    }).buffer(buffer_size, -slider)
+                    }).buffer(svmAxelConfig.window, -svmAxelConfig.slider)
                     .map([gpsDataStore](std::vector<devices::accelerometer::Acceleration> v){
                         return std::make_pair(gpsDataStore->fetch(), v);
                     });

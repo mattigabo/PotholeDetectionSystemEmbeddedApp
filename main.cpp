@@ -206,5 +206,8 @@ int main(int argc, char *argv[]) {
     }
 
     HTTP::close();
+
+    std::cout << "---------------------------------------------------------" << std::endl << std::endl;
+
     return 1;
 }

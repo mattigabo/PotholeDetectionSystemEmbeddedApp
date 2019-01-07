@@ -12,6 +12,8 @@
     "max-iter": 1000,
     "epsilon": 0.000001,
     "C": 10,
-    "gamma": 0.000001
+    "gamma": 0.000001,
+    "window": 30,
+    "slider": 15
   }
 }
