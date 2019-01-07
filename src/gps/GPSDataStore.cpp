@@ -3,6 +3,7 @@
 //
 
 #include "gps/GPSDataStore.h"
+#include <math.h>
 
 namespace phd {
     namespace devices {
