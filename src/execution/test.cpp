@@ -458,7 +458,7 @@ namespace phd{
 
                 auto values_A = rxcpp::observable<>::interval(period_A, rxcpp::observe_on_event_loop());
 
-                auto A_with_B = values_A.buffer(30).map([&](std::vector<long> v){
+                auto A_with_B = values_A.buffer(6, -3).map([&](std::vector<long> v){
                     return asPairs(static_cast<long>(dist6(rng)), v);
                 }).publish();
 
@@ -496,6 +496,7 @@ namespace phd{
                     std::tie(i, sum, s) = t;
 
                     std::cout << i << "|" << sum << "|" << s.size() << std::endl;
+                    std::cout << s << std::endl;
                 },[](){
                     printf("OnCompleted\n");
                 });
