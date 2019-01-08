@@ -66,15 +66,15 @@ namespace phd {
         }
 
         void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
-                                phd::devices::gps::GPSDataStore *gpsDataStore,
-                                phd::devices::raspberry::led::NotificationLeds notificationLeds,
-                                phd::configurations::CommandLineArgs cmdArgs) {
+                                        phd::devices::gps::GPSDataStore *gpsDataStore,
+                                        phd::devices::accelerometer::Accelerometer *accelerometer,
+                                        phd::devices::raspberry::led::NotificationLeds notificationLeds,
+                                        phd::configurations::CommandLineArgs cmdArgs) {
 
             notificationLeds.programInExecution.switchOn();
 
             doFingerprinting(loadedConfig.serverConfig);
 
-            auto accelerometer = new phd::devices::accelerometer::Accelerometer();
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 
             cout << "--------> Press enter in order to exit from the App <--------" << endl;

@@ -148,8 +148,19 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
 
         auto updater = new phd::devices::gps::SimulatedGPSDataUpdater(gpsDataStore);
 
+        phd::devices::accelerometer::Accelerometer *accelerometer;
+        if(args.simulatedAccelerometer) {
+            cout << "Run with the Simulated Accelerometer..." << endl;
+            accelerometer = new phd::devices::accelerometer::SimulatedAccelerometer(loadedConfig.svmConfig.test_set);
+        } else {
+            cout << "Run with Nunchuck Accelerometer..." << endl;
+            accelerometer = new phd::devices::accelerometer::Accelerometer();
+        }
+
+
         phd::executionmodes::runObservationMode(loadedConfig,
                                                 gpsDataStore,
+                                                accelerometer,
                                                 notificationLeds,
                                                 args);
 
@@ -162,9 +173,17 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
             SerialPort *serialPort = initSerialPort(loadedConfig.serialPortName);
 
             auto updater = new phd::devices::gps::GPSDataUpdater(gpsDataStore, serialPort);
+            phd::devices::accelerometer::Accelerometer *accelerometer;
+            if(args.simulatedAccelerometer) {
+                cout << "Run with the Simulated Accelerometer..." << endl;
+                accelerometer = new phd::devices::accelerometer::SimulatedAccelerometer(loadedConfig.svmConfig.test_set);
+            } else {
+                cout << "Run with Nunchuck Accelerometer..." << endl;
+                accelerometer = new phd::devices::accelerometer::Accelerometer();
+            }
 
             phd::executionmodes::runObservationMode(loadedConfig,
-                                                    gpsDataStore,
+                                                    gpsDataStore, nullptr,
                                                     notificationLeds,
                                                     args);
 

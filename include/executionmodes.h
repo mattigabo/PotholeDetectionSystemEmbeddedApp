@@ -12,11 +12,13 @@
 
 #include <serialport/SerialPort.h>
 #include <gps/GPSDataStore.h>
+#include <accelerometer/accelerometer.h>
 
 namespace phd {
     namespace executionmodes {
         void runObservationMode(phd::configurations::EmbeddedAppConfiguration loadedConfig,
                                         phd::devices::gps::GPSDataStore *gpsDataStore,
+                                        phd::devices::accelerometer::Accelerometer *accelerometer,
                                         phd::devices::raspberry::led::NotificationLeds notificationLeds,
                                         phd::configurations::CommandLineArgs cmdArgs);
     }
