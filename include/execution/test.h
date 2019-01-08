@@ -29,8 +29,11 @@ namespace phd{
 
             void testAccelerometerCommunication(bool withoutRx, bool simulated, phd::configurations::EmbeddedAppConfiguration loadedConfig);
 
-            std::pair<cv::Mat, cv::Mat> trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
-                                                                                  const bool cross_validate);
+            phd::configurations::MLOptions<phd::configurations::SVMParams>
+                    trainAccelerometerMlAlgorithm(
+                            const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
+                            const bool cross_validate
+                    );
 
             void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args);
         }

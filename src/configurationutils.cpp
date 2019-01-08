@@ -136,6 +136,84 @@ namespace phd{
             return serverConfig;
         }
 
+        const auto type_parser = [](const string type) -> cv::ml::SVM::Types {
+
+            string stub = string(type.data());
+            std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
+            std::transform(stub.begin(), stub.end(), stub.begin(), [](char c) {
+                return c == '-' || c == ' ' ? '_' : c;
+            });
+
+            if (stub == "C_SVC" || stub == "CSVC") {
+                return cv::ml::SVM::Types::C_SVC;
+            } else if (stub == "NU_SVC" || stub == "NUSVC"){
+                return cv::ml::SVM::Types::NU_SVC;
+            } else if (stub == "EPS_SVR" || stub == "EPSSVR"){
+                return cv::ml::SVM::Types::EPS_SVR;
+            } else if (stub == "NU_SVR" || stub == "NUSVR"){
+                return cv::ml::SVM::Types::NU_SVR;
+            } else if (stub == "ONE_CLASS" || stub == "ONECLASS"){
+                return cv::ml::SVM::Types::ONE_CLASS;
+            } else {
+                std::cerr << "Unknown SVM type " << type << ". Using default type C_SVC." << std::endl;
+                return cv::ml::SVM::Types::C_SVC;
+            }
+        };
+
+        const auto kernel_parser = [](string kernel) -> cv::ml::SVM::KernelTypes {
+            string stub = string(kernel.data());
+            std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
+            if (stub == "RBF") {
+                return cv::ml::SVM::KernelTypes::RBF;
+            } else if (stub == "LINEAR"){
+                return cv::ml::SVM::KernelTypes::LINEAR;
+            } else if (stub == "POLY"){
+                return cv::ml::SVM::KernelTypes::POLY;
+            } else if (stub == "SIGMOID"){
+                return cv::ml::SVM::KernelTypes::SIGMOID;
+            } else if (stub == "CHI2"){
+                return cv::ml::SVM::KernelTypes::CHI2;
+            } else if (stub == "INTER"){
+                return cv::ml::SVM::KernelTypes::INTER;
+            } else {
+                std::cerr << "Unknown kernel " << kernel << ". Using default kernel RBF." << std::endl;
+                return cv::ml::SVM::KernelTypes::RBF;
+            }
+        };
+
+        const auto norm_parser = [](string norm_method) -> cv::NormTypes {
+
+            string stub = string(norm_method.data());
+
+            std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
+            std::transform(stub.begin(), stub.end(), stub.begin(), [](char c) {
+                return c == '-' || c == ' ' ? '_' : c;
+            });
+
+            if (stub.find("NORM_") != string::npos) {
+                stub.erase(0, string("NORM_").length());
+            }
+
+            if (stub == "MIN_MAX" || stub == "MINMAX") {
+                return cv::NormTypes::NORM_MINMAX;
+            } else if (stub == "L1"){
+                return cv::NormTypes::NORM_L1;
+            } else if (stub == "L2"){
+                return cv::NormTypes::NORM_L2;
+            } else if (stub == "HAMMING"){
+                return cv::NormTypes::NORM_HAMMING;
+            } else if (stub == "HAMMING2"){
+                return cv::NormTypes::NORM_HAMMING2;
+            } else if (stub == "INF"){
+                return cv::NormTypes::NORM_INF;
+            } else if (stub == "RELATIVE"){
+                return cv::NormTypes::NORM_RELATIVE;
+            } else {
+                std::cerr << "Unknown normalization method " << norm_method << ". Using default method MINMAX." << std::endl;
+                return cv::NormTypes::NORM_MINMAX;
+            }
+        };
+
         MLOptions<SVMParams> loadSVMOptions(const string &path_to_config) {
 
             MLOptions<SVMParams> config;
@@ -167,6 +245,11 @@ namespace phd{
                 assert((*json)["svm"].HasMember("norm-range"));
                 assert((*json)["svm"]["norm-range"].IsArray());
 
+                assert((*json)["svm"].HasMember("min"));
+                assert((*json)["svm"]["min"].IsArray());
+                assert((*json)["svm"].HasMember("min"));
+                assert((*json)["svm"]["min"].IsArray());
+
                 // svm-specific
                 assert((*json)["svm"].HasMember("type"));
                 assert((*json)["svm"]["type"].IsString());
@@ -188,85 +271,6 @@ namespace phd{
                 assert((*json)["svm"]["C"].IsDouble());
                 assert((*json)["svm"].HasMember("gamma"));
                 assert((*json)["svm"]["gamma"].IsDouble());
-
-
-                auto type_parser = [](const string type) -> cv::ml::SVM::Types {
-
-                    string stub = string(type.data());
-                    std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
-                    std::transform(stub.begin(), stub.end(), stub.begin(), [](char c) {
-                        return c == '-' || c == ' ' ? '_' : c;
-                    });
-
-                    if (stub == "C_SVC" || stub == "CSVC") {
-                        return cv::ml::SVM::Types::C_SVC;
-                    } else if (stub == "NU_SVC" || stub == "NUSVC"){
-                        return cv::ml::SVM::Types::NU_SVC;
-                    } else if (stub == "EPS_SVR" || stub == "EPSSVR"){
-                        return cv::ml::SVM::Types::EPS_SVR;
-                    } else if (stub == "NU_SVR" || stub == "NUSVR"){
-                        return cv::ml::SVM::Types::NU_SVR;
-                    } else if (stub == "ONE_CLASS" || stub == "ONECLASS"){
-                        return cv::ml::SVM::Types::ONE_CLASS;
-                    } else {
-                        std::cerr << "Unknown SVM type " << type << ". Using default type C_SVC." << std::endl;
-                        return cv::ml::SVM::Types::C_SVC;
-                    }
-                };
-
-                auto kernel_parser = [](string kernel) -> cv::ml::SVM::KernelTypes {
-                    string stub = string(kernel.data());
-                    std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
-                    if (stub == "RBF") {
-                        return cv::ml::SVM::KernelTypes::RBF;
-                    } else if (stub == "LINEAR"){
-                        return cv::ml::SVM::KernelTypes::LINEAR;
-                    } else if (stub == "POLY"){
-                        return cv::ml::SVM::KernelTypes::POLY;
-                    } else if (stub == "SIGMOID"){
-                        return cv::ml::SVM::KernelTypes::SIGMOID;
-                    } else if (stub == "CHI2"){
-                        return cv::ml::SVM::KernelTypes::CHI2;
-                    } else if (stub == "INTER"){
-                        return cv::ml::SVM::KernelTypes::INTER;
-                    } else {
-                        std::cerr << "Unknown kernel " << kernel << ". Using default kernel RBF." << std::endl;
-                        return cv::ml::SVM::KernelTypes::RBF;
-                    }
-                };
-
-                auto norm_parser = [](string norm_method) -> cv::NormTypes {
-
-                    string stub = string(norm_method.data());
-
-                    std::transform(stub.begin(), stub.end(), stub.begin(), ::toupper);
-                    std::transform(stub.begin(), stub.end(), stub.begin(), [](char c) {
-                        return c == '-' || c == ' ' ? '_' : c;
-                    });
-
-                    if (stub.find("NORM_") != string::npos) {
-                        stub.erase(0, string("NORM_").length());
-                    }
-
-                    if (stub == "MIN_MAX" || stub == "MINMAX") {
-                        return cv::NormTypes::NORM_MINMAX;
-                    } else if (stub == "L1"){
-                        return cv::NormTypes::NORM_L1;
-                    } else if (stub == "L2"){
-                        return cv::NormTypes::NORM_L2;
-                    } else if (stub == "HAMMING"){
-                        return cv::NormTypes::NORM_HAMMING;
-                    } else if (stub == "HAMMING2"){
-                        return cv::NormTypes::NORM_HAMMING2;
-                    } else if (stub == "INF"){
-                        return cv::NormTypes::NORM_INF;
-                    } else if (stub == "RELATIVE"){
-                        return cv::NormTypes::NORM_RELATIVE;
-                    } else {
-                        std::cerr << "Unknown normalization method " << norm_method << ". Using default method MINMAX." << std::endl;
-                        return cv::NormTypes::NORM_MINMAX;
-                    }
-                };
 
                 config.train_set = (*json)["svm"]["train-set"].GetString();
                 config.test_set = (*json)["svm"]["test-set"].GetString();
@@ -301,6 +305,19 @@ namespace phd{
                     }
                 } (json);
 
+                config.min = cv::Mat(1, (*json)["svm"]["min"].GetArray().Size(), CV_32FC1);
+                config.max = cv::Mat(1, (*json)["svm"]["max"].GetArray().Size(), CV_32FC1);
+
+                for (int i = 0; i < (*json)["svm"]["min"].GetArray().Size(); ++i) {
+                    assert((*json)["svm"]["min"].GetArray()[i].IsNumber());
+                    config.min.at<float>(0, i) = (*json)["svm"]["min"].GetArray()[i].GetFloat();
+                }
+
+                for (int i = 0; i < (*json)["svm"]["max"].GetArray().Size(); ++i) {
+                    assert((*json)["svm"]["max"].GetArray()[i].IsNumber());
+                    config.max.at<float>(0, i) = (*json)["svm"]["max"].GetArray()[i].GetFloat();
+                }
+
                 params.k_fold = (*json)["svm"]["k-fold"].GetInt();
                 params.max_iter = (*json)["svm"]["max-iter"].GetInt();
                 params.epsilon = (*json)["svm"]["epsilon"].GetDouble();
@@ -318,6 +335,8 @@ namespace phd{
                 << "window:" << config.window <<  std::endl
                 << "slider:" << config.slider <<  std::endl
                 << "norm:" << (*json)["svm"]["norm-method"].GetString() << " | def: MIN-MAX" << std::endl
+                << "min:" << config.min <<  std::endl
+                << "max:" << config.max <<  std::endl
                 << "range:[" << config.norm_range.first << "," << config.norm_range.second << "]" <<  std::endl
                 << "type:" << (*json)["svm"]["type"].GetString() << " | def: C_SVC" << std::endl
                 << "kernel:" << (*json)["svm"]["kernel"].GetString() << " | def: RBF" <<  std::endl
@@ -357,6 +376,7 @@ namespace phd{
                               &saveCaptures,
                               &axelOutputLocation,
                               &capturesSaveLocation](int argc, int idx, char* argv[]) {
+
                 if (std::strcmp(argv[idx], "-withoutRx") == 0) {
                     withoutRx = true;
                 } else if (std::strcmp(argv[idx], "-simulatedAcc") == 0) {
@@ -380,7 +400,7 @@ namespace phd{
 
             if (argc > 2) {
                 for (int i = 2; i < argc; ++i) {
-                    std::cout << argv[i] << "|";
+                    std::cout << argv[i] << " | ";
                     evaluator(argc, i, argv);
                 }
             }

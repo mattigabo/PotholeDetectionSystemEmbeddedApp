@@ -63,8 +63,13 @@ namespace observers {
                         gpsWithFeatures.first,
                         devices::accelerometer::data::toMat(v)
                 );
+
             }).map([svmAxelConfig](GPSWithMat gpsWithMat) {
-                std::cout << "Pre Norm: " << gpsWithMat.second << std::endl;
+
+//                std::cout << "Pre Norm: " << gpsWithMat.second << std::endl;
+
+                gpsWithMat.second.push_back(svmAxelConfig.min);
+                gpsWithMat.second.push_back(svmAxelConfig.max);
 
                 auto normalizedMat = std::make_pair(
                     gpsWithMat.first,
@@ -73,9 +78,10 @@ namespace observers {
                             svmAxelConfig.norm_range.first,
                             svmAxelConfig.norm_range.second,
                             svmAxelConfig.norm_method
-                    ));
+                    ).row(0)
+                );
 
-                std::cout << "Post Norm: " << normalizedMat.second << std::endl;
+//                std::cout << "Post Norm: " << normalizedMat.second << std::endl;
 
 
                 return normalizedMat;
@@ -90,10 +96,9 @@ namespace observers {
 
                 auto labels = gpsWithLabels.second.at<int>(0,0);
 
-                //std::vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
+                auto is_ph_label_present = labels == 1;
 
-                auto is_ph_label_present = labels == 1;//std::find(l.begin(), l.end(), 1) != l.end();
-                std::cout << "Label: " << labels << std::endl;
+//                std::cout << "Label: " << labels << std::endl;
 
                 if (is_ph_label_present) {
                     std::cout << "OK: PH found from Accelerometer @ [" <<

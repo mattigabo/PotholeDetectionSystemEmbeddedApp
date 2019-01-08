@@ -118,23 +118,25 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
     } else if (args.mode == "-accelerometer") {
         phd::test::accelerometer::testAccelerometerCommunication(args.withoutRx, args.simulatedAccelerometer, loadedConfig);
 
-    } else if (args.mode == "-train" && argc > 2) {
+    } else if (args.mode == "-train") {
 
-        auto svmConfig = loadSVMOptions(argv[2]);
-        phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, false, 0);
+        phd::test::accelerometer::trainAccelerometerMlAlgorithm(loadedConfig.svmConfig, false);
 
-    } else if (args.mode == "-cross-train" && argc > 2) {
+    } else if (args.mode == "-cross-train") {
 
-        auto svmConfig = loadSVMOptions(argv[2]);
+        auto train_config = loadedConfig.svmConfig;
 
-        phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, true, 0);
-        phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
+        if (argc > 2) {
+            train_config = loadSVMOptions(std::string(argv[2]));
+        }
 
-    } else if (args.mode == "-test" && argc > 2) {
+        auto test_config = phd::test::accelerometer::trainAccelerometerMlAlgorithm(train_config, true);
 
-        auto svmConfig = loadSVMOptions(argv[2]);
+        phd::test::accelerometer::testAccelerometerMlAlgorithm(test_config);
 
-        phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
+    } else if (args.mode == "-test") {
+
+        phd::test::accelerometer::testAccelerometerMlAlgorithm(loadedConfig.svmConfig);
 
     }  else if (args.mode == "-fp") {
 
@@ -156,7 +158,6 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
             cout << "Run with Nunchuck Accelerometer..." << endl;
             accelerometer = new phd::devices::accelerometer::Accelerometer();
         }
-
 
         phd::executionmodes::runObservationMode(loadedConfig,
                                                 gpsDataStore,

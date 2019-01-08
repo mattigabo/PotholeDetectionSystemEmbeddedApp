@@ -8,6 +8,8 @@
 #include <iostream>
 #include <opencv2/ml.hpp>
 #include <phdetection/io.hpp>
+#include <accelerometer/features.h>
+
 
 namespace phd {
     namespace devices {
@@ -49,14 +51,14 @@ namespace phd {
                         sum = sum + (d - mean) * (d - mean);
                     }
 
-                    return sum / array.size();
+                    return sum / (array.size() - 1);
                 }
 
                 float std_dev(const float variance) {
                     return sqrt(variance);
                 }
 
-                float relative_std_dev(const float std_dev, const float mean) {
+                float coefficient_of_variation(const float std_dev, const float mean) {
                     return std_dev / mean;
                 }
 
@@ -84,7 +86,7 @@ namespace phd {
                     ft.mean = mean(window);
                     ft.variance = variance(window, ft.mean);
                     ft.std_dev = std_dev(ft.variance);
-                    ft.relative_std_dev = relative_std_dev(ft.std_dev, ft.mean);
+                    ft.coefficient_of_variation = coefficient_of_variation(ft.std_dev, ft.mean);
                     ft.max_min_diff = max_min_difference(window);
 
                     if (assign_confidence(ft.mean, std_thresholds.mean_threshold, ft.mean_confidence))
@@ -93,15 +95,15 @@ namespace phd {
                     if (assign_confidence(ft.std_dev, std_thresholds.std_dev_threshold, ft.std_dev_confidence))
                         ft.thresholds_overpass_count++;
 
-                    if (assign_confidence(ft.relative_std_dev, std_thresholds.relative_std_dev_threshold,
-                            ft.relative_std_dev_confidence))
+                    if (assign_confidence(ft.coefficient_of_variation, std_thresholds.relative_std_dev_threshold,
+                            ft.coefficient_of_variation_confidence))
                         ft.thresholds_overpass_count++;
 
                     if (assign_confidence(ft.max_min_diff, std_thresholds.max_min_diff_threshold,
                             ft.max_min_diff_confidence))
                         ft.thresholds_overpass_count++;
 
-                    ft.confidences_sum = ft.mean_confidence + ft.std_dev_confidence + ft.relative_std_dev_confidence +
+                    ft.confidences_sum = ft.mean_confidence + ft.std_dev_confidence + ft.coefficient_of_variation_confidence +
                             ft.max_min_diff_confidence;
 
                     if (assign_confidence(ft.confidences_sum, std_thresholds.sum_threshold,
@@ -111,27 +113,42 @@ namespace phd {
                     return ft;
                 }
 
+                cv::Mat toMat(const Features &features) {
+
+                    auto data = cv::Mat(1, n_features, CV_32FC1);
+
+                    data.at<float>(0, 0) = features.mean;
+                    data.at<float>(0, 1) = features.mean_confidence;
+                    data.at<float>(0, 2) = features.std_dev;
+                    data.at<float>(0, 3) = features.std_dev_confidence;
+                    data.at<float>(0, 4) = features.variance;
+                    data.at<float>(0, 5) = features.coefficient_of_variation;
+                    data.at<float>(0, 6) = features.coefficient_of_variation_confidence;
+                    data.at<float>(0, 7) = features.max_min_diff;
+                    data.at<float>(0, 8) = features.max_min_diff_confidence;
+                    data.at<float>(0, 9) = features.confidences_sum;
+                    data.at<float>(0, 10) = features.confidences_sum_confidence;
+                    data.at<float>(0, 11) = static_cast<float>(features.thresholds_overpass_count);
+
+                    return data;
+                }
+
                 cv::Mat toMat(const std::vector<Features> &features) {
-                    cv::Mat data(static_cast<int>(features.size()), n_features, CV_32FC1);
+                    cv::Mat data(0, n_features, CV_32FC1);
 
                     for (int i = 0; i < features.size(); i++) {
-                        data.at<float>(i, 0) = features[i].mean;
-                        data.at<float>(i, 1) = features[i].mean_confidence;
-                        data.at<float>(i, 2) = features[i].std_dev;
-                        data.at<float>(i, 3) = features[i].std_dev_confidence;
-                        data.at<float>(i, 4) = features[i].variance;
-                        data.at<float>(i, 5) = features[i].relative_std_dev;
-                        data.at<float>(i, 6) = features[i].relative_std_dev_confidence;
-                        data.at<float>(i, 7) = features[i].max_min_diff;
-                        data.at<float>(i, 8) = features[i].max_min_diff_confidence;
-                        data.at<float>(i, 9) = features[i].confidences_sum;
-                        data.at<float>(i, 10) = features[i].confidences_sum_confidence;
-                        data.at<float>(i, 11) = features[i].thresholds_overpass_count;
+
+                        data.push_back(toMat(features[i]));
+
                     }
+
+//                    std::cout << data.rows << "|" << data.cols << std::endl;
+
                     return data;
                 }
 
                 std::pair<cv::Mat, cv::Mat> findMinMaxFeatures(cv::Mat train_data){
+
                     auto minFeatures = cv::Mat(1, 12, CV_32FC1);
                     auto maxFeatures = cv::Mat(1, 12, CV_32FC1);
 
@@ -141,6 +158,9 @@ namespace phd {
 
                         auto min = static_cast<float>(tmpMin);
                         auto max = static_cast<float>(tmpMax);
+
+//                        minFeatures.at<float>(0, i) = min;
+//                        maxFeatures.at<float>(0, i) = max;
 
                         if ( i == 0 || i == 2 || i == 4 || i == 5 || i == 7) {
 
@@ -160,6 +180,7 @@ namespace phd {
                             maxFeatures.at<float>(0, i) = 5.0f;
                         }
                     }
+
                     return std::make_pair(minFeatures, maxFeatures);
                 }
 
@@ -290,6 +311,38 @@ namespace phd {
                     }
 
                     return getFeatures(axis_values);
+                }
+
+                std::vector<Features> toFeaturesVector(const cv::Mat &features) {
+
+                    auto v = std::vector<Features>();
+
+                    for (int i = 0; i < features.rows; ++i) {
+
+                        auto ft = toFeatures(features.row(i));
+
+                        v.push_back(ft);
+                    }
+
+                    return v;
+                }
+
+                Features toFeatures(const cv::Mat &features) {
+
+                    return {
+                        features.at<float>(0, 0),
+                        features.at<float>(0, 1),
+                        features.at<float>(0, 2),
+                        features.at<float>(0, 3),
+                        features.at<float>(0, 4),
+                        features.at<float>(0, 5),
+                        features.at<float>(0, 6),
+                        features.at<float>(0, 7),
+                        features.at<float>(0, 8),
+                        features.at<float>(0, 9),
+                        features.at<float>(0, 10),
+                        static_cast<int>(features.at<float>(0, 11))
+                    };
                 }
             }
         }

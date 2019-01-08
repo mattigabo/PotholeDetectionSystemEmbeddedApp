@@ -35,6 +35,8 @@ namespace phd {
             std::pair<std::string, T> params;
             int window;
             int slider;
+            cv::Mat min;
+            cv::Mat max;
         };
 
         struct SVMParams {

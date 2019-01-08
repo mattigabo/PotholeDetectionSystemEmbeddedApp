@@ -34,8 +34,8 @@ namespace phd {
                     float std_dev;
                     float std_dev_confidence;
                     float variance; // Has no confidence score
-                    float relative_std_dev;
-                    float relative_std_dev_confidence;
+                    float coefficient_of_variation;
+                    float coefficient_of_variation_confidence;
                     float max_min_diff;
                     float max_min_diff_confidence;
                     float confidences_sum;
@@ -144,6 +144,12 @@ namespace phd {
                 * @return
                 */
                 cv::Mat toMat(const std::vector<Features> &features);
+
+                cv::Mat toMat(const Features &features);
+
+                std::vector<Features> toFeaturesVector(const cv::Mat &features);
+
+                Features toFeatures(const cv::Mat &features);
 
                 std::pair<cv::Mat, cv::Mat> findMinMaxFeatures(cv::Mat train_data);
 

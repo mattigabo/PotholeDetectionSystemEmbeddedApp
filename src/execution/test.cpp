@@ -192,8 +192,11 @@ namespace phd{
             }
 
 
-            std::pair<cv::Mat, cv::Mat> trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
-                                                                                  const bool cross_validate) {
+            phd::configurations::MLOptions<phd::configurations::SVMParams>
+                trainAccelerometerMlAlgorithm(
+                        const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
+                        const bool cross_validate
+                    ) {
 
                 std::vector<phd::devices::accelerometer::data::Features> features;
                 std::vector<int> labels;
@@ -244,7 +247,18 @@ namespace phd{
                 features.clear();
                 labels.clear();
 
-                return minMax;
+                return {
+                    args.train_set,
+                    args.test_set,
+                    args.model,
+                    args.norm_method,
+                    args.norm_range,
+                    args.params,
+                    args.window,
+                    args.slider,
+                    minMax.first,
+                    minMax.second
+                };
             }
 
             void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {
@@ -259,9 +273,16 @@ namespace phd{
 
                 loadFeatureFromDataSet(args.test_set, sliding_function, features, labels);
 
-                const cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
+                cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
 
-                const cv::Mat normalized_test_data =
+                std::cout << test_data.cols << std::endl;
+                std::cout << args.min << std::endl;
+                std::cout << args.max << std::endl;
+
+                test_data.push_back(args.min);
+                test_data.push_back(args.max);
+
+                cv::Mat tmp_norm =
                         phd::devices::accelerometer::data::normalize(
                                 test_data,
                                 args.norm_range.first,
@@ -269,7 +290,12 @@ namespace phd{
                                 args.norm_method
                         );
 
+                tmp_norm.pop_back(2L);
+
+                const auto normalized_test_data = tmp_norm;
+
                 auto test_labels = phd::devices::accelerometer::data::classify(normalized_test_data, args.model);
+
                 float tp = 0, fp = 0, fn = 0, tn = 0;
 
                 for (int i = 0; i < labels.size(); ++i) {

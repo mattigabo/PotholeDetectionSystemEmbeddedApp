@@ -14,6 +14,8 @@
     "C": 10,
     "gamma": 0.000001,
     "window": 30,
-    "slider": 15
+    "slider": 15,
+    "min": [],
+    "max": []
   }
 }
