@@ -191,8 +191,9 @@ namespace phd{
                 cout << "Bye Bye" << endl;
             }
 
-            void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
-                                               const bool cross_validate) {
+
+            std::pair<cv::Mat, cv::Mat> trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
+                                                                                  const bool cross_validate) {
 
                 std::vector<phd::devices::accelerometer::data::Features> features;
                 std::vector<int> labels;
@@ -201,14 +202,27 @@ namespace phd{
 
                 loadFeatureFromDataSet(args.train_set, sliding_function, features, labels);
 
-                const cv::Mat train_data = toMat(features);
-                const cv::Mat normalized_train_data =
+                cv::Mat train_data = toMat(features);
+
+                const auto minMax = phd::devices::accelerometer::data::findMinMaxFeatures(train_data);
+
+                train_data.push_back(minMax.first);
+                train_data.push_back(minMax.second);
+
+                std::cout << "Min:" << minMax.first <<  std::endl;
+                std::cout << "Max:" << minMax.second <<  std::endl;
+
+                cv::Mat tmp_norm =
                         phd::devices::accelerometer::data::normalize(
                                 train_data,
                                 args.norm_range.first,
                                 args.norm_range.second,
                                 args.norm_method
                         );
+
+                tmp_norm.pop_back(2L);
+
+                const auto normalized_train_data = tmp_norm;
 
                 if (cross_validate) {
                     phd::devices::accelerometer::data::cross_train(
@@ -229,6 +243,8 @@ namespace phd{
 
                 features.clear();
                 labels.clear();
+
+                return minMax;
             }
 
             void testAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args) {

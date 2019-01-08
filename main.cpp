@@ -121,13 +121,13 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
     } else if (args.mode == "-train" && argc > 2) {
 
         auto svmConfig = loadSVMOptions(argv[2]);
-        phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, false);
+        phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, false, 0);
 
     } else if (args.mode == "-cross-train" && argc > 2) {
 
         auto svmConfig = loadSVMOptions(argv[2]);
 
-        phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, true);
+        phd::test::accelerometer::trainAccelerometerMlAlgorithm(svmConfig, true, 0);
         phd::test::accelerometer::testAccelerometerMlAlgorithm(svmConfig);
 
     } else if (args.mode == "-test" && argc > 2) {

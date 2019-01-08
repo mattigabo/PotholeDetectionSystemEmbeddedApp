@@ -145,6 +145,7 @@ namespace phd {
                 */
                 cv::Mat toMat(const std::vector<Features> &features);
 
+                std::pair<cv::Mat, cv::Mat> findMinMaxFeatures(cv::Mat train_data);
 
                 cv::Mat
                 normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type);

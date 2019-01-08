@@ -64,16 +64,21 @@ namespace observers {
                         devices::accelerometer::data::toMat(v)
                 );
             }).map([svmAxelConfig](GPSWithMat gpsWithMat) {
+                std::cout << "Pre Norm: " << gpsWithMat.second << std::endl;
 
-                return std::make_pair(
-                        gpsWithMat.first,
-                        devices::accelerometer::data::normalize(
-                                gpsWithMat.second,
-                                svmAxelConfig.norm_range.first,
-                                svmAxelConfig.norm_range.second,
-                                svmAxelConfig.norm_method
-                        )
-                );
+                auto normalizedMat = std::make_pair(
+                    gpsWithMat.first,
+                    devices::accelerometer::data::normalize(
+                            gpsWithMat.second,
+                            svmAxelConfig.norm_range.first,
+                            svmAxelConfig.norm_range.second,
+                            svmAxelConfig.norm_method
+                    ));
+
+                std::cout << "Post Norm: " << normalizedMat.second << std::endl;
+
+
+                return normalizedMat;
 
             }).map([svmAxelConfig](GPSWithMat gpsWithNormMat) {
 
@@ -83,11 +88,12 @@ namespace observers {
 
             }).filter([](GPSWithMat gpsWithLabels) {
 
-                auto labels = gpsWithLabels.second.row(0);
+                auto labels = gpsWithLabels.second.at<int>(0,0);
 
-                std::vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
+                //std::vector<int> l(labels.ptr<int>(0), labels.ptr<int>(0) + labels.cols);
 
-                auto is_ph_label_present = std::find(l.begin(), l.end(), 1) != l.end();
+                auto is_ph_label_present = labels == 1;//std::find(l.begin(), l.end(), 1) != l.end();
+                std::cout << "Label: " << labels << std::endl;
 
                 if (is_ph_label_present) {
                     std::cout << "OK: PH found from Accelerometer @ [" <<

@@ -131,6 +131,39 @@ namespace phd {
                     return data;
                 }
 
+                std::pair<cv::Mat, cv::Mat> findMinMaxFeatures(cv::Mat train_data){
+                    auto minFeatures = cv::Mat(1, 12, CV_32FC1);
+                    auto maxFeatures = cv::Mat(1, 12, CV_32FC1);
+
+                    for (int i = 0; i < train_data.cols; i++) {
+                        double tmpMin, tmpMax;
+                        cv::minMaxLoc(train_data.col(i), &tmpMin, &tmpMax);
+
+                        auto min = static_cast<float>(tmpMin);
+                        auto max = static_cast<float>(tmpMax);
+
+                        if ( i == 0 || i == 2 || i == 4 || i == 5 || i == 7) {
+
+                            minFeatures.at<float>(0, i) = min;
+                            maxFeatures.at<float>(0, i) = max;
+
+                        } else if (i == 1 || i == 3 || i == 6 || i == 8 || i == 10) {
+
+                            minFeatures.at<float>(0, i) = std_coefficients.low_confidence_score;
+                            maxFeatures.at<float>(0, i) = std_coefficients.high_confidence_score;
+
+                        } else if (i == 9) {
+                            minFeatures.at<float>(0, i) = 4.0f * std_coefficients.low_confidence_score;
+                            maxFeatures.at<float>(0, i) = 4.0f * std_coefficients.high_confidence_score;
+                        } else {
+                            minFeatures.at<float>(0, i) = 0.0f;
+                            maxFeatures.at<float>(0, i) = 5.0f;
+                        }
+                    }
+                    return std::make_pair(minFeatures, maxFeatures);
+                }
+
+
                 cv::Mat
                 normalize(const cv::Mat &features, const double minValue, const double maxValue, const int type) {
 
@@ -231,28 +264,29 @@ namespace phd {
                     return labels;
                 }
 
-                Features toFeatures(const std::vector<phd::devices::accelerometer::Acceleration> &window, const Axis &acceleration_axis) {
+                Features toFeatures(const std::vector<phd::devices::accelerometer::Acceleration> &window,
+                        const Axis &acceleration_axis) {
 
                     std::vector<float> axis_values;
 
                     switch (acceleration_axis) {
                         case Axis::X:
                             std::for_each(window.begin(), window.end(),
-                                    [&axis_values](phd::devices::accelerometer::Acceleration a) {
-                                axis_values.push_back(a.X);
-                            });
+                                          [&axis_values](phd::devices::accelerometer::Acceleration a) {
+                                              axis_values.push_back(a.X);
+                                          });
                             break;
-                            case Axis::Y:
-                                std::for_each(window.begin(), window.end(),
-                                        [&axis_values](phd::devices::accelerometer::Acceleration a) {
-                                    axis_values.push_back(a.Y);
-                                });
-                                break;
-                                default:
-                                    std::for_each(window.begin(), window.end(),
-                                            [&axis_values](phd::devices::accelerometer::Acceleration a) {
-                                        axis_values.push_back(a.Z);
-                                    });
+                        case Axis::Y:
+                            std::for_each(window.begin(), window.end(),
+                                          [&axis_values](phd::devices::accelerometer::Acceleration a) {
+                                              axis_values.push_back(a.Y);
+                                          });
+                            break;
+                        default:
+                            std::for_each(window.begin(), window.end(),
+                                          [&axis_values](phd::devices::accelerometer::Acceleration a) {
+                                              axis_values.push_back(a.Z);
+                                          });
                     }
 
                     return getFeatures(axis_values);
