@@ -13,7 +13,7 @@ namespace phd {
                 setupWiringPiIfNotInitialized();
                 this->reader = new NunchuckReader(NunchuckReader::InitializationMode::NOT_ENCRYPTED);
                 this->dataStore = new NunchuckDataStore();
-                this->dataSampler = new NunchuckDataSampler(this->reader, this-> dataStore);
+                this->dataSampler = new NunchuckDataSampler(this->reader, this->dataStore);
             }
 
             Accelerometer::~Accelerometer() {
