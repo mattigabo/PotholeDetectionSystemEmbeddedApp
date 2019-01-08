@@ -90,11 +90,11 @@ namespace observers {
                 auto is_ph_label_present = std::find(l.begin(), l.end(), 1) != l.end();
 
                 if (is_ph_label_present) {
-                    std::cout << "PH found from Accelerometer @ [" <<
+                    std::cout << "OK: PH found from Accelerometer @ [" <<
                               gpsWithLabels.first.longitude << "," << gpsWithLabels.first.latitude
                               << "]" << std::endl;
                 } else {
-                    std::cout << "NO PH found from Accelerometer @ [" <<
+                    std::cout << "NO: PH found from Accelerometer @ [" <<
                               gpsWithLabels.first.longitude << "," << gpsWithLabels.first.latitude
                               << "]" << std::endl;
                 }
