@@ -35,7 +35,7 @@ namespace observers {
             auto subscription = rxcpp::composite_subscription();
 
             auto accelerometer_obs = observables::accelerometer::createAccelerometerObservable(accelerometer,
-                    OBSERVATION_PERIOD_AT_50Hz);
+                                                                                               observables::accelerometer::REFRESH_PERIOD_AT_50Hz);
 
             auto buffered_accelerations_with_gps = accelerometer_obs.map([](phd::devices::accelerometer::Acceleration accelerationInG){
                         return phd::devices::accelerometer::utils::convertToMSSquared(accelerationInG);
@@ -132,7 +132,7 @@ namespace observers {
             auto output_file = new std::ofstream(axelOutputLocation);
             auto accelerometer_obs = observables::accelerometer::createAccelerometerObservable(
                     accelerometer,
-                    observers::accelerometer::OBSERVATION_PERIOD_AT_50Hz
+                    observables::accelerometer::REFRESH_PERIOD_AT_50Hz
             );
 
             auto subscription = rxcpp::composite_subscription();

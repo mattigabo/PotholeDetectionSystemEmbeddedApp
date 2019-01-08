@@ -10,9 +10,9 @@
 
 namespace observables{
     namespace accelerometer{
-        const int REFRESH_FREQUENCY = 50; //50hz
-        constexpr long ACCELEROMETER_REFRESH_PERIOD = 1/REFRESH_FREQUENCY * 1000;// milliseconds
 
+        constexpr long REFRESH_PERIOD_AT_2Hz = 500L; //2hz = 500ms
+        constexpr long REFRESH_PERIOD_AT_50Hz = 20L; //50hz = 20ms
         /**
        * Create an HOT Observable stream from the given Accelerometer. Values are emitted every refresh
        *

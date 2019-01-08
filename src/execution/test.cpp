@@ -132,13 +132,38 @@ namespace phd{
             void testAccelerometerWithRxCpp(phd::devices::accelerometer::Accelerometer *accelerometer){
                 auto accelerationStream = observables::accelerometer::createAccelerometerObservable(
                         accelerometer,
-                        observables::accelerometer::ACCELEROMETER_REFRESH_PERIOD
+                        observables::accelerometer::REFRESH_PERIOD_AT_2Hz
                 );
                 accelerationStream.as_blocking().subscribe([](const phd::devices::accelerometer::Acceleration values) {
                     printValues(values);
                 },[](){
                     cout << "OnCompleted\n" << endl;
                 });
+            }
+
+            void loadFeatureFromDataSet(string set,
+                    std::function<int(int)> sliding_function,
+                    std::vector<phd::devices::accelerometer::data::Features> &features,
+                    std::vector<int> &labels){
+
+                if (phd::io::is_dir(set.data())) {
+                    vector<cv::String> globs;
+                    cv::glob(set + "/*.json", globs);
+
+                    for (const string ds : globs) {
+                        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
+                        phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+                    }
+
+                } else if (phd::io::is_file(set.data())) {
+
+                    const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(set);
+                    phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+
+                } else {
+                    cerr << "Undefined directory or file " << set << endl;
+                    exit(-3);
+                }
             }
 
             void testAccelerometerCommunication(bool withoutRx){
@@ -168,24 +193,7 @@ namespace phd{
 
                 auto sliding_function = [](int window) { return window - 1; };
 
-                if (phd::io::is_dir(args.train_set.data())) {
-                    vector<cv::String> globs;
-                    cv::glob(args.train_set + "/*.json", globs);
-
-                    for (const string ds : globs) {
-                        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
-                        phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
-                    }
-
-                } else if (phd::io::is_file(args.train_set.data())) {
-
-                    const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.train_set);
-                    phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
-
-                } else {
-                    cerr << "Undefined directory or file " << args.train_set << endl;
-                    exit(-3);
-                }
+                loadFeatureFromDataSet(args.train_set, sliding_function, features, labels);
 
                 const cv::Mat train_data = toMat(features);
                 const cv::Mat normalized_train_data =
@@ -227,24 +235,7 @@ namespace phd{
 //                auto sliding_function = [](int window) { return window - 1; };
                 auto sliding_function = [](int window) { return window / 2; };
 
-                if (phd::io::is_dir(args.test_set.data())) {
-                    vector<cv::String> globs;
-                    cv::glob(args.test_set + "/*.json", globs);
-
-                    for (const string ds : globs) {
-                        const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
-                        phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
-                    }
-
-                } else if (phd::io::is_file(args.test_set.data())) {
-
-                    const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(args.test_set);
-                    phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
-
-                } else {
-                    cerr << "Undefined directory or file " << args.test_set << endl;
-                    exit(-3);
-                }
+                loadFeatureFromDataSet(args.test_set, sliding_function, features, labels);
 
                 const cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
 

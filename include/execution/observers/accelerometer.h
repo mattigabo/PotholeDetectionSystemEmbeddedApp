@@ -23,8 +23,6 @@ namespace observers {
 
     namespace accelerometer {
 
-        const long OBSERVATION_PERIOD_AT_50Hz = 20L; //50hz = 20ms
-
         typedef std::pair<phd::devices::gps::Coordinates, std::vector<phd::devices::accelerometer::Acceleration>> GPSWithAccelerations;
         typedef std::pair<phd::devices::gps::Coordinates, cv::Mat> GPSWithMat;
         typedef std::pair<phd::devices::gps::Coordinates, phd::devices::accelerometer::data::Features> GPSWithFeatures;
