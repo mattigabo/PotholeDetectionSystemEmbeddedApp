@@ -20,13 +20,62 @@ namespace phd {
         namespace accelerometer {
             namespace utils {
 
-                RawData readJSONDataset(const std::string &dataset) {
+                std::vector<Acceleration> exctractAccelerationsFromDataSet(rapidjson::Document &config){
 
-                    RawData rawData = {
+                    std::vector<Acceleration> accelerations = std::vector<Acceleration>();
+
+                    assert(config.HasMember("rot_acc_y"));
+                    assert(config.HasMember("rot_acc_x"));
+                    assert(config.HasMember("rot_acc_z"));
+
+                    assert(config["rot_acc_y"].IsArray());
+                    assert(config["rot_acc_x"].IsArray());
+                    assert(config["rot_acc_z"].IsArray());
+
+                    assert(config["rot_acc_y"].GetArray().Capacity() == config["rot_acc_x"].GetArray().Capacity() &&
+                           config["rot_acc_y"].GetArray().Capacity() == config["rot_acc_z"].GetArray().Capacity());
+
+                    for (int i = 0; i < config["rot_acc_y"].GetArray().Capacity(); ++i) {
+                        const auto &v_y = config["rot_acc_y"].GetArray()[i];
+                        const auto &v_x = config["rot_acc_x"].GetArray()[i];
+                        const auto &v_z = config["rot_acc_z"].GetArray()[i];
+                        assert(v_y.IsFloat());
+                        assert(v_x.IsFloat());
+                        assert(v_z.IsFloat());
+                        accelerations.push_back({ v_x.GetFloat(), v_y.GetFloat(), v_z.GetFloat()});
+                    }
+
+                    return accelerations;
+                }
+
+                std::vector<Acceleration> readAccelerationFromDataSet(const std::string &dataset){
+                    std::vector<Acceleration> accelerations;
+
+                    std::ifstream json(dataset, std::fstream::in);
+
+                    rapidjson::IStreamWrapper wrapper(json);
+
+                    rapidjson::Document config;
+                    config.ParseStream(wrapper);
+
+                    if (json.is_open() && config.IsObject()) {
+                        accelerations = exctractAccelerationsFromDataSet(config);
+                    } else {
+                        std::cerr << "Error" << std::endl;
+
+                        exit(-3);
+                    }
+
+                    json.close();
+
+                    return accelerations;
+                }
+
+                DataSet readJSONDataset(const std::string &dataset) {
+
+                    DataSet dataLoaded = {
                             std::vector<Anomaly>(),
-                            std::vector<float>(),
-                            std::vector<float>(),
-                            std::vector<float>()
+                            std::vector<Acceleration>(),
                     };
 
                     std::ifstream json(dataset, std::fstream::in);
@@ -38,31 +87,10 @@ namespace phd {
 
                     if (json.is_open() && config.IsObject()) {
 
-                        assert(config.HasMember("rot_acc_y"));
-                        assert(config.HasMember("rot_acc_x"));
-                        assert(config.HasMember("rot_acc_z"));
+                        dataLoaded.accelerations = exctractAccelerationsFromDataSet(config);
+
                         assert(config.HasMember("anomalies"));
-
-                        assert(config["rot_acc_y"].IsArray());
-                        assert(config["rot_acc_x"].IsArray());
-                        assert(config["rot_acc_z"].IsArray());
                         assert(config["anomalies"].IsArray());
-
-                        assert(config["rot_acc_y"].GetArray().Capacity() == config["rot_acc_x"].GetArray().Capacity() &&
-                        config["rot_acc_y"].GetArray().Capacity() == config["rot_acc_z"].GetArray().Capacity());
-
-                        for (int i = 0; i < config["rot_acc_y"].GetArray().Capacity(); ++i) {
-                            const auto &v_y = config["rot_acc_y"].GetArray()[i];
-                            const auto &v_x = config["rot_acc_x"].GetArray()[i];
-                            const auto &v_z = config["rot_acc_z"].GetArray()[i];
-                            assert(v_y.IsFloat());
-                            assert(v_x.IsFloat());
-                            assert(v_z.IsFloat());
-                            rawData.y.push_back(v_y.GetFloat());
-                            rawData.x.push_back(v_x.GetFloat());
-                            rawData.z.push_back(v_z.GetFloat());
-                        }
-
                         for (const auto &a : config["anomalies"].GetArray()) {
 
                             assert(a.IsObject());
@@ -73,7 +101,7 @@ namespace phd {
                             assert(a.HasMember("type"));
                             assert(a["type"].IsString());
 
-                            rawData.anomalies.push_back(Anomaly {
+                            dataLoaded.anomalies.push_back(Anomaly {
                                 .starts = a["start"].GetInt(),
                                 .ends = a["end"].GetInt(),
                                 .type = a["type"].GetString()
@@ -88,7 +116,7 @@ namespace phd {
 
                     json.close();
 
-                    return rawData;
+                    return dataLoaded;
                 }
 
                 void printAccelerationValues(Acceleration acceleration, std::string measureUnit){
@@ -108,14 +136,25 @@ namespace phd {
                 }
 
 
-                bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
+                bool toFeatures(const DataSet &dataset, const std::string &axis, std::function<int(int)> sliding_logic,
                         std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels){
 
-                    const auto v = (
-                            axis == "x" || axis == "X" ? raw.x :
-                            axis == "y" || axis == "Y" ? raw.y :
-                            raw.z
-                            );
+                    std::vector<float> v = std::vector<float>();
+
+                    if(axis == "x" || axis == "X") {
+                        for (const auto &a : dataset.accelerations){
+                            v.push_back(a.X);
+                        }
+                    } else if(axis == "y" || axis == "Y"){
+                        for (const auto &a : dataset.accelerations){
+                            v.push_back(a.Y);
+                        }
+                    } else {
+                        for (const auto &a : dataset.accelerations){
+                            v.push_back(a.Z);
+                        }
+                    }
+
 
                     int
                     slider = 0,
@@ -127,7 +166,7 @@ namespace phd {
 
                         auto a_copy = std::vector<Anomaly>();
 
-                        std::copy_if(raw.anomalies.begin(), raw.anomalies.end(),
+                        std::copy_if(dataset.anomalies.begin(), dataset.anomalies.end(),
                                 std::back_inserter(a_copy),
                                 [&](const Anomaly& a) {
                             return slider > a.starts && slider < a.ends

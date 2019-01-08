@@ -21,20 +21,20 @@ namespace phd {
                     std::string type;
                 } Anomaly;
 
-                typedef struct RawData {
+                typedef struct DataSet {
                     std::vector<Anomaly> anomalies;
-                    std::vector<float> x;
-                    std::vector<float> y;
-                    std::vector<float> z;
-                } RawData;
+                    std::vector<Acceleration> accelerations;
+                } DataSet;
 
-                RawData readJSONDataset(const std::string &dataset);
+                DataSet readJSONDataset(const std::string &dataset);
+
+                std::vector<Acceleration> readAccelerationFromDataSet(const std::string &dataset);
 
                 void printAccelerationValues(Acceleration acceleration, std::string measureUnit);
 
                 Acceleration convertToMSSquared(Acceleration accelerationInG);
 
-                bool toFeatures(const RawData &raw, const std::string &axis, std::function<int(int)> sliding_logic,
+                bool toFeatures(const DataSet &dataset, const std::string &axis, std::function<int(int)> sliding_logic,
                         std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels);
 
             }
