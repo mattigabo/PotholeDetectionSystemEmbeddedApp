@@ -50,7 +50,7 @@ void showHelper(void) {
             "[-mocked = use the simulated implementation of the gps updater]" << endl;
     cout << "-http [== Test HTTP communication]" << endl;
     cout << "-led [== Test LED]" << endl;
-    cout << "-accelerometer [== Test Accelerometer]" <<
+    cout << "-accelerometer [== Test Accelerometer] -simulatedAcc [== use the simulated version of the accelerometer that read data from the test_set]" <<
             "[-withoutRx = to test accelerometer data reading without the use of RxCpp Functions]" << endl;
     cout << "-train <config-file> [ == Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
     cout << "-cross-train <config-file> [ == Cross-fold validate and Train the SVM classifier for the acceleration data against the given train-set(s) and test-set(s)]" << endl;
@@ -116,8 +116,7 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
         phd::test::led::testLed(notificationLeds);
 
     } else if (args.mode == "-accelerometer") {
-
-        phd::test::accelerometer::testAccelerometerCommunication(args.withoutRx);
+        phd::test::accelerometer::testAccelerometerCommunication(args.withoutRx, args.simulatedAccelerometer, loadedConfig);
 
     } else if (args.mode == "-train" && argc > 2) {
 

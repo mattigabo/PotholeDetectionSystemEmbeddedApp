@@ -343,6 +343,7 @@ namespace phd{
             auto mode = std::string(argv[1]);
 
             bool withoutRx = false;
+            bool simulatedAccelerometer = false;
             bool useCamera = false;
             bool saveAxelValues = false;
             bool saveCaptures = false;
@@ -350,6 +351,7 @@ namespace phd{
             string capturesSaveLocation = "../res/captures/";
 
             auto evaluator = [&withoutRx,
+                              &simulatedAccelerometer,
                               &useCamera,
                               &saveAxelValues,
                               &saveCaptures,
@@ -357,6 +359,8 @@ namespace phd{
                               &capturesSaveLocation](int argc, int idx, char* argv[]) {
                 if (std::strcmp(argv[idx], "-withoutRx") == 0) {
                     withoutRx = true;
+                } else if (std::strcmp(argv[idx], "-simulatedAcc") == 0) {
+                    simulatedAccelerometer = true;
                 } else if (std::strcmp(argv[idx], "-camera") == 0) {
                     useCamera = true;
                 } else if (std::strcmp(argv[idx], "-save-axel") == 0) {
@@ -383,7 +387,7 @@ namespace phd{
 
             std::cout << "." << endl;
 
-            return {mode, withoutRx, useCamera, saveAxelValues, saveCaptures, axelOutputLocation, capturesSaveLocation};
+            return {mode, withoutRx, simulatedAccelerometer, useCamera, saveAxelValues, saveCaptures, axelOutputLocation, capturesSaveLocation};
         }
 
     }};

@@ -28,11 +28,13 @@ namespace phd {
 
                 DataSet readJSONDataset(const std::string &dataset);
 
-                std::vector<Acceleration> readAccelerationFromDataSet(const std::string &dataset);
+                std::vector<Acceleration> readAccelerationsInGFromDataSet(const std::string &dataset);
 
                 void printAccelerationValues(Acceleration acceleration, std::string measureUnit);
 
                 Acceleration convertToMSSquared(Acceleration accelerationInG);
+
+                Acceleration convertToG(Acceleration accelerationInMSSquared);
 
                 bool toFeatures(const DataSet &dataset, const std::string &axis, std::function<int(int)> sliding_logic,
                         std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels);

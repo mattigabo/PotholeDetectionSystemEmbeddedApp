@@ -166,9 +166,15 @@ namespace phd{
                 }
             }
 
-            void testAccelerometerCommunication(bool withoutRx){
-                cout << "Test the read from the Nunchuck Accelerometer..." << endl;
-                auto accelerometer = new phd::devices::accelerometer::Accelerometer();
+            void testAccelerometerCommunication(bool withoutRx, bool simulated, phd::configurations::EmbeddedAppConfiguration loadedConfig){
+                phd::devices::accelerometer::Accelerometer *accelerometer;
+                if(simulated) {
+                    cout << "Test the read from the Simulated Accelerometer..." << endl;
+                    accelerometer = new phd::devices::accelerometer::SimulatedAccelerometer(loadedConfig.svmConfig.test_set);
+                } else {
+                    cout << "Test the read from the Nunchuck Accelerometer..." << endl;
+                    accelerometer = new phd::devices::accelerometer::Accelerometer();
+                }
 
                 if(withoutRx) {
                     cout << "without RxCpp" << endl;

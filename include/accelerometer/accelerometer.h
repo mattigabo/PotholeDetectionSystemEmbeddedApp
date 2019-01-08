@@ -11,6 +11,8 @@
 #include <nunchuckreader.h>
 #include <nunchuckdatasampler.h>
 
+#include <vector>
+
 namespace phd {
     namespace devices {
         namespace accelerometer {
@@ -25,11 +27,20 @@ namespace phd {
             public:
                 Accelerometer();
                 ~Accelerometer();
-                Acceleration fetch();
+                virtual Acceleration fetch();
             private:
                 nunchuckadapter::NunchuckReader* reader;
                 nunchuckadapter::NunchuckDataStore* dataStore;
                 nunchuckadapter::NunchuckDataSampler* dataSampler;
+            };
+
+            class SimulatedAccelerometer : public Accelerometer {
+            public:
+                explicit SimulatedAccelerometer(const std::string &path_to_acceleration_file);
+                Acceleration fetch() override;
+            private:
+                int currentElement;
+                std::vector<Acceleration> mockedAccelerationStream;
             };
         }
     }

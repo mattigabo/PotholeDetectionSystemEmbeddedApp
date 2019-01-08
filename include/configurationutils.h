@@ -59,6 +59,7 @@ namespace phd {
         struct CommandLineArgs {
             std::string mode;
             bool withoutRx;
+            bool simulatedAccelerometer;
             bool useCamera;
             bool saveAxelValues;
             bool savePositiveCaptures;

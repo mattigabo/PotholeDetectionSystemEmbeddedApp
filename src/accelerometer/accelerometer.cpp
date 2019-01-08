@@ -2,6 +2,7 @@
 // Created by Matteo Gabellini on 2018-12-15.
 //
 #include "accelerometer/accelerometer.h"
+#include "accelerometer/utils.h"
 
 using namespace phd::raspberry::utils;
 using namespace nunchuckadapter;
@@ -34,6 +35,23 @@ namespace phd {
                 };
                 return result;
             }
+
+
+            SimulatedAccelerometer::SimulatedAccelerometer(const std::string &path_to_acceleration_file){
+                this->currentElement = 0;
+                this->mockedAccelerationStream = phd::devices::accelerometer::utils::readAccelerationsInGFromDataSet(
+                        path_to_acceleration_file);
+            }
+
+            Acceleration SimulatedAccelerometer::fetch() {
+                if(this->currentElement >= this->mockedAccelerationStream.size()){
+                    this->currentElement = 0;
+                }
+                Acceleration res = this->mockedAccelerationStream[this->currentElement];
+                this->currentElement++;
+                return res;
+            }
+
         }
     }
 }

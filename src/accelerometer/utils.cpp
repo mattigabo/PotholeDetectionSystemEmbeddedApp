@@ -42,16 +42,16 @@ namespace phd {
                         assert(v_y.IsFloat());
                         assert(v_x.IsFloat());
                         assert(v_z.IsFloat());
-                        accelerations.push_back({ v_x.GetFloat(), v_y.GetFloat(), v_z.GetFloat()});
+                        accelerations.push_back({ v_x.GetFloat() , v_y.GetFloat(), v_z.GetFloat()});
                     }
 
                     return accelerations;
                 }
 
-                std::vector<Acceleration> readAccelerationFromDataSet(const std::string &dataset){
-                    std::vector<Acceleration> accelerations;
+                std::vector<Acceleration> readAccelerationsInGFromFile(const std::string &file){
+                    std::vector<Acceleration> accelerationsInG = std::vector<Acceleration>();
 
-                    std::ifstream json(dataset, std::fstream::in);
+                    std::ifstream json(file, std::fstream::in);
 
                     rapidjson::IStreamWrapper wrapper(json);
 
@@ -59,7 +59,10 @@ namespace phd {
                     config.ParseStream(wrapper);
 
                     if (json.is_open() && config.IsObject()) {
-                        accelerations = exctractAccelerationsFromDataSet(config);
+                        std::vector<Acceleration> accelerationsInMSSquared = exctractAccelerationsFromDataSet(config);
+                        for(const auto acceleration : accelerationsInMSSquared){
+                            accelerationsInG.push_back(convertToG(acceleration));
+                        }
                     } else {
                         std::cerr << "Error" << std::endl;
 
@@ -68,7 +71,35 @@ namespace phd {
 
                     json.close();
 
-                    return accelerations;
+                    return accelerationsInG;
+                }
+
+                std::vector<Acceleration> readAccelerationsInGFromDataSet(const std::string &dataset){
+                    std::cout << "Loading Acceleration from dataset..." << std::endl;
+                    std::vector<Acceleration> accelerationsLoaded;
+                    if (phd::io::is_dir(dataset.data())) {
+                        std::vector<cv::String> globs;
+                        cv::glob(dataset + "/*.json", globs);
+
+                        for (const std::string ds : globs) {
+                            const auto accelerations = phd::devices::accelerometer::utils::readAccelerationsInGFromFile(
+                                    ds);
+                            for(const auto acc : accelerations) {
+                                accelerationsLoaded.push_back(acc);
+                            }
+                        }
+                    } else if (phd::io::is_file(dataset.data())) {
+                        const auto accelerations = phd::devices::accelerometer::utils::readAccelerationsInGFromFile(
+                                dataset);
+                        for(const auto acc : accelerations) {
+                            accelerationsLoaded.push_back(acc);
+                        }
+                    } else {
+                        std::cerr << "Undefined directory or file " << dataset << std::endl;
+                        exit(-3);
+                    }
+                    std::cout << "Dataset Loading finished!" << std::endl;
+                    return accelerationsLoaded;
                 }
 
                 DataSet readJSONDataset(const std::string &dataset) {
@@ -135,6 +166,14 @@ namespace phd {
                     return accInMeterSecondSquared;
                 }
 
+                Acceleration convertToG(Acceleration accelerationInMSSquared){
+                    phd::devices::accelerometer::Acceleration accInMeterSecondSquared = {
+                            accelerationInMSSquared.X / devices::accelerometer::data::g,
+                            accelerationInMSSquared.Y / devices::accelerometer::data::g,
+                            accelerationInMSSquared.Z / devices::accelerometer::data::g
+                    };
+                    return accInMeterSecondSquared;
+                }
 
                 bool toFeatures(const DataSet &dataset, const std::string &axis, std::function<int(int)> sliding_logic,
                         std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels){

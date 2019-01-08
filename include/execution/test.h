@@ -27,7 +27,7 @@ namespace phd{
 
         namespace accelerometer{
 
-            void testAccelerometerCommunication(bool withoutRx);
+            void testAccelerometerCommunication(bool withoutRx, bool simulated, phd::configurations::EmbeddedAppConfiguration loadedConfig);
 
             void trainAccelerometerMlAlgorithm(const phd::configurations::MLOptions<phd::configurations::SVMParams> &args,
                                                const bool cross_validate);
