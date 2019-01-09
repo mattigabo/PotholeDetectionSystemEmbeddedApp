@@ -194,10 +194,9 @@ namespace phd {
                         }
                     }
 
-
                     int
-                    slider = 0,
-                    window_size = phd::devices::accelerometer::data::std_coefficients.windows_size;
+                        slider = 0,
+                        window_size = phd::devices::accelerometer::data::std_coefficients.windows_size;
 
                     while (slider < v.size() - window_size) {
 

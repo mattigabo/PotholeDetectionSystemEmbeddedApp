@@ -64,29 +64,30 @@ namespace observers {
                         devices::accelerometer::data::toMat(v)
                 );
 
-            }).map([svmAxelConfig](GPSWithMat gpsWithMat) {
-
-//                std::cout << "Pre Norm: " << gpsWithMat.second << std::endl;
-
-                gpsWithMat.second.push_back(svmAxelConfig.min);
-                gpsWithMat.second.push_back(svmAxelConfig.max);
-
-                auto normalizedMat = std::make_pair(
-                    gpsWithMat.first,
-                    devices::accelerometer::data::normalize(
-                            gpsWithMat.second,
-                            svmAxelConfig.norm_range.first,
-                            svmAxelConfig.norm_range.second,
-                            svmAxelConfig.norm_method
-                    ).row(0)
-                );
-
-//                std::cout << "Post Norm: " << normalizedMat.second << std::endl;
-
-
-                return normalizedMat;
-
-            }).map([svmAxelConfig](GPSWithMat gpsWithNormMat) {
+            })
+//            .map([svmAxelConfig](GPSWithMat gpsWithMat) {
+//
+////                std::cout << "Pre Norm: " << gpsWithMat.second << std::endl;
+//
+//                gpsWithMat.second.push_back(svmAxelConfig.min);
+//                gpsWithMat.second.push_back(svmAxelConfig.max);
+//
+//                auto normalizedMat = std::make_pair(
+//                    gpsWithMat.first,
+//                    devices::accelerometer::data::normalize(
+//                            gpsWithMat.second,
+//                            svmAxelConfig.norm_range.first,
+//                            svmAxelConfig.norm_range.second,
+//                            svmAxelConfig.norm_method
+//                    ).row(0)
+//                );
+//
+////                std::cout << "Post Norm: " << normalizedMat.second << std::endl;
+//
+//                return normalizedMat;
+//
+//            })
+            .map([svmAxelConfig](GPSWithMat gpsWithNormMat) {
 
                 auto labels = devices::accelerometer::data::classify(gpsWithNormMat.second, svmAxelConfig.model);
 
