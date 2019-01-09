@@ -175,8 +175,12 @@ namespace phd {
                     return accInMeterSecondSquared;
                 }
 
-                bool toFeatures(const DataSet &dataset, const std::string &axis, std::function<int(int)> sliding_logic,
-                        std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels){
+                bool toFeatures(const DataSet &dataset,
+                                const std::string &axis,
+                                const int window_size,
+                                std::function<int(int)> sliding_logic,
+                                std::vector<phd::devices::accelerometer::data::Features> &features,
+                                std::vector<int> &labels) {
 
                     std::vector<float> v = std::vector<float>();
 
@@ -194,9 +198,7 @@ namespace phd {
                         }
                     }
 
-                    int
-                        slider = 0,
-                        window_size = phd::devices::accelerometer::data::std_coefficients.windows_size;
+                    int slider = 0;
 
                     while (slider < v.size() - window_size) {
 
@@ -204,19 +206,19 @@ namespace phd {
 
                         auto a_copy = std::vector<Anomaly>();
 
+                        // Gets only those anomalies that contains the starting index of the slider and
+                        // Only for those windows that contains at least the 100% of the labeled malformation
                         std::copy_if(dataset.anomalies.begin(), dataset.anomalies.end(),
                                 std::back_inserter(a_copy),
                                 [&](const Anomaly& a) {
-                            return slider > a.starts && slider < a.ends
-                            // Only gets those features that cover more than the 50% on the labeled malformation
-                            && (float)(slider - a.starts) / (float) (a.ends - a.starts) < 0.5;
+                            return slider >= a.starts && slider + window_size <= a.ends;
+//                            && (float)(slider - a.starts) / (float) (a.ends - a.starts) < 0.5;
                         });
 
-                        if (!a_copy.empty()) {
-                            labels.push_back(1);
-                        } else {
-                            labels.push_back(0);
-                        }
+                        // If contains at least an anomaly then
+                        // add the label 1 for the actual features set
+                        // else set the label 0
+                        labels.push_back((!a_copy.empty()) ? 1 : 0);
 
                         auto ft = phd::devices::accelerometer::data::getFeatures(res);
 

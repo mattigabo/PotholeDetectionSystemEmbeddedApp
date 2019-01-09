@@ -142,6 +142,7 @@ namespace phd{
             }
 
             void loadFeatureFromDataSet(string set,
+                    const int window_size,
                     std::function<int(int)> sliding_function,
                     std::vector<phd::devices::accelerometer::data::Features> &features,
                     std::vector<int> &labels){
@@ -152,13 +153,14 @@ namespace phd{
 
                     for (const string ds : globs) {
                         const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(ds);
-                        phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+                        phd::devices::accelerometer::utils::toFeatures(rawData, "z", window_size, sliding_function, features,
+                                                                       labels);
                     }
 
                 } else if (phd::io::is_file(set.data())) {
 
                     const auto rawData = phd::devices::accelerometer::utils::readJSONDataset(set);
-                    phd::devices::accelerometer::utils::toFeatures(rawData, "z", sliding_function, features, labels);
+                    phd::devices::accelerometer::utils::toFeatures(rawData, "z", window_size, sliding_function, features, labels);
 
                 } else {
                     cerr << "Undefined directory or file " << set << endl;
@@ -201,9 +203,9 @@ namespace phd{
                 std::vector<phd::devices::accelerometer::data::Features> features;
                 std::vector<int> labels;
 
-                auto sliding_function = [](int window) { return window - 1; };
+                auto sliding_function = [args](int window) { return window - args.slider; };
 
-                loadFeatureFromDataSet(args.train_set, sliding_function, features, labels);
+                loadFeatureFromDataSet(args.train_set, args.window, sliding_function, features, labels);
 
                 cv::Mat train_data = toMat(features);
 
@@ -272,13 +274,13 @@ namespace phd{
                 std::vector<phd::devices::accelerometer::data::Features> features;
                 std::vector<int> labels;
 
-                auto sliding_function = [](int window) { return window / 2; };
+                auto sliding_function = [args](int window) { return window - args.slider; };
 
-                loadFeatureFromDataSet(args.test_set, sliding_function, features, labels);
+                loadFeatureFromDataSet(args.test_set, args.window, sliding_function, features, labels);
 
                 cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
 
-//                std::cout << test_data.cols << std::endl;
+                std::cout << test_data.rows << "|" << test_data.cols << std::endl;
 //                std::cout << args.min << std::endl;
 //                std::cout << args.max << std::endl;
 //
@@ -295,10 +297,10 @@ namespace phd{
 
 //                normalized_test_data.pop_back(2L);
 
-                auto test_labels = phd::devices::accelerometer::data::classify(normalized_test_data, args.model);
-
                 float tp = 0, fp = 0, fn = 0, tn = 0;
 
+                auto test_labels = phd::devices::accelerometer::data::classify(normalized_test_data, args.model);
+//                    std::cout << test_labels;
                 for (int i = 0; i < labels.size(); ++i) {
                     if (test_labels.at<float>(0, i) == 1 && labels[i] == 1) {
                         tp++;
