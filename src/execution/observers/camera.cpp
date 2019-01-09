@@ -20,13 +20,14 @@ namespace observers {
                 phd::io::Configuration &phdConfig,
                 phd::configurations::CVArgs &cvConfig,
                 phd::configurations::ServerConfig &serverConfig,
+                phd::devices::raspberry::led::Led *cameraIsShootingLed,
                 phd::devices::raspberry::led::Led *dataTransferringNotificationLed) {
 
             auto subscription = rxcpp::composite_subscription();
 
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1500L);
 
-            auto camera_obs = observables::camera::createCameraObservable(gps_obs);
+            auto camera_obs = observables::camera::createCameraObservable(gps_obs, cameraIsShootingLed);
 
             camera_obs.map([cvConfig](GPSWithMat image) {
 
@@ -106,6 +107,7 @@ namespace observers {
                                                                         phd::io::Configuration &phdConfig,
                                                                         phd::configurations::CVArgs &cvConfig,
                                                                         phd::configurations::ServerConfig &serverConfig,
+                                                                        phd::devices::raspberry::led::Led *cameraIsShootingLed,
                                                                         phd::devices::raspberry::led::Led *dataTransferringNotificationLed,
                                                                         std::string &posCapturesSaveLocation) {
 
@@ -115,7 +117,7 @@ namespace observers {
 
             auto gps_obs = observables::gps::createGPSObservable(gpsDataStore, 1500L);
 
-            auto camera_obs = observables::camera::createCameraObservable(gps_obs);
+            auto camera_obs = observables::camera::createCameraObservable(gps_obs, cameraIsShootingLed);
 
             camera_obs.map([cvConfig](GPSWithMat image) {
 
