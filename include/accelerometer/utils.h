@@ -36,8 +36,9 @@ namespace phd {
 
                 Acceleration convertToG(Acceleration accelerationInMSSquared);
 
-                bool toFeatures(const DataSet &dataset, const std::string &axis, std::function<int(int)> sliding_logic,
-                        std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels);
+                bool toFeatures(const DataSet &dataset, const std::string &axis, const int window_size,
+                                                std::function<int(int)> sliding_logic,
+                                                std::vector<phd::devices::accelerometer::data::Features> &features, std::vector<int> &labels);
 
             }
         }

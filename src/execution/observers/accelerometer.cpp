@@ -95,9 +95,9 @@ namespace observers {
 
             }).filter([](GPSWithMat gpsWithLabels) {
 
-                auto labels = gpsWithLabels.second.at<int>(0,0);
+                auto labels = gpsWithLabels.second.at<float>(0,0);
 
-                auto is_ph_label_present = labels == 1;
+                auto is_ph_label_present = (labels == 1);
 
 //                std::cout << "Label: " << labels << std::endl;
 
