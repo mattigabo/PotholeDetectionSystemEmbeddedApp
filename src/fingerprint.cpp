@@ -351,6 +351,8 @@ namespace fingerprint {
                 }
             }
             std::transform(buf.begin(), buf.end(), buf.begin(), ::toupper);
+
+            only_once = true;
         }
 
         return buf;
