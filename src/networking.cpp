@@ -137,13 +137,17 @@ namespace phd{
                         T pop(){
                             //Acquire the mutex and automatic release when exit from this scope
                             std::lock_guard <std::mutex> lock(internal_mutex);
-                            if (buffer.size() > 0) {
+                            if (!this->isEmpty()) {
                                 T item = buffer.at(0);
                                 buffer.pop_front();
                                 return item;
                             } else {
                                 return nullptr;
                             }
+                        }
+
+                        bool isEmpty() {
+                            return buffer.size() == 0;
                         }
                     };
 
@@ -161,7 +165,7 @@ namespace phd{
                             this->is_alive = true;
                             this->executor = std::thread([this]() {
                                 unsigned long long exec_id = 0;
-                                while(this->is_alive) {
+                                while(this->is_alive || !this->tsb.isEmpty()) {
                                     auto handle = this->tsb.pop();
                                     if (handle != nullptr) {
 
@@ -184,8 +188,9 @@ namespace phd{
                         }
 
                         void kill() {
-                            this->executor.join();
+
                             this->is_alive = false;
+                            this->executor.join();
                         }
                     };
 
