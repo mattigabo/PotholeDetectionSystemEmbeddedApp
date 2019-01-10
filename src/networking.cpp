@@ -11,6 +11,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <mutex>
+#include <deque>
+#include <vector>
 #include <stdio.h>
 
 using namespace rapidjson;
@@ -19,7 +23,8 @@ using namespace std;
 namespace phd{
     namespace devices {
         namespace networking {
-            const int TIMEOUT_SECONDS = 20;
+
+            const int TIMEOUT_SECONDS = 5;
 
             string getURL(const phd::configurations::ServerConfig config) {
                 return getURL(config.protocol, config.hostname, config.port, config.api);
@@ -44,9 +49,7 @@ namespace phd{
                 CURLcode POST(
                         std::string url,
                         std::vector<std::pair<std::string, std::string>> headers,
-                        std::string &payload
-                        ) {
-
+                        std::string payload) {
 
                     CURL *curl = curl_easy_init();
                     curl_slist *_headers = NULL;
@@ -55,7 +58,7 @@ namespace phd{
                         return CURLE_FAILED_INIT;
                     }
 
-                    cout << url << endl;
+//                    cout << url << endl;
 
                     for (auto p : headers) {
                         auto h = std::string().append(p.first).append(": ").append(p.second);
@@ -101,10 +104,114 @@ namespace phd{
                     curl_easy_setopt(curl, CURLOPT_TIMEOUT, TIMEOUT_SECONDS);
 
                     CURLcode res = curl_easy_perform(curl);
+
+                    // ToDo
+
                     curl_slist_free_all(_headers);
                     curl_easy_cleanup(curl);
 
                     return res;
+                }
+
+                namespace async {
+
+                    template<typename T>
+                    class ThreadSafeBuffer {
+                    private:
+                        std::deque<T> buffer;
+                        std::mutex internal_mutex;
+
+                    public:
+                        ThreadSafeBuffer (){
+                            buffer = std::deque<T>();
+                        }
+
+                        void push(const T item){
+
+                            //Acquire the mutex and automatic release when exit from this scope
+                            std::lock_guard <std::mutex> lock(internal_mutex);
+
+                            buffer.push_back(item);
+                        }
+
+                        T pop(){
+                            //Acquire the mutex and automatic release when exit from this scope
+                            std::lock_guard <std::mutex> lock(internal_mutex);
+                            if (buffer.size() > 0) {
+                                T item = buffer.at(0);
+                                buffer.pop_front();
+                                return item;
+                            } else {
+                                return nullptr;
+                            }
+                        }
+                    };
+
+
+                    class HTTPRequestHandler {
+                    private:
+
+                        std::thread executor;
+                        ThreadSafeBuffer<std::function<CURLcode(void)>> tsb;
+                        bool is_alive;
+
+                    public:
+
+                        HTTPRequestHandler() {
+                            this->is_alive = true;
+                            this->executor = std::thread([this]() {
+                                unsigned long long exec_id = 0;
+                                while(this->is_alive) {
+                                    auto handle = this->tsb.pop();
+                                    if (handle != nullptr) {
+
+                                        cout << "[Async HTTP Request Handler][OpID:" << exec_id << "]"
+                                        << "Received new handle to execute." << endl;
+
+                                        auto res = handle();
+
+                                        cout << "[Async HTTP Request Handler][OpID:" << exec_id << "]"
+                                        << "HTTP Response Code:" << res << endl;
+
+                                        exec_id++;
+                                    }
+                                }
+                            });
+                        }
+
+                        void submit(std::function<CURLcode(void)> handle) {
+                            this->tsb.push(handle);
+                        }
+
+                        void kill() {
+                            this->executor.join();
+                            this->is_alive = false;
+                        }
+                    };
+
+                    static HTTPRequestHandler* httpRequestHandler;
+
+                    CURLcode init() {
+                        httpRequestHandler = new HTTPRequestHandler();
+                        return curl_global_init(CURL_GLOBAL_ALL);
+                    }
+
+                    void close() {
+                        httpRequestHandler->kill();
+                        curl_global_cleanup();
+                    }
+
+                    void POST(
+                            std::string url,
+                            std::vector<std::pair<std::string, std::string>> headers,
+                            std::string payload) {
+
+                        httpRequestHandler->submit([url, headers, payload]() -> CURLcode {
+                           return HTTP::POST(url, headers, payload);
+                        });
+
+                    }
+
                 }
 
             }

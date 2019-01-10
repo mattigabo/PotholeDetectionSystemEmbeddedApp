@@ -54,6 +54,13 @@ void sendDataToServer(std::string payload, phd::configurations::ServerConfig ser
     cout << "HTTP Response Code:" << res << endl;
 }
 
+void sendDataToServerAsync(std::string payload, phd::configurations::ServerConfig serverConfig){
+    phd::devices::networking::HTTP::async::POST(
+            phd::devices::networking::getURL(serverConfig),
+            httpHeaders,
+            payload);
+}
+
 template <typename T>
 void print_vector(const std::vector<T> v) {
     cout << "[";
@@ -83,7 +90,7 @@ std::string toJSON(std::string token) {
     return buffer.GetString();
 }
 
-void registerDeviceOnServer(std::string payload, phd::configurations::ServerConfig serverConfig) {
+CURLcode registerDeviceOnServer(std::string payload, phd::configurations::ServerConfig serverConfig) {
 
     CURLcode res = phd::devices::networking::HTTP::POST(
             phd::devices::networking::getURL(serverConfig) + "register",
@@ -91,5 +98,7 @@ void registerDeviceOnServer(std::string payload, phd::configurations::ServerConf
             payload);
 
     cout << "HTTP Response Code:" << res << endl;
+
+    return res;
 
 }

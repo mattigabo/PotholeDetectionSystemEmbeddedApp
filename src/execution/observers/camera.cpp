@@ -193,11 +193,9 @@ namespace observers {
                     [subscription, serverConfig, dataTransferringNotificationLed](GPSCoordinates coordinates){
                         std::string position = toJSON(coordinates, fingerprint::getUID());
 
-                        auto f = std::async(std::launch::async, [position, serverConfig, dataTransferringNotificationLed]() {
-                            dataTransferringNotificationLed->switchOn();
-                            sendDataToServer(position, serverConfig);
-                            dataTransferringNotificationLed->switchOff();
-                        });
+                        dataTransferringNotificationLed->switchOn();
+                        sendDataToServerAsync(position, serverConfig);
+                        dataTransferringNotificationLed->switchOff();
 
                     }, []() {
                         std::cout << "Camera Image Classifier has COMPLETED." << std::endl;

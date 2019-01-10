@@ -26,11 +26,11 @@ namespace phd{
 
                 CURLcode init();
 
-                CURLcode POST (
+                CURLcode POST(
                         std::string url,
                         std::vector<std::pair<std::string, std::string>> headers,
-                        std::string &payload
-                        );
+                        std::string payload
+                );
 
                 CURLcode GET (
                         std::string url,
@@ -39,6 +39,19 @@ namespace phd{
                         );
 
                 void close();
+
+                namespace async {
+
+                    CURLcode init();
+
+                    void POST(
+                            std::string url,
+                            std::vector<std::pair<std::string, std::string>> headers,
+                            std::string payload
+                    );
+
+                    void close();
+                }
             };
         }
     }

@@ -49,13 +49,11 @@ using namespace std;
 namespace phd {
     namespace executionmodes {
 
-        void doFingerprinting(phd::configurations::ServerConfig serverConfig){
+        CURLcode doFingerprinting(phd::configurations::ServerConfig serverConfig){
             const string fp = fingerprint::getUID();
 
             cout << "Registering Device " << fp << " on Server..." << endl;
-            //            auto f = std::async(std::launch::async, [fp, serverConfig]() {
-            registerDeviceOnServer(toJSON(fp), serverConfig);
-            //            }
+            return registerDeviceOnServer(toJSON(fp), serverConfig);
         }
 
         void switchOffAllLeds(phd::devices::raspberry::led::NotificationLeds notificationLeds){
@@ -73,7 +71,14 @@ namespace phd {
 
             notificationLeds.programInExecution.switchOn();
 
-            doFingerprinting(loadedConfig.serverConfig);
+            notificationLeds.serverDataTransfering.switchOn();
+            auto registration_result = doFingerprinting(loadedConfig.serverConfig);
+
+            if (registration_result != 0) {
+                cout << "Unable to register device on server... Found malformations won't be submitted." << endl;
+            }
+
+            notificationLeds.serverDataTransfering.switchOff();
 
             auto axis = phd::devices::accelerometer::data::Axis::Z;
 

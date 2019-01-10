@@ -87,15 +87,15 @@ SerialPort* initSerialPort(string portName){
     return sp;
 }
 
-void initCURL(){
-    CURLcode initResult =  HTTP::init();
-    cout << "cURL Global Initialization: ";
+void initHTTP(){
+    CURLcode initResult =  HTTP::async::init();
+    cout << "HTTP Global Initialization: ";
     if(initResult == CURLE_OK){
         cout << "OK";
     } else {
         cout << "Error " << initResult;
     }
-    cout << "\n"<< endl;
+    cout << endl << endl;
 }
 
 void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
@@ -212,9 +212,10 @@ int main(int argc, char *argv[]) {
     const string root = phd::io::getParentDirectory(string(dirname(argv[0])));
 
     auto config_folder = root + config_folder_suffix;
+
     cout << config_folder << endl;
 
-    initCURL();
+    initHTTP();
 
     if (argc < 2) {
         showHelper();
@@ -224,9 +225,9 @@ int main(int argc, char *argv[]) {
         selectMode(argc, argv, loadedConfig);
     }
 
-    HTTP::close();
+    HTTP::async::close();
 
-    std::cout << "---------------------------------------------------------" << std::endl << std::endl;
+    std::cout << std::endl << "---------------------------------------------------------" << std::endl << std::endl;
 
     return 1;
 }
