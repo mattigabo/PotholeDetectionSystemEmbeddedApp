@@ -21,6 +21,8 @@
 #include <camera.h>
 #include <gps/GPSDataStore.h>
 
+#include "raspberrypi/led.h"
+
 namespace observables {
     namespace  camera {
 
@@ -34,7 +36,7 @@ namespace observables {
         * @return An Observable source of pair of GPS coordinates and image
         */
         rxcpp::observable<GPSWithMat>
-        createCameraObservable(const rxcpp::observable<phd::devices::gps::Coordinates> &coordinates);
+        createCameraObservable(const rxcpp::observable<phd::devices::gps::Coordinates> &coordinates,  phd::devices::raspberry::led::Led *cameraIsShootingLed);
     }
 }
 

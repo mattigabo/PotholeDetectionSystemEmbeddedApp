@@ -184,7 +184,8 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
             }
 
             phd::executionmodes::runObservationMode(loadedConfig,
-                                                    gpsDataStore, nullptr,
+                                                    gpsDataStore,
+                                                    accelerometer,
                                                     notificationLeds,
                                                     args);
 

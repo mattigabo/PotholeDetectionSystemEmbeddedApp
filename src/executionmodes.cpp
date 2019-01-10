@@ -93,14 +93,16 @@ namespace phd {
                                                                             loadedConfig.phdConfig,
                                                                             loadedConfig.cvConfig,
                                                                             loadedConfig.serverConfig,
+                                                                            &notificationLeds.cameraIsShooting,
                                                                             &notificationLeds.serverDataTransfering,
                                                                             cmdArgs.captureSaveLocation);
                 } else {
                     camera_subs = observers::camera::runCameraObserver(gpsDataStore,
-                                                                            loadedConfig.phdConfig,
-                                                                            loadedConfig.cvConfig,
-                                                                            loadedConfig.serverConfig,
-                                                                            &notificationLeds.serverDataTransfering);
+                            loadedConfig.phdConfig,
+                            loadedConfig.cvConfig,
+                            loadedConfig.serverConfig,
+                            &notificationLeds.cameraIsShooting,
+                            &notificationLeds.serverDataTransfering);
                 }
             }
 

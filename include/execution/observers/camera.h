@@ -32,12 +32,14 @@ namespace observers {
                                                         phd::io::Configuration &phdConfig,
                                                         phd::configurations::CVArgs &cvConfig,
                                                         phd::configurations::ServerConfig &serverConfig,
+                                                        phd::devices::raspberry::led::Led *cameraIsShootingLed,
                                                         phd::devices::raspberry::led::Led *dataTransferringNotificationLed);
 
         rxcpp::composite_subscription runCameraObserverWithCaptureSaver(phd::devices::gps::GPSDataStore *gpsDataStore,
                                                         phd::io::Configuration &phdConfig,
                                                         phd::configurations::CVArgs &cvConfig,
                                                         phd::configurations::ServerConfig &serverConfig,
+                                                        phd::devices::raspberry::led::Led *cameraIsShootingLed,
                                                         phd::devices::raspberry::led::Led *dataTransferringNotificationLed,
                                                         std::string &posCapturesSaveLocation);
     }
