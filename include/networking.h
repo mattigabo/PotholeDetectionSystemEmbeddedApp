@@ -10,6 +10,7 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <vector>
+#include <raspberrypi/led.h>
 
 #include "configurationutils.h"
 
@@ -24,19 +25,24 @@ namespace phd{
 
             namespace HTTP {
 
+                typedef std::vector<std::pair<std::string, std::string>> Params;
+                typedef std::vector<std::pair<std::string, std::string>> Headers;
+                typedef std::string URL;
+                typedef std::string Payload;
+
                 CURLcode init();
 
                 CURLcode POST(
-                        std::string url,
-                        std::vector<std::pair<std::string, std::string>> headers,
-                        std::string payload
+                        HTTP::URL url,
+                        HTTP::Headers headers,
+                        HTTP::Payload payload
                 );
 
                 CURLcode GET (
-                        std::string url,
-                        std::vector<std::pair<std::string, std::string>> headers,
-                        std::vector<std::pair<std::string, std::string>> params
-                        );
+                        HTTP::URL url,
+                        HTTP::Headers headers,
+                        HTTP::Params params
+                    );
 
                 void close();
 
@@ -44,11 +50,11 @@ namespace phd{
 
                     CURLcode init();
 
-                    void POST(
-                            std::string url,
-                            std::vector<std::pair<std::string, std::string>> headers,
-                            std::string payload
-                    );
+                    void POST(HTTP::URL url,
+                              HTTP::Headers headers,
+                              HTTP::Payload payload,
+                              std::function<void(CURLcode)> callback,
+                              phd::devices::raspberry::led::Led *led = nullptr);
 
                     void close();
                 }

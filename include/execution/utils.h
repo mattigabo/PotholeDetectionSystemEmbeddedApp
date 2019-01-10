@@ -8,6 +8,7 @@
 #include <gps/GPSDataStore.h>
 #include <string>
 #include <networking.h>
+#include <raspberrypi/led.h>
 
 std::string toJSON(phd::devices::gps::Coordinates coordinates, std::string token);
 
@@ -15,7 +16,8 @@ std::string toJSON(std::string token);
 
 void sendDataToServer(std::string payload, phd::configurations::ServerConfig serverConfig);
 
-void sendDataToServerAsync(std::string payload, phd::configurations::ServerConfig serverConfig);
+void sendDataToServerAsync(phd::configurations::ServerConfig serverConfig, std::string payload,
+                           std::function<void(CURLcode)> callback, phd::devices::raspberry::led::Led *led);
 
 CURLcode registerDeviceOnServer(std::string payload, phd::configurations::ServerConfig serverConfig);
 

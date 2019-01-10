@@ -54,11 +54,18 @@ void sendDataToServer(std::string payload, phd::configurations::ServerConfig ser
     cout << "HTTP Response Code:" << res << endl;
 }
 
-void sendDataToServerAsync(std::string payload, phd::configurations::ServerConfig serverConfig){
+void sendDataToServerAsync(phd::configurations::ServerConfig serverConfig,
+                           std::string payload,
+                           std::function<void(CURLcode)> callback,
+                           phd::devices::raspberry::led::Led *led) {
+
     phd::devices::networking::HTTP::async::POST(
             phd::devices::networking::getURL(serverConfig),
             httpHeaders,
-            payload);
+            payload,
+            callback,
+            led
+    );
 }
 
 template <typename T>

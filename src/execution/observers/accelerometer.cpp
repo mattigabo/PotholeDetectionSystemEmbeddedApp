@@ -121,11 +121,14 @@ namespace observers {
 
                         std::string position = toJSON(coordinates, fingerprint::getUID());
 
-//                        auto f = std::async(std::launch::async, [position, serverConfig, dataTransferringNotificationLed]() {
-                            dataTransferringNotificationLed->switchOn();
-                            sendDataToServerAsync(position, serverConfig);
-                            dataTransferringNotificationLed->switchOff();
-//                        });
+                        auto callback = [dataTransferringNotificationLed](CURLcode result) {
+                            std::cout << "HTTP Response Code:" << result << std::endl;
+                            if (dataTransferringNotificationLed->isSwitchedOn()) {
+                                dataTransferringNotificationLed->switchOff();
+                            }
+                        };
+
+                        sendDataToServerAsync(serverConfig, position, callback, dataTransferringNotificationLed);
 
                     }, []() {
                         std::cout << "Axel Stream Classifier has COMPLETED." << std::endl;

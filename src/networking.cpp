@@ -156,7 +156,7 @@ namespace phd{
                     private:
 
                         std::thread executor;
-                        ThreadSafeBuffer<std::function<CURLcode(void)>> tsb;
+                        ThreadSafeBuffer<std::function<void(void)>> tsb;
                         bool is_alive;
 
                     public:
@@ -172,10 +172,7 @@ namespace phd{
                                         cout << "[Async HTTP Request Handler][OpID:" << exec_id << "]"
                                         << "Received new handle to execute." << endl;
 
-                                        auto res = handle();
-
-                                        cout << "[Async HTTP Request Handler][OpID:" << exec_id << "]"
-                                        << "HTTP Response Code:" << res << endl;
+                                        handle();
 
                                         exec_id++;
                                     }
@@ -183,7 +180,7 @@ namespace phd{
                             });
                         }
 
-                        void submit(std::function<CURLcode(void)> handle) {
+                        void submit(std::function<void(void)> handle) {
                             this->tsb.push(handle);
                         }
 
@@ -206,13 +203,17 @@ namespace phd{
                         curl_global_cleanup();
                     }
 
-                    void POST(
-                            std::string url,
-                            std::vector<std::pair<std::string, std::string>> headers,
-                            std::string payload) {
+                    void POST(std::string url,
+                              std::vector<std::pair<std::string, std::string>> headers,
+                              std::string payload,
+                              std::function<void(CURLcode)> callback,
+                              phd::devices::raspberry::led::Led *led) {
 
-                        httpRequestHandler->submit([url, headers, payload]() -> CURLcode {
-                           return HTTP::POST(url, headers, payload);
+                        httpRequestHandler->submit([url, headers, payload, callback, led]() {
+                            if (led != nullptr && !led->isSwitchedOn()) {
+                                led->switchOn();
+                            }
+                            callback(HTTP::POST(url, headers, payload));
                         });
 
                     }
