@@ -3,6 +3,7 @@
     "train-set": "/path/to/train/set/{file}",
     "test-set": "/path/to/test/set/{file}",
     "model": "/path/to/svm/model.yml",
+    "use-norm": false,
     "norm-method": "MIN-MAX | L1 | L2 | HAMMING | HAMMING2",
     "norm-range": [0.1, 0.9],
     "kernel": "RBF | LINEAR",

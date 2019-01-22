@@ -136,7 +136,13 @@ void selectMode(int argc, char *argv[], EmbeddedAppConfiguration loadedConfig){
 
     } else if (args.mode == "-test") {
 
-        phd::test::accelerometer::testAccelerometerMlAlgorithm(loadedConfig.svmConfig);
+        auto test_config = loadedConfig.svmConfig;
+
+        if (argc > 2) {
+            test_config = loadSVMOptions(std::string(argv[2]));
+        }
+
+        phd::test::accelerometer::testAccelerometerMlAlgorithm(test_config);
 
     }  else if (args.mode == "-fp") {
 

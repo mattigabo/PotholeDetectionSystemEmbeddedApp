@@ -30,6 +30,7 @@ namespace phd {
             std::string train_set;
             std::string test_set;
             std::string model;
+            bool use_norm;
             cv::NormTypes norm_method;
             std::pair<float, float> norm_range;
             std::pair<std::string, T> params;

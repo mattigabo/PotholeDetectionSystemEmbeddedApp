@@ -209,29 +209,25 @@ namespace phd{
 
                 cv::Mat train_data = toMat(features);
 
+                cv::Mat normalized_train_data = train_data;
+
                 const auto minMax = phd::devices::accelerometer::data::findMinMaxFeatures(train_data);
 
-                const auto min = minMax.first;
-                const auto max = minMax.second;
+                if (args.use_norm) {
 
-//                train_data.push_back(min);
-//                train_data.push_back(max);
+                    train_data.push_back(minMax.first);
+                    train_data.push_back(minMax.second);
 
-//                std::cout << "Min:" << minMax.first <<  std::endl;
-//                std::cout << "Max:" << minMax.second <<  std::endl;
+                    normalized_train_data = phd::devices::accelerometer::data::normalize(
+                                train_data,
+                                args.norm_range.first,
+                                args.norm_range.second,
+                                args.norm_method
+                        );
 
-//                std::cout << "Min:" << min <<  std::endl;
-//                std::cout << "Max:" << max <<  std::endl;
+                    normalized_train_data.pop_back(2L);
+                }
 
-                cv::Mat normalized_train_data = train_data;
-//                        phd::devices::accelerometer::data::normalize(
-//                                train_data,
-//                                args.norm_range.first,
-//                                args.norm_range.second,
-//                                args.norm_method
-//                        );
-//
-//                normalized_train_data.pop_back(2L);
 
                 if (cross_validate) {
                     phd::devices::accelerometer::data::cross_train(
@@ -257,13 +253,14 @@ namespace phd{
                     args.train_set,
                     args.test_set,
                     args.model,
+                    args.use_norm,
                     args.norm_method,
                     args.norm_range,
                     args.params,
                     args.window,
                     args.slider,
-                    min,
-                    max
+                    minMax.first,
+                    minMax.second
                 };
             }
 
@@ -281,26 +278,31 @@ namespace phd{
                 cv::Mat test_data = phd::devices::accelerometer::data::toMat(features);
 
                 std::cout << test_data.rows << "|" << test_data.cols << std::endl;
-//                std::cout << args.min << std::endl;
-//                std::cout << args.max << std::endl;
-//
-//                test_data.push_back(args.min);
-//                test_data.push_back(args.max);
 
                 cv::Mat normalized_test_data = test_data;
-//                        phd::devices::accelerometer::data::normalize(
-//                                test_data,
-//                                args.norm_range.first,
-//                                args.norm_range.second,
-//                                args.norm_method
-//                        );
 
-//                normalized_test_data.pop_back(2L);
+                if (args.use_norm) {
+
+                    test_data.push_back(args.min);
+                    test_data.push_back(args.max);
+
+                    normalized_test_data = phd::devices::accelerometer::data::normalize(
+                                test_data,
+                                args.norm_range.first,
+                                args.norm_range.second,
+                                args.norm_method
+                        );
+
+                    normalized_test_data.pop_back(2L);
+
+                }
 
                 float tp = 0, fp = 0, fn = 0, tn = 0;
 
                 auto test_labels = phd::devices::accelerometer::data::classify(normalized_test_data, args.model);
+
 //                    std::cout << test_labels;
+
                 for (int i = 0; i < labels.size(); ++i) {
                     if (test_labels.at<float>(0, i) == 1 && labels[i] == 1) {
                         tp++;
@@ -313,11 +315,15 @@ namespace phd{
                     }
                 }
 
-                cout << "TP: " << tp << " | TN: " << tn << " | FP: " << fp << " | FN: " << fn << endl;
+                cout
+                << "Precision," << "Sensitivity," << "F1,"
+                << "TP," <<"TN," << "FP," << "FN"
+                << endl;
 
-                cout << "Precision: " << (tp/(tp+fp)) << endl;
-                cout << "Recall/Sensitivity: " << (tp/(tp+fn)) << endl;
-                cout << "F1: " << (2*tp/(2*tp+fp+fn)) << endl;
+                cout
+                << (tp/(tp+fp)) << "," << (tp/(tp+fn)) << "," << (2*tp/(2*tp+fp+fn)) << ","
+                << tp << "," << tn << "," << fp << "," << fn
+                << endl;
             }
         }
 

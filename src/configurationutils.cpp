@@ -245,6 +245,9 @@ namespace phd{
                 assert((*json)["svm"].HasMember("norm-range"));
                 assert((*json)["svm"]["norm-range"].IsArray());
 
+                assert((*json)["svm"].HasMember("use-norm"));
+                assert((*json)["svm"]["use-norm"].IsBool());
+
                 assert((*json)["svm"].HasMember("min"));
                 assert((*json)["svm"]["min"].IsArray());
                 assert((*json)["svm"].HasMember("min"));
@@ -275,6 +278,7 @@ namespace phd{
                 config.train_set = (*json)["svm"]["train-set"].GetString();
                 config.test_set = (*json)["svm"]["test-set"].GetString();
                 config.model = (*json)["svm"]["model"].GetString();
+                config.use_norm = (*json)["svm"]["use-norm"].GetBool();
                 config.norm_method = norm_parser((*json)["svm"]["norm-method"].GetString());
 
                 if ((*json)["svm"]["norm-range"].GetArray().Size() >= 2 &&
@@ -334,6 +338,7 @@ namespace phd{
                 << "model:" << config.model <<  std::endl
                 << "window:" << config.window <<  std::endl
                 << "slider:" << config.slider <<  std::endl
+                << "use-norm:" << (config.use_norm ? "true" : "false") <<  std::endl
                 << "norm:" << (*json)["svm"]["norm-method"].GetString() << " | def: MIN-MAX" << std::endl
                 << "min:" << config.min <<  std::endl
                 << "max:" << config.max <<  std::endl

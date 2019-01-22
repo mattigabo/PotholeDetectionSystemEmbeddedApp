@@ -163,6 +163,7 @@ namespace phd{
 
                         HTTPRequestHandler() {
                             this->is_alive = true;
+
                             this->executor = std::thread([this]() {
                                 unsigned long long exec_id = 0;
                                 while(this->is_alive || !this->tsb.isEmpty()) {
